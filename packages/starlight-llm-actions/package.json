@@ -7,11 +7,11 @@
   "author": "Holden Hewett",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hhewett/starlight-llm-actions.git"
+    "url": "git+https://github.com/holdenhewett/starlight-llm-actions.git"
   },
-  "homepage": "https://hhewett.github.io/starlight-llm-actions/",
+  "homepage": "https://holdenhewett.github.io/starlight-llm-actions/",
   "bugs": {
-    "url": "https://github.com/hhewett/starlight-llm-actions/issues"
+    "url": "https://github.com/holdenhewett/starlight-llm-actions/issues"
   },
   "keywords": [
     "starlight",

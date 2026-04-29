@@ -6,7 +6,7 @@
 > T3 Chat, or Cursor — using the most reliable per-provider strategy.
 
 > **Status:** v0.1 in active development. Not yet published to npm.
-> See [PLAN.md](https://github.com/hhewett/starlight-llm-actions/blob/main/PLAN.md).
+> See [PLAN.md](https://github.com/holdenhewett/starlight-llm-actions/blob/main/PLAN.md).
 
 ## Install
 
@@ -92,7 +92,7 @@ to render only one half.
 ## Configuration
 
 Full reference to land in v0.1.0. See
-[PLAN.md §4](https://github.com/hhewett/starlight-llm-actions/blob/main/PLAN.md)
+[PLAN.md §4](https://github.com/holdenhewett/starlight-llm-actions/blob/main/PLAN.md)
 for the public API surface during development.
 
 ## License

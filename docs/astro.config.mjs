@@ -12,7 +12,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/hhewett/starlight-llm-actions',
+          href: 'https://github.com/holdenhewett/starlight-llm-actions',
         },
       ],
       plugins: [
