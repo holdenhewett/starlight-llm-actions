@@ -73,11 +73,16 @@ jobs:
             if [ -f "$f" ]; then echo "--- $f ---"; cat "$f"; else echo "$f: (none)"; fi
           done
           echo ""
-          echo "=== npm config (filtered) ==="
-          npm config list -l 2>&1 | grep -iE "registry|provenance|auth|trusted|oidc" || true
+          echo "=== npm config sources (long) ==="
+          npm config list -l --long 2>&1 | grep -B1 -iE "registry|provenance|auth|trusted|oidc" || true
           echo ""
-          echo "=== env (filtered) ==="
-          env | grep -iE "^NPM|^NODE_AUTH|^NODE_CONFIG|^ACTIONS_ID" || true
+          echo "=== /etc/npmrc + globalconfig ==="
+          for f in /etc/npmrc /usr/etc/npmrc /usr/local/etc/npmrc /opt/hostedtoolcache/node/24.14.1/x64/etc/npmrc; do
+            if [ -f "$f" ]; then echo "--- $f ---"; cat "$f"; else echo "$f: (none)"; fi
+          done
+          echo ""
+          echo "=== ALL env (npm_config_* + npm related) ==="
+          env | grep -iE "^npm_|^NPM_|^NODE_AUTH" || true
 
       - name: Publish to npm
         working-directory: packages/starlight-llm-actions
