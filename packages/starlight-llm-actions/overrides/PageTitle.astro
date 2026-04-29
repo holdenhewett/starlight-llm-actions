@@ -1,0 +1,179 @@
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import PageActions from '../components/PageActions.astro';
+import config from 'virtual:starlight-llm-actions/config';
+
+const { printNotice } = config;
+const branding = printNotice?.branding ?? null;
+const warning = printNotice?.warning ?? null;
+---
+
+{branding && (
+  <div class="sl-llm-print-banner sl-llm-print-banner--branding" aria-hidden="true">
+    {branding.logo && (
+      <img
+        class="sl-llm-print-banner__logo"
+        src={branding.logo.src}
+        alt={branding.logo.alt}
+        style={`height: ${branding.logo.height}; width: auto;`}
+      />
+    )}
+    {branding.siteName && (
+      <span class="sl-llm-print-banner__site-name">{branding.siteName}</span>
+    )}
+  </div>
+)}
+
+<div class="starlight-llm-actions-row">
+  <Default {...Astro.props}><slot /></Default>
+  <PageActions />
+</div>
+
+{warning && (
+  <div class="sl-llm-print-banner sl-llm-print-banner--aside" aria-hidden="true">
+    <div class="sl-llm-print-banner__title">
+      <svg
+        class="sl-llm-print-banner__icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z" />
+      </svg>
+      <span>{warning.title}</span>
+    </div>
+    <div class="sl-llm-print-banner__content">
+      {warning.message.map((line) => <p>{line}</p>)}
+      {warning.showUrl && (
+        <p>
+          {warning.urlLabel}
+          <span class="sl-llm-print-banner__url" data-sl-llm-print-url></span>
+        </p>
+      )}
+      {warning.showDate && (
+        <p>
+          {warning.dateLabel}
+          <span data-sl-llm-print-date></span>
+        </p>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .starlight-llm-actions-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .starlight-llm-actions-row :global(h1) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Hide the entire print notice on screen — it's only for @media print. */
+  .sl-llm-print-banner {
+    display: none;
+  }
+
+  @media print {
+    .starlight-llm-actions-row {
+      display: block;
+    }
+
+    .sl-llm-print-banner {
+      display: block;
+    }
+
+    .sl-llm-print-banner--branding {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      /* Top margin keeps the logo clear of the browser's print page header
+       * (URL/page-number band) and any user-set "minimum" margins. */
+      margin-block-start: 0.75rem;
+      margin-block-end: 0.75rem;
+      break-inside: avoid;
+    }
+
+    .sl-llm-print-banner__logo {
+      /* Belt-and-suspenders: a tiny top padding gives extra clearance even
+       * if the parent margin is collapsed by an ancestor reset. */
+      padding-block-start: 0.125rem;
+    }
+
+    .sl-llm-print-banner__site-name {
+      font-size: var(--sl-text-base);
+      font-weight: 600;
+      color: var(--sl-color-text);
+    }
+
+    .sl-llm-print-banner--aside {
+      margin-block: 1rem;
+      padding: 1rem;
+      border-inline-start: 0.25rem solid var(--sl-color-orange);
+      background-color: var(--sl-color-orange-low);
+      border-radius: 0.25rem;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      break-inside: avoid;
+    }
+
+    .sl-llm-print-banner__title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: var(--sl-text-body);
+      color: var(--sl-color-orange-high);
+      margin-block-end: 0.5rem;
+    }
+
+    .sl-llm-print-banner__icon {
+      width: 1.25em;
+      height: 1.25em;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    .sl-llm-print-banner__content {
+      font-size: var(--sl-text-sm);
+      color: var(--sl-color-text);
+      line-height: 1.6;
+    }
+
+    .sl-llm-print-banner__content p {
+      margin: 0.25rem 0;
+    }
+
+    .sl-llm-print-banner__url {
+      word-break: break-all;
+    }
+  }
+</style>
+
+{printNotice && (
+  <script is:inline>
+    (function () {
+      function update() {
+        var dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        var dateText = new Date().toLocaleDateString(undefined, dateOptions);
+        var url = window.location.href;
+
+        var urlEls = document.querySelectorAll('[data-sl-llm-print-url]');
+        for (var i = 0; i < urlEls.length; i++) {
+          urlEls[i].textContent = url;
+        }
+
+        var dateEls = document.querySelectorAll('[data-sl-llm-print-date]');
+        for (var j = 0; j < dateEls.length; j++) {
+          dateEls[j].textContent = dateText;
+        }
+      }
+
+      update();
+      document.addEventListener('astro:page-load', update);
+    })();
+  </script>
+)}

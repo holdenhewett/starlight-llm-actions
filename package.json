@@ -1,0 +1,16 @@
+{
+  "name": "starlight-llm-actions-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Workspace root for the starlight-llm-actions plugin and its docs playground.",
+  "scripts": {
+    "dev": "pnpm --filter docs dev",
+    "build": "pnpm --filter docs build",
+    "preview": "pnpm --filter docs preview"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": "^22.0.0 || >=24.0.0"
+  }
+}

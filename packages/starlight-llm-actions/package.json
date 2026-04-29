@@ -1,0 +1,66 @@
+{
+  "name": "starlight-llm-actions",
+  "version": "0.1.0-pre",
+  "type": "module",
+  "description": "Starlight plugin: Page Actions dropdown with Copy/View/PDF and Open-in-LLM buttons (ChatGPT, Claude, Gemini, Perplexity, T3 Chat, Cursor, Copilot).",
+  "license": "MIT",
+  "author": "Holden Hewett",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hhewett/starlight-llm-actions.git"
+  },
+  "homepage": "https://hhewett.github.io/starlight-llm-actions/",
+  "bugs": {
+    "url": "https://github.com/hhewett/starlight-llm-actions/issues"
+  },
+  "keywords": [
+    "starlight",
+    "starlight-plugin",
+    "astro",
+    "astro-component",
+    "documentation",
+    "llm",
+    "ai",
+    "chatgpt",
+    "claude",
+    "gemini",
+    "perplexity",
+    "cursor",
+    "page-actions",
+    "copy-as-markdown",
+    "open-in-chatgpt"
+  ],
+  "exports": {
+    ".": "./index.ts",
+    "./overrides/PageTitle.astro": "./overrides/PageTitle.astro"
+  },
+  "files": [
+    "index.ts",
+    "route.ts",
+    "env.d.ts",
+    "components",
+    "overrides",
+    "providers",
+    "config",
+    "icons",
+    "internal",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@astrojs/starlight": ">=0.36.0",
+    "astro": ">=5.6.0",
+    "vite": ">=5.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.23.0"
+  },
+  "engines": {
+    "node": "^22.0.0 || >=24.0.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

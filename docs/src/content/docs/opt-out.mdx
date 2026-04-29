@@ -1,0 +1,18 @@
+---
+title: Opt-out example
+description: This page disables the plugin via frontmatter.
+llmActions: false
+---
+
+This page sets `llmActions: false` in its frontmatter, so the plugin's
+dropdown should **not** render here.
+
+```mdx
+---
+title: Opt-out example
+llmActions: false
+---
+```
+
+When the plugin is wired up correctly, the page header on this page should
+look identical to a stock Starlight site without the plugin installed.

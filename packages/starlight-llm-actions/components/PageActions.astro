@@ -1,0 +1,523 @@
+---
+import config from 'virtual:starlight-llm-actions/config';
+import { markdownUrlForSlug } from '../config/resolve';
+import chatBubbleSvg from '../icons/chat-bubble.svg?raw';
+import claudeSvg from '../icons/claude.svg?raw';
+import geminiSvg from '../icons/googlegemini.svg?raw';
+import copilotSvg from '../icons/githubcopilot.svg?raw';
+import perplexitySvg from '../icons/perplexity.svg?raw';
+import cursorSvg from '../icons/cursor.svg?raw';
+
+const BUNDLED_ICONS: Record<string, string> = {
+  'chat-bubble.svg': chatBubbleSvg,
+  'claude.svg': claudeSvg,
+  'googlegemini.svg': geminiSvg,
+  'githubcopilot.svg': copilotSvg,
+  'perplexity.svg': perplexitySvg,
+  'cursor.svg': cursorSvg,
+};
+
+const { actions, triggerLabel, pageOptOut, markdownUrl } = config;
+
+const route = Astro.locals.starlightRoute;
+// Starlight's home-page entry has an empty id; map to 'index' so it matches
+// the file Astro generates for the corresponding `[...slug]` route.
+const slug = route?.entry?.id || 'index';
+const markdownHref = markdownUrlForSlug(markdownUrl, slug);
+
+const showCopy = actions.copyMarkdown;
+const showView = actions.viewMarkdown;
+const showPdf = actions.printPdf;
+const openIn = actions.openIn;
+const hasMarkdownSection = showCopy || showView;
+const hasExportSection = showPdf;
+const hasOpenInSection = openIn !== false && openIn.providers.length > 0;
+
+// Render nothing if all sections are disabled or the menu would be empty.
+const renderMenu = hasMarkdownSection || hasExportSection || hasOpenInSection;
+
+// Honour per-page opt-out via frontmatter, e.g. `llmActions: false`.
+const optedOut =
+  pageOptOut !== false &&
+  // @ts-expect-error — user-defined frontmatter field, not in DocsSchema.
+  route?.entry?.data?.[pageOptOut] === false;
+
+function getInlineIcon(value: string | false): string | null {
+  if (value === false) return null;
+  if (value.startsWith('http') || value.startsWith('/')) return null;
+  return BUNDLED_ICONS[value] ?? null;
+}
+
+function getImageIcon(value: string | false): string | null {
+  if (value === false) return null;
+  if (value.startsWith('http') || value.startsWith('/')) return value;
+  return null;
+}
+---
+
+{!optedOut && renderMenu && (
+  <div class="page-actions" data-state="closed" data-markdown-href={markdownHref}>
+    <button class="page-actions-trigger" type="button"
+      aria-label={triggerLabel} aria-expanded="false" aria-haspopup="menu">
+      <svg class="trigger-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="5" width="8" height="9" rx="1"/>
+        <path d="M3 11V3a1 1 0 0 1 1-1h6"/>
+      </svg>
+      <span class="trigger-label">{triggerLabel}</span>
+      <svg class="trigger-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"
+        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 5l3 3 3-3"/>
+      </svg>
+    </button>
+
+    <div class="page-actions-menu" role="menu" hidden>
+      {hasMarkdownSection && (
+        <>
+          <div class="section-label" role="presentation">Markdown</div>
+          {showCopy && (
+            <button class="page-actions-item" role="menuitem" tabindex="-1" data-action="copy-md">
+              <span class="item-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="5" y="5" width="8" height="9" rx="1"/>
+                  <path d="M3 11V3a1 1 0 0 1 1-1h6"/>
+                </svg>
+              </span>
+              <span class="item-text">
+                <span class="item-title">Copy page</span>
+                <span class="item-desc">Copy this page as Markdown</span>
+              </span>
+            </button>
+          )}
+          {showView && (
+            <button class="page-actions-item" role="menuitem" tabindex="-1" data-action="view-md">
+              <span class="item-icon">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 3h10a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
+                  <path d="M5 6h4"/>
+                  <path d="M5 9h6"/>
+                </svg>
+              </span>
+              <span class="item-text">
+                <span class="item-title">View as Markdown</span>
+                <span class="item-desc">Open this page as plain text</span>
+              </span>
+              <svg class="item-external" width="12" height="12" viewBox="0 0 12 12" fill="none"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 7v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3"/>
+                <path d="M7 2h3v3"/>
+                <path d="M5 7l5-5"/>
+              </svg>
+            </button>
+          )}
+        </>
+      )}
+
+      {hasExportSection && (
+        <>
+          {hasMarkdownSection && <div class="section-divider" role="separator"></div>}
+          <div class="section-label" role="presentation">Export</div>
+          <button class="page-actions-item" role="menuitem" tabindex="-1" data-action="pdf">
+            <span class="item-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M8 2v8"/>
+                <path d="M5 7l3 3 3-3"/>
+                <path d="M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2"/>
+              </svg>
+            </span>
+            <span class="item-text">
+              <span class="item-title">Download as PDF</span>
+              <span class="item-desc">Save this page as a PDF file</span>
+            </span>
+          </button>
+        </>
+      )}
+
+      {hasOpenInSection && openIn !== false && (
+        <>
+          {(hasMarkdownSection || hasExportSection) && (
+            <div class="section-divider" role="separator"></div>
+          )}
+          <div class="section-label" role="presentation">{openIn.label}</div>
+          {openIn.providers.some((p) => p.strategy === 'clipboard-open') && (
+            <div class="section-hint" role="presentation">
+              Copies page as Markdown to your clipboard
+            </div>
+          )}
+          {openIn.providers.map((p) => {
+            const inlineIcon = getInlineIcon(p.icon);
+            const imageIcon = getImageIcon(p.icon);
+            return (
+              <button class="page-actions-item" role="menuitem" tabindex="-1"
+                data-action="provider"
+                data-provider-id={p.id}
+                data-strategy={p.strategy}
+                data-prompt={p.prompt}
+                data-url-template={p.urlTemplate}
+                data-max-bytes={p.maxBytes ?? ''}
+                data-fallback-strategy={p.fallbackStrategy ?? ''}
+              >
+                {p.icon !== false && (
+                  <span class="item-icon">
+                    {inlineIcon && <Fragment set:html={inlineIcon} />}
+                    {imageIcon && <img src={imageIcon} alt="" width="16" height="16" />}
+                  </span>
+                )}
+                <span class="item-text">
+                  <span class="item-title">Open in {p.label}</span>
+                  <span class="item-desc">{p.description}</span>
+                </span>
+              </button>
+            );
+          })}
+        </>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .page-actions {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .page-actions-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.25rem;
+    padding: 0 0.625rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--sl-color-white);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .page-actions-trigger:hover {
+    background: var(--sl-color-gray-5);
+    border-color: var(--sl-color-gray-4);
+  }
+
+  .page-actions-trigger:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .trigger-icon { flex-shrink: 0; opacity: 0.8; }
+  .trigger-label { line-height: 1; }
+
+  .trigger-chevron {
+    flex-shrink: 0;
+    opacity: 0.6;
+    transition: transform 0.2s;
+  }
+
+  .page-actions[data-state="open"] .trigger-chevron {
+    transform: rotate(180deg);
+  }
+
+  .page-actions-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 100;
+    width: 280px;
+    margin-top: 0.375rem;
+    padding: 0.375rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: var(--sl-color-bg-nav);
+    box-shadow: var(--sl-shadow-lg);
+  }
+
+  .section-divider {
+    height: 1px;
+    margin: 0.25rem 0.625rem;
+    background: var(--sl-color-gray-5);
+  }
+
+  .section-label {
+    padding: 0.375rem 0.625rem 0.125rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sl-color-gray-3);
+    user-select: none;
+  }
+
+  .section-hint {
+    padding: 0 0.625rem 0.25rem;
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    color: var(--sl-color-gray-3);
+    font-style: italic;
+    user-select: none;
+  }
+
+  .page-actions-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--sl-color-white);
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.1s;
+  }
+
+  .page-actions-item:hover,
+  .page-actions-item:focus-visible {
+    background: var(--sl-color-gray-5);
+    outline: none;
+  }
+
+  .item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .item-icon :global(svg),
+  .item-icon img {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .item-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+  }
+
+  .item-title { font-size: 0.8125rem; line-height: 1.3; }
+
+  .item-desc {
+    font-size: 0.6875rem;
+    line-height: 1.3;
+    color: var(--sl-color-gray-3);
+  }
+
+  .item-external { flex-shrink: 0; opacity: 0.4; }
+
+  @media print {
+    .page-actions { display: none !important; }
+  }
+
+  :global(.page-actions-toast) {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(0.5rem);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-gray-5);
+    color: var(--sl-color-white);
+    font-size: 0.8125rem;
+    box-shadow: var(--sl-shadow-lg);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  :global(.page-actions-toast.visible) {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    function init() {
+      var container = document.querySelector('.page-actions');
+      if (!container || container.dataset.initialized) return;
+      container.dataset.initialized = 'true';
+
+      var trigger = container.querySelector('.page-actions-trigger');
+      var menu = container.querySelector('.page-actions-menu');
+      var items = Array.prototype.slice.call(container.querySelectorAll('[role="menuitem"]'));
+      var markdownHref = container.dataset.markdownHref || '';
+
+      function open() {
+        container.dataset.state = 'open';
+        trigger.setAttribute('aria-expanded', 'true');
+        menu.removeAttribute('hidden');
+        if (items[0]) items[0].focus();
+      }
+
+      function close() {
+        container.dataset.state = 'closed';
+        trigger.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('hidden', '');
+      }
+
+      trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (container.dataset.state === 'open') close(); else open();
+      });
+
+      document.addEventListener('click', function (e) {
+        if (container.dataset.state === 'open' && !container.contains(e.target)) close();
+      });
+
+      trigger.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); }
+      });
+
+      container.addEventListener('keydown', function (e) {
+        if (container.dataset.state !== 'open') return;
+        var idx = items.indexOf(document.activeElement);
+        switch (e.key) {
+          case 'Escape': e.preventDefault(); close(); trigger.focus(); break;
+          case 'ArrowDown': e.preventDefault(); items[(idx + 1) % items.length].focus(); break;
+          case 'ArrowUp': e.preventDefault(); items[(idx - 1 + items.length) % items.length].focus(); break;
+          case 'Home': e.preventDefault(); if (items[0]) items[0].focus(); break;
+          case 'End': e.preventDefault(); if (items[items.length - 1]) items[items.length - 1].focus(); break;
+        }
+      });
+
+      function fetchMarkdown() {
+        return fetch(markdownHref).then(function (res) {
+          if (!res.ok) throw new Error('Not found');
+          return res.text();
+        });
+      }
+
+      function showToast(message) {
+        var existing = document.querySelector('.page-actions-toast');
+        if (existing) existing.remove();
+        var toast = document.createElement('div');
+        toast.className = 'page-actions-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { toast.classList.add('visible'); });
+        });
+        setTimeout(function () {
+          toast.classList.remove('visible');
+          setTimeout(function () { toast.remove(); }, 300);
+        }, 2500);
+      }
+
+      function resolvePrompt(template) {
+        return (template || '').replace(/\{url\}/g, window.location.href);
+      }
+
+      function buildUrl(template, replacements) {
+        var url = template;
+        for (var key in replacements) {
+          url = url.split('{' + key + '}').join(encodeURIComponent(replacements[key]));
+        }
+        return url;
+      }
+
+      function handleProvider(item) {
+        var strategy = item.dataset.strategy;
+        var template = item.dataset.urlTemplate || '';
+        var prompt = resolvePrompt(item.dataset.prompt);
+        var maxBytes = parseInt(item.dataset.maxBytes || '0', 10);
+        var fallback = item.dataset.fallbackStrategy || '';
+
+        if (strategy === 'url-prompt') {
+          window.open(buildUrl(template, { prompt: prompt }), '_blank');
+          return;
+        }
+
+        if (strategy === 'inline-content') {
+          fetchMarkdown()
+            .then(function (md) {
+              var combined = prompt + '\n\n' + md;
+              var fullUrl = buildUrl(template, { prompt_with_markdown: combined, prompt: prompt });
+              if (!maxBytes || fullUrl.length <= maxBytes) {
+                window.open(fullUrl, '_blank');
+                return;
+              }
+              if (fallback === 'url-prompt') {
+                var promptOnly = buildUrl(template, { prompt_with_markdown: prompt, prompt: prompt });
+                navigator.clipboard.writeText(md).then(function () {
+                  window.open(promptOnly, '_blank');
+                  showToast('Page too large — markdown copied to clipboard');
+                });
+              } else if (fallback === 'clipboard-open') {
+                var baseUrl = template.split('?')[0];
+                navigator.clipboard.writeText(combined).then(function () {
+                  window.open(baseUrl, '_blank');
+                  showToast('Copied & opening…');
+                });
+              } else {
+                window.open(fullUrl, '_blank');
+              }
+            })
+            .catch(function () { showToast('Failed to load page'); });
+          return;
+        }
+
+        if (strategy === 'clipboard-open') {
+          fetchMarkdown()
+            .then(function (md) {
+              var ctx = prompt + '\n\n' + md;
+              return navigator.clipboard.writeText(ctx).then(function () {
+                window.open(template, '_blank');
+                showToast('Copied & opening…');
+              });
+            })
+            .catch(function () { showToast('Failed to copy'); });
+        }
+      }
+
+      function handleAction(item) {
+        var action = item.dataset.action;
+        switch (action) {
+          case 'copy-md':
+            fetchMarkdown()
+              .then(function (md) { return navigator.clipboard.writeText(md); })
+              .then(function () { showToast('Copied as Markdown'); })
+              .catch(function () { showToast('Failed to copy'); });
+            break;
+          case 'view-md':
+            window.open(markdownHref, '_blank');
+            break;
+          case 'pdf':
+            showToast('Opening print dialog…');
+            setTimeout(function () { window.print(); }, 100);
+            break;
+          case 'provider':
+            handleProvider(item);
+            break;
+        }
+        close();
+      }
+
+      items.forEach(function (item) {
+        item.addEventListener('click', function () { handleAction(item); });
+      });
+    }
+
+    init();
+    document.addEventListener('astro:page-load', init);
+  })();
+</script>
