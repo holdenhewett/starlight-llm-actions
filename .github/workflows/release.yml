@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -35,6 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify tag matches package.json version
+        if: github.event_name == 'push'
         env:
           GITHUB_REF: ${{ github.ref }}
         run: |
@@ -68,8 +70,20 @@ jobs:
         with:
           subject-path: ${{ steps.pack.outputs.path }}
 
+      - name: Debug npm + OIDC env
+        run: |
+          echo "npm: $(npm --version)"
+          echo "node: $(node --version)"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL set? ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN set? ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+yes}"
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_WORKFLOW_REF: $GITHUB_WORKFLOW_REF"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "--- npm config ---"
+          npm config list -l 2>&1 | grep -iE "registry|provenance|auth|trusted" || true
+
       - name: Publish to npm
         working-directory: packages/starlight-llm-actions
         env:
           TARBALL: ${{ steps.pack.outputs.tarball }}
-        run: npm publish "$TARBALL" --provenance --access public
+        run: npm publish "$TARBALL" --provenance --access public --loglevel=verbose
