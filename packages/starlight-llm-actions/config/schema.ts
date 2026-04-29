@@ -10,7 +10,7 @@ const ProviderOverrideSchema = z
     prompt: z.string().optional(),
     /**
      * URL template. Placeholders are substituted client-side and URL-encoded:
-     *   {prompt}                — resolved prompt with {url} substituted
+     *   {prompt}                — resolved prompt with {url} / {md_url} substituted
      *   {prompt_with_markdown}  — prompt + "\n\n" + page markdown body
      */
     url: z.string().optional(),

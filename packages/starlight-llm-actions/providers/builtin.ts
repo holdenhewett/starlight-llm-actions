@@ -9,7 +9,7 @@ export interface BuiltinProvider {
   strategy: Strategy;
   /**
    * URL template. Placeholders (URL-encoded at click-time):
-   *   {prompt}                — resolved prompt (with {url} substituted)
+   *   {prompt}                — resolved prompt (with {url} / {md_url} substituted)
    *   {prompt_with_markdown}  — prompt + "\n\n" + page markdown
    * For `clipboard-open` providers this is the static URL opened after copy.
    */
