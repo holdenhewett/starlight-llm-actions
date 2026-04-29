@@ -1,6 +1,6 @@
 {
   "name": "starlight-llm-actions",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Starlight plugin: Page Actions dropdown with Copy/View/PDF and Open-in-LLM buttons (ChatGPT, Claude, Gemini, Perplexity, T3 Chat, Cursor, Copilot).",
   "license": "MIT",
@@ -15,10 +15,12 @@
     "url": "https://github.com/holdenhewett/starlight-llm-actions/issues"
   },
   "keywords": [
+    "astro-integration",
+    "astro-component",
+    "withastro",
     "starlight",
     "starlight-plugin",
     "astro",
-    "astro-component",
     "documentation",
     "llm",
     "ai",
@@ -49,6 +51,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "peerDependencies": {

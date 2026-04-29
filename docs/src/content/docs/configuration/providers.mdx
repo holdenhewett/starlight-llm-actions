@@ -163,9 +163,11 @@ starlightLlmActions({
 })
 ```
 
-`{url}` is substituted with the absolute URL of the current page. `{prompt_with_markdown}`
-in the URL template appends the page's markdown body to the prompt — useful
-for `inline-content` providers.
+`{md_url}` is substituted with the absolute URL of the current page's `.md`
+route (preferred — gives LLMs clean markdown). `{url}` substitutes the
+rendered HTML URL instead. `{prompt_with_markdown}` in the URL template
+appends the page's markdown body to the prompt — useful for `inline-content`
+providers.
 
 ## Trademark and branding note
 
