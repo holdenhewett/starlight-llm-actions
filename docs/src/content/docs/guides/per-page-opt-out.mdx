@@ -1,0 +1,83 @@
+---
+title: Per-page opt-out
+description: Hide the dropdown on specific pages via frontmatter.
+---
+
+Some pages don't benefit from the dropdown — marketing pages, landing pages,
+auto-generated indexes, or pages with policy reasons not to expose raw
+markdown. The plugin supports a frontmatter opt-out to hide the dropdown on
+those pages without touching the global config.
+
+## Use it
+
+Add the opt-out key to the page's frontmatter:
+
+```mdx title="src/content/docs/marketing/landing.mdx" {3}
+---
+title: Marketing landing page
+llmActions: false
+---
+
+Your content here…
+```
+
+The dropdown won't render on that page. The rest of the site keeps the
+dropdown as configured.
+
+## Live example
+
+The [Opt-out example page](/starlight-llm-actions/opt-out/) on this site
+sets `llmActions: false` in its frontmatter. Compare its header to any other
+page on this site — you'll see the dropdown is gone.
+
+## Customising the frontmatter key
+
+The default key is `llmActions`. Change it via the
+[`pageOptOut`](/starlight-llm-actions/configuration/reference/#pageoptout)
+option:
+
+```js
+starlightLlmActions({
+  pageOptOut: 'showAiTools',
+})
+```
+
+Pages then use:
+
+```mdx
+---
+title: ...
+showAiTools: false
+---
+```
+
+## Disabling opt-out entirely
+
+If you want the dropdown to render on every page no matter what:
+
+```js
+starlightLlmActions({
+  pageOptOut: false,
+})
+```
+
+Frontmatter values for the opt-out key are ignored.
+
+## When to use it
+
+- **Marketing or landing pages** that don't have a meaningful markdown body.
+- **Pages with sensitive content** where exposing raw markdown is a policy
+  concern. (Note: setting `llmActions: false` only hides the dropdown — the
+  markdown route at `/{slug}.md` is still injected. To suppress the route
+  too, see [`injectRoute`](/starlight-llm-actions/configuration/reference/#injectroute).)
+- **Auto-generated index pages** where every action would feel out of place.
+
+## When *not* to use it
+
+- For "I don't want PDF on this page" — use the global
+  [`actions.printPdf`](/starlight-llm-actions/configuration/reference/#actionsprintpdf)
+  setting and let users reach the print dialog via Cmd/Ctrl+P if they need
+  it.
+- To hide the dropdown for one specific provider on one page — that level of
+  per-page customisation isn't supported. Configure providers globally via
+  [`providers`](/starlight-llm-actions/configuration/reference/#providers).

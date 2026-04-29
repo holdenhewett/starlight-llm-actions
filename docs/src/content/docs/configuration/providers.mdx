@@ -1,0 +1,177 @@
+---
+title: Providers
+description: The seven built-in LLM providers and how to customise them.
+---
+
+The plugin ships with seven built-in providers, each with a sensible default
+strategy and URL template. This page lists every default and the fields you
+can override.
+
+## The matrix
+
+| Provider | Strategy | URL template | Notes |
+| --- | --- | --- | --- |
+| **ChatGPT** | `url-prompt` | `https://chatgpt.com/?q={prompt}` | Auto-submits |
+| **Perplexity** | `url-prompt` | `https://www.perplexity.ai/?q={prompt}` | |
+| **T3 Chat** | `url-prompt` | `https://t3.chat/new?q={prompt}` | Path must be `/new` |
+| **Cursor** | `inline-content` | `https://cursor.com/link/prompt?text={prompt_with_markdown}` | 8 KB cap, falls back to `url-prompt` |
+| **Claude** | `clipboard-open` | `https://claude.ai/new` | Copy + open |
+| **Gemini** | `clipboard-open` | `https://gemini.google.com/app` | Copy + open |
+| **GitHub Copilot** | `clipboard-open` | `https://github.com/copilot` | Copy + open |
+
+For why each provider uses its assigned strategy, see
+[Concepts: per-provider strategies](/starlight-llm-actions/getting-started/concepts/#strategies).
+
+## Provider IDs
+
+When configuring `providers`, use these exact ids:
+
+- `chatgpt`
+- `claude`
+- `gemini`
+- `copilot`
+- `perplexity`
+- `t3chat`
+- `cursor`
+
+## Disabling providers
+
+Pass `false` for any provider to remove it from the submenu:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        copilot: false,
+        gemini: false,
+      },
+    },
+  },
+})
+```
+
+## Customising a provider
+
+Pass a [`ProviderOverride`](/starlight-llm-actions/configuration/reference/#provideroverride)
+object. Every field is optional; unset fields fall back to the built-in
+defaults.
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        chatgpt: {
+          label: 'ChatGPT (work account)',
+          description: 'Send the page to ChatGPT for summary',
+          prompt: 'Summarise the linked Acme docs page: {url}',
+        },
+      },
+    },
+  },
+})
+```
+
+## Common customisations
+
+### Tighter `inline-content` budget for Cursor
+
+Cursor's default `maxBytes` is 8000 (8 KB). To force the fallback for any
+page over 4 KB:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        cursor: {
+          maxBytes: 4000,
+          fallbackStrategy: 'clipboard-open',
+        },
+      },
+    },
+  },
+})
+```
+
+### Force a different strategy
+
+If a provider ships URL prefill in the future, you can switch its strategy
+without waiting for a plugin release:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        claude: {
+          strategy: 'url-prompt',
+          url: 'https://claude.ai/?q={prompt}',
+        },
+      },
+    },
+  },
+})
+```
+
+### Replace icons with your own brand assets
+
+Provider icons are SVGs sourced from [Simple Icons](https://simpleicons.org/)
+(CC0). To use official brand assets:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        chatgpt: {
+          icon: 'https://example.com/openai-official.svg',
+        },
+      },
+    },
+  },
+})
+```
+
+`icon` accepts:
+
+- An SVG filename under the package's `icons/` folder (e.g.
+  `'chat-bubble.svg'`).
+- An absolute URL.
+- `false` — hide the icon.
+
+### Per-provider prompts
+
+Each provider can use a different prompt:
+
+```js
+starlightLlmActions({
+  prompt: 'Help me understand this page: {url}',
+  actions: {
+    openIn: {
+      providers: {
+        cursor: {
+          prompt: 'Use this docs context to scaffold an integration.',
+        },
+        chatgpt: {
+          prompt: 'Summarise in one paragraph: {url}',
+        },
+      },
+    },
+  },
+})
+```
+
+`{url}` is substituted with the absolute URL of the current page. `{prompt_with_markdown}`
+in the URL template appends the page's markdown body to the prompt — useful
+for `inline-content` providers.
+
+## Trademark and branding note
+
+Brand names (ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity, T3 Chat,
+Cursor) and marks remain trademarks of their respective owners and appear
+nominatively in the plugin only to identify the linked services. No
+endorsement is implied. The bundled icons are from
+[Simple Icons](https://simpleicons.org/) under CC0; to use official brand
+assets, override `providers.<id>.icon`.

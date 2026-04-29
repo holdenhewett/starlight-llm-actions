@@ -1,0 +1,72 @@
+---
+title: Download as PDF
+description: An optional dropdown item that triggers the browser's print dialog.
+---
+
+The **Download as PDF** action opens the browser's print dialog, where the
+user can save the page as a PDF (Chrome: "Save as PDF"; Safari: "Save as PDF"
+or "Export as PDF"; Firefox: "Save to PDF").
+
+This action is **off by default**. The print dialog is always reachable via
+Cmd/Ctrl+P, and many sites prefer not to advertise PDF as a primary artifact.
+
+## Enable it
+
+```js {3}
+starlightLlmActions({
+  actions: {
+    printPdf: true,
+  },
+})
+```
+
+## How it works
+
+The action calls `window.print()`. Anything you'd see in a printed page —
+including the [print/PDF snapshot notice](/starlight-llm-actions/configuration/print-notice/) —
+will appear in the resulting PDF.
+
+## Pair with the print snapshot notice
+
+The most common reason to enable this action is to combine it with the
+print/PDF snapshot notice, so PDFs that escape your site point readers back
+to the canonical page:
+
+```js
+starlightLlmActions({
+  actions: {
+    printPdf: true,
+  },
+  printNotice: {
+    branding: {
+      logo: { src: '/logo.svg', alt: 'Acme', height: '1.5rem' },
+      siteName: 'Acme DOCS',
+    },
+    warning: {
+      message: [
+        'This is a point-in-time export and may be outdated.',
+        'Internal use only — do not redistribute.',
+      ],
+    },
+  },
+})
+```
+
+The notice prints regardless of how the user reaches the print dialog, so
+even users who hit Cmd/Ctrl+P without ever opening the dropdown still get the
+disclaimer in their PDF.
+
+See [Print/PDF snapshot notice](/starlight-llm-actions/configuration/print-notice/)
+for the full configuration.
+
+## Why it's off by default
+
+Three reasons:
+
+1. **Discoverability isn't the problem.** Cmd/Ctrl+P already works. Adding a
+   dropdown item doesn't unlock new behaviour, it just surfaces it.
+2. **Some teams don't want PDFs as a deliverable.** Stale PDFs in shared
+   drives are a known support headache. Defaulting the button off lets teams
+   opt in deliberately.
+3. **Surface area.** The dropdown is meant to feel light. Off-by-default
+   keeps the "Open in…" providers as the focal point.

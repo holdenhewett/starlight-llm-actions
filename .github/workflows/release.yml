@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          version: 9.12.0
+          run_install: false
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.0.0
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify tag matches package.json version
+        env:
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          tag_version="${GITHUB_REF#refs/tags/v}"
+          pkg_version=$(node -p "require('./packages/starlight-llm-actions/package.json').version")
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Tag v$tag_version does not match package.json version $pkg_version"
+            exit 1
+          fi
+          echo "Publishing v$pkg_version"
+
+      - name: Build plugin
+        run: pnpm --filter starlight-llm-actions build
+
+      - name: Lint package metadata (publint)
+        run: pnpm --filter starlight-llm-actions exec publint .
+
+      - name: Verify type resolution (arethetypeswrong)
+        run: pnpm --filter starlight-llm-actions exec npx --yes -p @arethetypeswrong/cli attw --pack .
+
+      - name: Publish to npm
+        working-directory: packages/starlight-llm-actions
+        run: npm publish --access public

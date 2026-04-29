@@ -1,0 +1,153 @@
+---
+title: Print/PDF snapshot notice
+description: Print-only branding and warning admonition for PDFs that escape your site.
+---
+
+For sites where printed or PDF copies tend to circulate — internal docs,
+compliance-sensitive content, or anything with a "live version" worth
+pointing readers back to — the plugin can render a snapshot notice that's
+hidden on screen and visible only in `@media print`.
+
+The notice appears regardless of how the user reaches the print dialog
+(Cmd/Ctrl+P, the dropdown's [PDF button](/starlight-llm-actions/actions/print-pdf/),
+or the browser menu).
+
+## Quick start
+
+The simplest configuration enables the default warning admonition:
+
+```js
+starlightLlmActions({
+  printNotice: true,
+})
+```
+
+This shows a "Documentation Snapshot" warning under the page heading in
+print/PDF, with the live URL and export date appended automatically.
+
+## What it looks like
+
+A snapshot notice has two parts:
+
+1. **Branding row** — rendered *above* the page H1. Logo on the left, site
+   name on the right. Hidden when `branding: false`.
+2. **Warning admonition** — rendered *below* the page H1. Title, body
+   paragraphs, plus optional live URL and export date. Hidden when
+   `warning: false`.
+
+Both are styled to match Starlight's print stylesheet and are hidden on
+screen.
+
+## Full configuration
+
+```js
+starlightLlmActions({
+  printNotice: {
+    branding: {
+      logo: { src: '/logo.svg', alt: 'Acme', height: '1.5rem' },
+      siteName: 'Acme DOCS',
+    },
+    warning: {
+      title: 'Documentation Snapshot',
+      message: [
+        'This is a point-in-time export and may be outdated.',
+        'Internal use only — do not redistribute.',
+      ],
+      // Live URL and export date are appended automatically.
+      // Set to false to suppress either:
+      // showUrl: false,
+      // showDate: false,
+      urlLabel: 'Live version: ',
+      dateLabel: 'Exported: ',
+    },
+  },
+})
+```
+
+## Branding-only
+
+To render the branding row without the warning admonition:
+
+```js
+starlightLlmActions({
+  printNotice: {
+    branding: {
+      logo: { src: '/logo.svg', height: '1.5rem' },
+      siteName: 'Acme DOCS',
+    },
+    warning: false,
+  },
+})
+```
+
+## Warning-only
+
+To render the warning admonition without the branding row:
+
+```js
+starlightLlmActions({
+  printNotice: {
+    warning: {
+      message: ['This export may be outdated.'],
+    },
+  },
+})
+```
+
+(With `branding` omitted, no branding row renders.)
+
+## Suppress URL or date
+
+```js
+starlightLlmActions({
+  printNotice: {
+    warning: {
+      message: ['This is a point-in-time export.'],
+      showUrl: false,  // hide the "Live version: <url>" line
+      showDate: true,  // keep the "Exported: <date>" line (default)
+    },
+  },
+})
+```
+
+## Pair with the PDF action
+
+The PDF action is off by default. To make the dropdown advertise PDF *and*
+add the snapshot notice in one config:
+
+```js
+starlightLlmActions({
+  actions: {
+    printPdf: true,
+  },
+  printNotice: {
+    branding: {
+      logo: { src: '/logo.svg', alt: 'Acme' },
+      siteName: 'Acme DOCS',
+    },
+    warning: {
+      message: ['Internal use only — do not redistribute.'],
+    },
+  },
+})
+```
+
+See [Download as PDF](/starlight-llm-actions/actions/print-pdf/) for more on
+the PDF action.
+
+## How it works
+
+The notice is a small HTML block injected into the rendered page, wrapped in
+a `display: none` rule that's overridden inside `@media print`. The page H1
+and content sit between the branding row and the warning admonition, so the
+PDF reads top-to-bottom: brand → page title → "this is a snapshot" →
+content.
+
+There's no JavaScript involved at print time. The browser's native print
+pipeline picks up the `@media print` rules and renders the notice into the
+PDF.
+
+## Reference
+
+For the full schema and every option, see
+[Configuration reference: `printNotice`](/starlight-llm-actions/configuration/reference/#printnotice).

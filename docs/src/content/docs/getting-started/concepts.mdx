@@ -1,0 +1,111 @@
+---
+title: Concepts
+description: How the plugin opens pages in different LLMs — strategies, prompts, and the markdown route.
+---
+
+To make "Open in ChatGPT" actually feel like opening *this page* in ChatGPT,
+the plugin uses a different strategy per provider, picked to match what each
+service supports today.
+
+## Strategies
+
+Three strategies cover every supported provider:
+
+### `url-prompt`
+
+The provider supports a query-string parameter that prefills the chat input.
+The plugin builds a URL like:
+
+```
+https://chatgpt.com/?q=<URL-encoded prompt>
+```
+
+…and opens it in a new tab. The user lands directly in a session with a
+prefilled message they can submit.
+
+**Used by:** ChatGPT, Perplexity, T3 Chat, Cursor (when under the byte cap).
+
+### `clipboard-open`
+
+The provider has no reliable URL prefill, so the plugin:
+
+1. Copies the resolved prompt (with the page URL substituted) to the clipboard.
+2. Opens the provider's app/web entry point in a new tab.
+
+The user pastes once. This is more friction than `url-prompt`, but it's the
+only honest path for providers without URL prefill — anything else would
+silently drop the page context.
+
+**Used by:** Claude, Gemini, GitHub Copilot.
+
+### `inline-content`
+
+The provider accepts the *full markdown body* in the URL, not just a prompt.
+The plugin builds a URL using the special `{prompt_with_markdown}` placeholder:
+
+```
+https://cursor.com/link/prompt?text=<prompt + "\n\n" + page markdown>
+```
+
+This is the ideal experience — the LLM sees the actual content, not a URL it
+has to fetch — but URLs have hard length limits.
+
+**The `maxBytes` budget.** When the assembled URL would exceed `maxBytes`
+(default 8000 for Cursor), the plugin falls back to the provider's
+`fallbackStrategy`. For Cursor, the fallback is `url-prompt`, so long pages
+still open Cursor with a prompt referencing the page URL.
+
+**Used by:** Cursor.
+
+## The markdown route
+
+Every strategy that mentions "the page" needs a stable URL where the page's
+markdown body lives. The plugin injects a route at `/[slug].md` (configurable
+via [`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl))
+that serves Content Collection entries as `text/markdown`.
+
+So if your page is at `/guides/install/`, the markdown route is at
+`/guides/install.md`. The dropdown's **View as Markdown** action navigates
+there directly; **Copy as Markdown** fetches it client-side.
+
+If your site already publishes per-page markdown — say through a custom
+HTML→Markdown pipeline at `/raw/[...slug]` — set
+[`injectRoute: false`](/starlight-llm-actions/configuration/reference/#injectroute)
+to disable the built-in route, and point `markdownUrl` at your existing one.
+
+## The prompt template
+
+Every "Open in…" strategy starts from a prompt template. The default is:
+
+> Read the documentation at {url} and help me understand it.
+
+`{url}` is substituted with the absolute URL of the current page. You can
+customise the prompt globally via the
+[`prompt`](/starlight-llm-actions/configuration/reference/#prompt) option, or
+per provider via
+[`providers.<id>.prompt`](/starlight-llm-actions/configuration/reference/#providers).
+The customised prompt is what gets URL-encoded into the `url-prompt` and
+`inline-content` URL templates, or copied to the clipboard for
+`clipboard-open` providers.
+
+## Why not a single strategy?
+
+Strategy choice is shaped by what each provider currently supports — not by
+what would make our integration code simpler. As of late 2025 / early 2026:
+
+- **ChatGPT, Perplexity, T3 Chat** all expose `?q=` query-string prefills
+  that auto-populate the input box. `url-prompt` is the cleanest experience
+  here.
+- **Claude.ai's** `?q=` parameter broke in October 2025; the desktop deep-link
+  works but only on installed clients. **Gemini** has no documented prefill.
+  **Copilot's** `?prompt=` parameter is undocumented and not stable enough to
+  rely on. For these three, `clipboard-open` is the only path that always
+  preserves context.
+- **Cursor** uniquely supports `inline-content` via its
+  [official deeplinks API](https://docs.cursor.com/en/get-started/deeplinks),
+  with an 8 KB cap.
+
+When provider URL schemes change, the plugin adapts in a point release; you
+do not need to update your config. If you want to override a provider's
+strategy yourself, see
+[`providers.<id>.strategy`](/starlight-llm-actions/configuration/reference/#providers).

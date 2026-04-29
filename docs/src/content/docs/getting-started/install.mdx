@@ -1,0 +1,120 @@
+---
+title: Install
+description: Install starlight-llm-actions and add it to your Starlight site.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`starlight-llm-actions` is a [Starlight plugin](https://starlight.astro.build/reference/plugins/).
+It works with **Starlight v0.32+** and **Astro v5+**.
+
+## 1. Install the package
+
+<Tabs syncKey="pkg">
+  <TabItem label="npm">
+    ```sh
+    npm install starlight-llm-actions
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm add starlight-llm-actions
+    ```
+  </TabItem>
+  <TabItem label="Yarn">
+    ```sh
+    yarn add starlight-llm-actions
+    ```
+  </TabItem>
+</Tabs>
+
+## 2. Add it to your Starlight config
+
+Drop the plugin into the `plugins` array of your Starlight integration in
+`astro.config.mjs`:
+
+```js title="astro.config.mjs" {3,9}
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+import starlightLlmActions from 'starlight-llm-actions';
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      title: 'My Docs',
+      plugins: [starlightLlmActions()],
+    }),
+  ],
+});
+```
+
+That's it. The dropdown now appears next to the page title on every content
+page, with these defaults:
+
+- **Copy as Markdown** ✅ on
+- **View as Markdown** ✅ on
+- **Download as PDF** ❌ off (see [Print PDF](/starlight-llm-actions/actions/print-pdf/))
+- **Open in…** ✅ on, with all seven providers enabled
+
+## 3. Verify the install
+
+Run your dev server and open any docs page:
+
+```sh
+npm run dev
+```
+
+You should see a button labelled **Page actions** next to the page heading.
+Open it and try:
+
+- **Copy as Markdown** — copies the page's `.md` source to your clipboard.
+- **View as Markdown** — navigates to the page's raw markdown URL.
+- **Open in ChatGPT** — opens ChatGPT with a prefilled prompt.
+
+If the dropdown doesn't appear, see [Troubleshooting](#troubleshooting).
+
+## What gets injected
+
+The plugin does three things behind the scenes:
+
+1. **Overrides `PageTitle.astro`** so the dropdown can render next to your
+   page title without you touching component overrides yourself.
+2. **Injects a markdown route** at `/[slug].md` (configurable via
+   [`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl))
+   that serves the page's body as `text/markdown`.
+3. **Bundles seven provider icons** (Simple Icons CC0) and the small client-side
+   script that runs the per-provider strategy.
+
+## Troubleshooting
+
+### The dropdown doesn't appear
+
+- Check that `starlightLlmActions()` is in the **`plugins`** array of `starlight()`,
+  not the top-level `integrations` array.
+- Make sure no other Starlight plugin overrides `PageTitle.astro`. The last
+  plugin to override a component wins; load `starlightLlmActions()` after any
+  plugin that does *not* care about page-title content.
+- Check the page frontmatter for `llmActions: false` — that opts the page out.
+  See [Per-page opt-out](/starlight-llm-actions/guides/per-page-opt-out/).
+
+### "Cannot find module 'starlight-llm-actions/route'"
+
+Your bundler can't resolve the package's subpath export. Make sure your
+`package.json` has `"type": "module"` (Astro projects do by default) and that
+`starlight-llm-actions` is in `dependencies`, not `devDependencies`.
+
+### Provider icons are missing
+
+The plugin ships SVGs in its `icons/` folder and references them via Astro's
+asset pipeline. If you've configured an unusually strict
+[`vite.assetsInclude`](https://vite.dev/config/shared-options.html#assetsinclude)
+filter, ensure `.svg` is still included.
+
+## Next steps
+
+- [Concepts: per-provider strategies](/starlight-llm-actions/getting-started/concepts/) —
+  why each LLM uses a different open-in approach.
+- [Configuration reference](/starlight-llm-actions/configuration/reference/) —
+  every option in the plugin config.
+- [Per-page opt-out](/starlight-llm-actions/guides/per-page-opt-out/) — hide
+  the dropdown on specific pages.
