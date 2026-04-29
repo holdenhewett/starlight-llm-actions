@@ -1,0 +1,61 @@
+---
+title: View as Markdown
+description: Open the current page's raw markdown URL in the browser.
+---
+
+The **View as Markdown** action navigates to the page's markdown route, where
+the body is served as `text/markdown`. The browser shows the raw source —
+useful for confirming what gets copied, what an LLM sees, or just inspecting
+the canonical markdown of a page.
+
+## When to use it
+
+- Verifying that the markdown route returns what you expect.
+- Linking someone to the raw source of a docs page.
+- Manual extraction by readers who prefer the markdown to the rendered HTML.
+
+## Configuration
+
+`viewMarkdown` is on by default. To disable it:
+
+```js
+starlightLlmActions({
+  actions: {
+    viewMarkdown: false,
+  },
+})
+```
+
+When disabled, the action is removed from the dropdown.
+
+## How it works
+
+The action is a plain anchor (`<a href>`) under the hood. Clicking it
+navigates to the URL produced by `markdownUrl` (default `/{slug}.md`),
+which the plugin's injected route serves with:
+
+- `Content-Type: text/markdown; charset=utf-8`
+- The body of the matching Content Collection entry, untransformed
+
+Browsers display `text/markdown` as plain text. There's no fallback rendering
+inside the docs site — the user sees exactly what an LLM, fetcher, or script
+would see at that URL.
+
+## Customising the URL
+
+Use [`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl)
+to change the path pattern, e.g. to serve under `.txt`:
+
+```js
+starlightLlmActions({
+  markdownUrl: '/{slug}.txt',
+})
+```
+
+## See also
+
+- [Copy as Markdown](/starlight-llm-actions/actions/copy/) — copies the same
+  content to the clipboard instead of navigating.
+- [`injectRoute`](/starlight-llm-actions/configuration/reference/#injectroute)
+  — opt out of the plugin's built-in markdown route if your site already
+  publishes per-page markdown.

@@ -1,0 +1,123 @@
+---
+title: Open in…
+description: Send the current page to ChatGPT, Claude, Gemini, Copilot, Perplexity, T3 Chat, or Cursor.
+---
+
+The **Open in…** group is the heart of the plugin: a submenu that opens the
+current page in any of seven LLMs, using the most reliable strategy each
+provider supports today.
+
+## Built-in providers
+
+| Provider | Strategy | Notes |
+| --- | --- | --- |
+| ChatGPT | `url-prompt` | `chatgpt.com/?q=` prefill |
+| Perplexity | `url-prompt` | `perplexity.ai/?q=` prefill |
+| T3 Chat | `url-prompt` | `t3.chat/new?q=` prefill |
+| Cursor | `inline-content` | `cursor.com/link/prompt?text=`; falls back to `url-prompt` over 8 KB |
+| Claude | `clipboard-open` | Copies prompt, opens `claude.ai/new` |
+| Gemini | `clipboard-open` | Copies prompt, opens `gemini.google.com/app` |
+| GitHub Copilot | `clipboard-open` | Copies prompt, opens `github.com/copilot` |
+
+For an explanation of each strategy and *why* the per-provider choice was
+made, see [Concepts: per-provider strategies](/starlight-llm-actions/getting-started/concepts/#strategies).
+
+## Default behaviour
+
+With no configuration, all seven providers are enabled and the submenu is
+labelled **Open in…**.
+
+```js
+starlightLlmActions()
+```
+
+## Disable the entire submenu
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: false,
+  },
+})
+```
+
+The submenu disappears from the dropdown. The other actions (Copy, View,
+PDF) still work.
+
+## Disable a single provider
+
+Pass an object instead of a boolean and override individual providers:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        copilot: false,
+        gemini: false,
+      },
+    },
+  },
+})
+```
+
+## Customise a provider
+
+Each provider accepts a full
+[ProviderOverride](/starlight-llm-actions/configuration/reference/#provideroverride):
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        chatgpt: {
+          label: 'ChatGPT (work account)',
+          prompt: 'Summarise the linked Acme docs page: {url}',
+        },
+        cursor: {
+          maxBytes: 4000, // tighter cap than the 8 KB default
+          fallbackStrategy: 'clipboard-open',
+        },
+      },
+    },
+  },
+})
+```
+
+See [Configuration: Providers](/starlight-llm-actions/configuration/providers/)
+for the full per-provider matrix and all overridable fields.
+
+## Customise the prompt
+
+The same prompt is used for every provider that doesn't override it. To
+change the global prompt:
+
+```js
+starlightLlmActions({
+  prompt: 'Read this Acme docs page and answer in plain English: {url}',
+})
+```
+
+`{url}` is substituted with the absolute URL of the current page. For
+`inline-content` providers, you can use `{prompt_with_markdown}` in the URL
+template to also include the page body.
+
+## Rename the submenu
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      label: 'Ask an LLM',
+    },
+  },
+})
+```
+
+## See also
+
+- [Configuration: Providers](/starlight-llm-actions/configuration/providers/)
+  — every overridable field and the built-in defaults.
+- [Concepts](/starlight-llm-actions/getting-started/concepts/) — strategies
+  and how prompts are assembled.

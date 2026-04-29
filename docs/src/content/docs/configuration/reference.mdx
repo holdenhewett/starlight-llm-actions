@@ -1,0 +1,380 @@
+---
+title: Configuration reference
+description: Every option in the starlight-llm-actions plugin config.
+---
+
+Every option you can pass to `starlightLlmActions()`. All options are optional;
+calling it with no arguments uses the defaults shown below.
+
+```ts
+starlightLlmActions({
+  // top-level options shown here
+})
+```
+
+## Top-level options
+
+### `actions`
+
+- **Type:** [`ActionsConfig`](#actionsconfig)
+- **Default:** all on except `printPdf` (off), all built-in providers enabled
+
+Controls which dropdown items render and how the **Open in…** submenu
+behaves. See [`ActionsConfig`](#actionsconfig) below.
+
+```js
+starlightLlmActions({
+  actions: {
+    copyMarkdown: true,
+    viewMarkdown: true,
+    printPdf: false,
+    openIn: true,
+  },
+})
+```
+
+### `markdownUrl`
+
+- **Type:** `string`
+- **Default:** `'/{slug}.md'`
+
+URL template the plugin uses for the page's markdown source. `{slug}` is
+substituted with the Content Collection entry's id.
+
+The default route is injected automatically. Sites that publish raw text
+under a different extension can override:
+
+```js
+starlightLlmActions({
+  markdownUrl: '/{slug}.txt',
+})
+```
+
+If your site already publishes per-page markdown via a different route, set
+[`injectRoute: false`](#injectroute) and point `markdownUrl` at it.
+
+### `injectRoute`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Whether the plugin should inject its own markdown route at the pattern
+derived from `markdownUrl`. Set to `false` if your site already publishes
+per-page markdown (e.g. via a custom HTML→markdown pipeline) and you only
+want the dropdown UI.
+
+```js
+starlightLlmActions({
+  markdownUrl: '/raw/{slug}',
+  injectRoute: false,
+})
+```
+
+### `prompt`
+
+- **Type:** `string`
+- **Default:** `'Read the documentation at {url} and help me understand it.'`
+
+Default prompt sent to every "Open in…" provider that doesn't define its own
+[`providers.<id>.prompt`](#providers). Placeholders:
+
+- `{url}` — substituted with the absolute URL of the current page.
+
+The resolved prompt (with `{url}` replaced) is what gets URL-encoded into
+provider URL templates and copied to the clipboard for `clipboard-open`
+providers.
+
+```js
+starlightLlmActions({
+  prompt: 'Read this Acme docs page and answer in plain English: {url}',
+})
+```
+
+### `triggerLabel`
+
+- **Type:** `string`
+- **Default:** `'Page actions'`
+
+Visible label of the dropdown trigger button next to the page title.
+
+```js
+starlightLlmActions({
+  triggerLabel: 'AI tools',
+})
+```
+
+### `pageOptOut`
+
+- **Type:** `string | false`
+- **Default:** `'llmActions'`
+
+Frontmatter key that, when set to `false` on a page, hides the dropdown on
+that page. Set this option to `false` to disable the opt-out entirely. Set
+it to a string to use a different frontmatter key.
+
+```js
+starlightLlmActions({
+  pageOptOut: 'showAiTools', // page sets `showAiTools: false`
+})
+```
+
+See [Per-page opt-out](/starlight-llm-actions/guides/per-page-opt-out/) for
+details.
+
+### `printNotice`
+
+- **Type:** `boolean | `[`PrintNoticeConfig`](#printnoticeconfig)
+- **Default:** `false`
+
+Snapshot disclaimer shown when the page is printed (Cmd/Ctrl+P, the
+dropdown's PDF button, or browser menu). Hidden on screen; visible only in
+`@media print`.
+
+- `true` — enable the warning admonition with built-in defaults.
+- A [`PrintNoticeConfig`](#printnoticeconfig) object — customise the
+  warning, supply branding (logo + site name), or both.
+- `false` (or omit) — disabled.
+
+See [Print/PDF snapshot notice](/starlight-llm-actions/configuration/print-notice/)
+for the full guide.
+
+## `ActionsConfig`
+
+The `actions` object's full shape:
+
+```ts
+interface ActionsConfig {
+  copyMarkdown?: boolean;        // default: true
+  viewMarkdown?: boolean;        // default: true
+  printPdf?: boolean;            // default: false
+  openIn?: boolean | OpenInConfig; // default: true
+}
+```
+
+### `actions.copyMarkdown`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Show the **Copy as Markdown** item. See
+[Copy as Markdown](/starlight-llm-actions/actions/copy/).
+
+### `actions.viewMarkdown`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Show the **View as Markdown** item. See
+[View as Markdown](/starlight-llm-actions/actions/view/).
+
+### `actions.printPdf`
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+Show the **Download as PDF** item. Off by default; the print dialog is
+always reachable via Cmd/Ctrl+P. See
+[Download as PDF](/starlight-llm-actions/actions/print-pdf/).
+
+### `actions.openIn`
+
+- **Type:** `boolean | OpenInConfig`
+- **Default:** `true`
+
+The **Open in…** submenu. `true` enables all providers with defaults; `false`
+removes the submenu. An [`OpenInConfig`](#openinconfig) object lets you
+relabel the submenu and configure providers individually.
+
+## `OpenInConfig`
+
+```ts
+interface OpenInConfig {
+  enabled?: boolean;          // default: true
+  label?: string;             // default: 'Open in…'
+  providers?: ProvidersConfig;
+}
+```
+
+### `openIn.enabled`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Whether the submenu renders. Equivalent to setting `openIn` itself to a
+boolean, but useful when you want to keep other `OpenInConfig` settings
+around while temporarily disabling the submenu.
+
+### `openIn.label`
+
+- **Type:** `string`
+- **Default:** `'Open in…'`
+
+Submenu label.
+
+### `openIn.providers`
+
+- **Type:** [`ProvidersConfig`](#providers)
+- **Default:** all seven built-in providers enabled
+
+Per-provider configuration. See [`providers`](#providers) below.
+
+## `providers`
+
+Object keyed by provider id. Each value is either:
+
+- `true` — enable with defaults.
+- `false` — disable.
+- A [`ProviderOverride`](#provideroverride) object — customise label, prompt,
+  URL template, strategy, etc.
+
+```ts
+interface ProvidersConfig {
+  chatgpt?:    boolean | ProviderOverride;
+  claude?:     boolean | ProviderOverride;
+  gemini?:     boolean | ProviderOverride;
+  copilot?:    boolean | ProviderOverride;
+  perplexity?: boolean | ProviderOverride;
+  t3chat?:     boolean | ProviderOverride;
+  cursor?:     boolean | ProviderOverride;
+}
+```
+
+For the seven built-in providers and their defaults, see
+[Configuration: Providers](/starlight-llm-actions/configuration/providers/).
+
+## `ProviderOverride`
+
+Every field is optional; unset fields fall back to the provider's built-in
+defaults.
+
+```ts
+interface ProviderOverride {
+  enabled?: boolean;
+  label?: string;
+  description?: string;
+  prompt?: string;
+  url?: string;
+  strategy?: 'url-prompt' | 'inline-content' | 'clipboard-open';
+  maxBytes?: number;
+  fallbackStrategy?: 'url-prompt' | 'inline-content' | 'clipboard-open';
+  icon?: string | false;
+}
+```
+
+### `enabled`
+
+Whether the provider appears in the submenu. Equivalent to passing
+`<id>: false` directly.
+
+### `label`
+
+Display label. Default: provider's built-in label (e.g. `'ChatGPT'`).
+
+### `description`
+
+Short description shown under the label. Default: provider's built-in
+description (e.g. `'Open this page in ChatGPT'`).
+
+### `prompt`
+
+Prompt template specific to this provider. Falls back to the global
+[`prompt`](#prompt) if unset.
+
+### `url`
+
+URL template. Placeholders are URL-encoded at click time:
+
+- `{prompt}` — the resolved prompt (with `{url}` substituted).
+- `{prompt_with_markdown}` — `{prompt}` + `"\n\n"` + the full page markdown.
+
+For `clipboard-open` providers, this is the static URL opened *after* the
+prompt is copied to the clipboard.
+
+### `strategy`
+
+One of `'url-prompt'`, `'inline-content'`, `'clipboard-open'`. See
+[Concepts: per-provider strategies](/starlight-llm-actions/getting-started/concepts/#strategies).
+
+### `maxBytes`
+
+For `inline-content` only. Maximum number of bytes the assembled URL may
+grow to. When the URL would exceed this, the plugin falls back to
+[`fallbackStrategy`](#fallbackstrategy).
+
+### `fallbackStrategy`
+
+Strategy used when the `inline-content` URL exceeds `maxBytes`. Cursor's
+default is `'url-prompt'`.
+
+### `icon`
+
+- An SVG filename under the package's `icons/` folder (e.g. `'cursor.svg'`).
+- An absolute URL.
+- `false` — hide the icon.
+
+## `PrintNoticeConfig`
+
+```ts
+interface PrintNoticeConfig {
+  branding?: false | PrintNoticeBranding;
+  warning?:  false | PrintNoticeWarning;
+}
+```
+
+Either field can be `false` to render only the other half.
+
+### `printNotice.branding`
+
+- **Type:** `false | PrintNoticeBranding`
+- **Default:** none
+
+Branding row rendered above the page H1 in print/PDF.
+
+```ts
+interface PrintNoticeBranding {
+  logo?: PrintNoticeLogo;
+  siteName?: string;
+}
+
+interface PrintNoticeLogo {
+  src: string;        // URL or site-relative path
+  alt?: string;
+  height?: string;    // CSS height, default '1.5rem'
+}
+```
+
+### `printNotice.warning`
+
+- **Type:** `false | PrintNoticeWarning`
+- **Default:** built-in defaults when `printNotice: true` or the `warning`
+  field is omitted under a `printNotice` object
+
+Warning admonition rendered below the page H1 in print/PDF.
+
+```ts
+interface PrintNoticeWarning {
+  title?: string;       // default: 'Documentation Snapshot'
+  message?: string[];   // each entry renders as a <p>
+  showUrl?: boolean;    // default: true
+  showDate?: boolean;   // default: true
+  urlLabel?: string;    // default: 'Live version: '
+  dateLabel?: string;   // default: 'Exported: '
+}
+```
+
+See [Print/PDF snapshot notice](/starlight-llm-actions/configuration/print-notice/)
+for examples.
+
+## Frontmatter options
+
+In addition to plugin options, individual pages can opt out via frontmatter:
+
+```mdx
+---
+title: A page with no AI dropdown
+llmActions: false
+---
+```
+
+The frontmatter key is configurable via [`pageOptOut`](#pageoptout). See
+[Per-page opt-out](/starlight-llm-actions/guides/per-page-opt-out/).

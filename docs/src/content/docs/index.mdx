@@ -1,22 +1,45 @@
 ---
-title: Welcome
-description: Playground for the starlight-llm-actions plugin.
+title: starlight-llm-actions
+description: Page Actions dropdown for Starlight — copy, view, save as PDF, and open in any LLM.
+template: splash
+hero:
+  tagline: A Page Actions dropdown for Starlight. Copy as Markdown, view raw, save as PDF, or open the current page in ChatGPT, Claude, Gemini, Copilot, Perplexity, T3 Chat, or Cursor.
+  actions:
+    - text: Get started
+      link: /starlight-llm-actions/getting-started/install/
+      icon: right-arrow
+    - text: Configuration reference
+      link: /starlight-llm-actions/configuration/reference/
+      variant: minimal
 ---
 
-This is the playground site for `starlight-llm-actions`. Use it to validate
-the plugin during development.
+import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## What you should see
+<CardGrid>
+  <Card title="One-line install" icon="rocket">
+    Drop the plugin into your `astro.config.mjs` `plugins` array and the
+    dropdown appears next to your page title — no styling work, no UI plumbing.
+  </Card>
+  <Card title="Per-provider strategies" icon="setting">
+    Each LLM gets the most reliable open-in path: prefilled URL where
+    supported (ChatGPT, Perplexity, T3 Chat, Cursor), copy-and-open
+    fallback where it isn't (Claude, Gemini, Copilot).
+  </Card>
+  <Card title="Print-aware snapshots" icon="document">
+    Optional snapshot disclaimer renders only in `@media print`, with
+    branding and live-URL/date stamps so PDFs that escape into the wild
+    point readers back to the canonical page.
+  </Card>
+  <Card title="Per-page opt-out" icon="seti:lock">
+    Set `llmActions: false` in any page's frontmatter to hide the
+    dropdown — useful for marketing pages or pages with policy reasons
+    not to expose raw markdown.
+  </Card>
+</CardGrid>
 
-Once Phase B is implemented, the dropdown in the page header should let you:
+## Try it on this site
 
-- **Copy this page as Markdown** — to clipboard
-- **View it as Markdown** — opens the source in a new tab
-- **Save as PDF** — triggers the print dialog
-- **Open with `<provider>`** — opens the page in an LLM (ChatGPT, Claude,
-  Gemini, GitHub Copilot, Perplexity, T3 Chat, Cursor)
-
-## Pages
-
-- [Welcome](/) — this page; all actions enabled
-- [Opt-out example](/opt-out/) — sets `llmActions: false`; dropdown should not render
+The dropdown next to the page title above is this plugin. Open it and
+try every action — this site is itself a deployment of the plugin.
+The [Per-page opt-out demo](/starlight-llm-actions/opt-out/) shows what
+a page looks like with the dropdown disabled.
