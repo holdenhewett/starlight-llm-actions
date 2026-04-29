@@ -9,8 +9,8 @@ import {
   type ProviderId,
   type StarlightLlmActionsConfig,
   type Strategy,
-} from './schema';
-import { BUILTIN_PROVIDERS, PROVIDER_IDS } from '../providers/builtin';
+} from './schema.js';
+import { BUILTIN_PROVIDERS, PROVIDER_IDS } from '../providers/builtin.js';
 
 /**
  * Fully-resolved provider entry. JSON-serializable: all values are strings,

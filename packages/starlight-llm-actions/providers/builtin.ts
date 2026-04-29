@@ -1,4 +1,4 @@
-import type { ProviderId, Strategy } from '../config/schema';
+import type { ProviderId, Strategy } from '../config/schema.js';
 
 export interface BuiltinProvider {
   /** Display label shown in the dropdown. */

@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import type { ResolvedConfig } from '../config/resolve';
+import type { ResolvedConfig } from '../config/resolve.js';
 
 const MODULE_ID = 'virtual:starlight-llm-actions/config';
 const RESOLVED_ID = `\0${MODULE_ID}`;

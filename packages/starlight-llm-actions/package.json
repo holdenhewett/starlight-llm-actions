@@ -7,7 +7,8 @@
   "author": "Holden Hewett",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/holdenhewett/starlight-llm-actions.git"
+    "url": "git+https://github.com/holdenhewett/starlight-llm-actions.git",
+    "directory": "packages/starlight-llm-actions"
   },
   "homepage": "https://holdenhewett.github.io/starlight-llm-actions/",
   "bugs": {
@@ -30,20 +31,23 @@
     "copy-as-markdown",
     "open-in-chatgpt"
   ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json --noCheck && node scripts/copy-assets.mjs",
+    "dev": "tsc -p tsconfig.build.json --noCheck --watch --preserveWatchOutput",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
   "exports": {
-    ".": "./index.ts",
-    "./overrides/PageTitle.astro": "./overrides/PageTitle.astro"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./route": "./dist/route.ts",
+    "./overrides/PageTitle.astro": "./dist/overrides/PageTitle.astro"
   },
   "files": [
-    "index.ts",
-    "route.ts",
-    "env.d.ts",
-    "components",
-    "overrides",
-    "providers",
-    "config",
-    "icons",
-    "internal",
+    "dist",
     "README.md",
     "LICENSE"
   ],

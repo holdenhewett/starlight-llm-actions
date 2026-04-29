@@ -4,11 +4,11 @@ import {
   markdownUrlToRoutePattern,
   resolveConfig,
   type ResolvedConfig,
-} from './config/resolve';
-import type { StarlightLlmActionsConfig } from './config/schema';
-import { virtualConfigPlugin } from './internal/virtual-module';
+} from './config/resolve.js';
+import type { StarlightLlmActionsConfig } from './config/schema.js';
+import { virtualConfigPlugin } from './internal/virtual-module.js';
 
-export type { StarlightLlmActionsConfig } from './config/schema';
+export type { StarlightLlmActionsConfig } from './config/schema.js';
 
 function createAstroIntegration(resolved: ResolvedConfig): AstroIntegration {
   return {
@@ -18,7 +18,7 @@ function createAstroIntegration(resolved: ResolvedConfig): AstroIntegration {
         if (resolved.injectRoute) {
           injectRoute({
             pattern: markdownUrlToRoutePattern(resolved.markdownUrl),
-            entrypoint: new URL('./route.ts', import.meta.url),
+            entrypoint: 'starlight-llm-actions/route',
             prerender: true,
           });
         }

@@ -5,12 +5,18 @@
   "type": "module",
   "description": "Workspace root for the starlight-llm-actions plugin and its docs playground.",
   "scripts": {
-    "dev": "pnpm --filter docs dev",
+    "predev": "pnpm --filter starlight-llm-actions build",
+    "dev": "pnpm --parallel --filter starlight-llm-actions --filter docs dev",
+    "prebuild": "pnpm --filter starlight-llm-actions build",
     "build": "pnpm --filter docs build",
-    "preview": "pnpm --filter docs preview"
+    "preview": "pnpm --filter docs preview",
+    "typecheck": "pnpm -r typecheck"
   },
   "packageManager": "pnpm@9.12.0",
   "engines": {
     "node": "^22.0.0 || >=24.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
   }
 }
