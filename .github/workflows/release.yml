@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,7 +11,6 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: npm-publish
     permissions:
       id-token: write
       contents: read
@@ -36,7 +34,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Verify tag matches package.json version
-        if: github.event_name == 'push'
         env:
           GITHUB_REF: ${{ github.ref }}
         run: |
@@ -57,33 +54,6 @@ jobs:
       - name: Verify type resolution (arethetypeswrong)
         run: pnpm --filter starlight-llm-actions exec npx --yes -p @arethetypeswrong/cli attw --pack .
 
-      - name: Pack tarball
-        id: pack
-        working-directory: packages/starlight-llm-actions
-        run: |
-          tarball=$(npm pack --json | node -e 'const j=JSON.parse(require("fs").readFileSync(0,"utf8")); console.log(j[0].filename)')
-          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
-          echo "path=packages/starlight-llm-actions/$tarball" >> "$GITHUB_OUTPUT"
-
-      - name: Generate build provenance attestation
-        uses: actions/attest-build-provenance@b3e506e8c389afc651c5bacf2b8f2a1ea0557215 # v4.1.0
-        with:
-          subject-path: ${{ steps.pack.outputs.path }}
-
-      - name: Debug npm + OIDC env
-        run: |
-          echo "npm: $(npm --version)"
-          echo "node: $(node --version)"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL set? ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN set? ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+yes}"
-          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
-          echo "GITHUB_WORKFLOW_REF: $GITHUB_WORKFLOW_REF"
-          echo "GITHUB_SHA: $GITHUB_SHA"
-          echo "--- npm config ---"
-          npm config list -l 2>&1 | grep -iE "registry|provenance|auth|trusted" || true
-
       - name: Publish to npm
         working-directory: packages/starlight-llm-actions
-        env:
-          TARBALL: ${{ steps.pack.outputs.tarball }}
-        run: npm publish "$TARBALL" --provenance --access public --loglevel=verbose
+        run: npm publish --access public
