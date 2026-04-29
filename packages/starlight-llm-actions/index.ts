@@ -38,14 +38,24 @@ export default function starlightLlmActions(
   return {
     name: 'starlight-llm-actions',
     hooks: {
-      'config:setup'({ updateConfig, addIntegration }) {
+      'config:setup'({ config, updateConfig, addIntegration, logger }) {
         const resolved = resolveConfig(userConfig);
 
-        updateConfig({
-          components: {
-            PageTitle: 'starlight-llm-actions/overrides/PageTitle.astro',
-          },
-        });
+        const existingComponents = config.components ?? {};
+        if (existingComponents.PageTitle) {
+          logger.warn(
+            'Skipping `PageTitle` override: another plugin or your site config has already overridden it. ' +
+              'The Page Actions menu will not be rendered. ' +
+              "To keep the menu, render `starlight-llm-actions`'s `PageActions` component from inside your own `PageTitle` override.",
+          );
+        } else {
+          updateConfig({
+            components: {
+              ...existingComponents,
+              PageTitle: 'starlight-llm-actions/overrides/PageTitle.astro',
+            },
+          });
+        }
 
         addIntegration(createAstroIntegration(resolved));
       },
