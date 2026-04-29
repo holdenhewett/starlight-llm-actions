@@ -15,10 +15,12 @@
     "url": "https://github.com/holdenhewett/starlight-llm-actions/issues"
   },
   "keywords": [
+    "astro-integration",
+    "astro-component",
+    "withastro",
     "starlight",
     "starlight-plugin",
     "astro",
-    "astro-component",
     "documentation",
     "llm",
     "ai",
@@ -49,6 +51,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "peerDependencies": {
