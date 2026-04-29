@@ -30,9 +30,7 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
-
-      - name: Upgrade npm to a version that supports OIDC trusted publishing
-        run: npm install -g npm@latest
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
