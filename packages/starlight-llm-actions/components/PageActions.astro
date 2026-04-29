@@ -23,7 +23,8 @@ const route = Astro.locals.starlightRoute;
 // Starlight's home-page entry has an empty id; map to 'index' so it matches
 // the file Astro generates for the corresponding `[...slug]` route.
 const slug = route?.entry?.id || 'index';
-const markdownHref = markdownUrlForSlug(markdownUrl, slug);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const markdownHref = base + markdownUrlForSlug(markdownUrl, slug);
 
 const showCopy = actions.copyMarkdown;
 const showView = actions.viewMarkdown;
