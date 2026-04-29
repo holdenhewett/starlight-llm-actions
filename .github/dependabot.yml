@@ -1,0 +1,64 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - '*'
+    labels:
+      - dependencies
+      - github-actions
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      runtime-dependencies:
+        dependency-type: production
+    labels:
+      - dependencies
+      - npm
+
+  - package-ecosystem: npm
+    directory: /packages/starlight-llm-actions
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: '@astrojs/starlight'
+        update-types: [version-update:semver-major]
+      - dependency-name: astro
+        update-types: [version-update:semver-major]
+      - dependency-name: vite
+        update-types: [version-update:semver-major]
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      runtime-dependencies:
+        dependency-type: production
+    labels:
+      - dependencies
+      - npm
+      - plugin
+
+  - package-ecosystem: npm
+    directory: /docs
+    schedule:
+      interval: weekly
+    versioning-strategy: increase
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      runtime-dependencies:
+        dependency-type: production
+    labels:
+      - dependencies
+      - npm
+      - docs
