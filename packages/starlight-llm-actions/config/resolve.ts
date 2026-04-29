@@ -80,7 +80,7 @@ export interface ResolvedConfig {
   printNotice: ResolvedPrintNotice | null;
 }
 
-const DEFAULT_PROMPT = 'Read {url}. I want to ask questions about it.';
+const DEFAULT_PROMPT = 'Read {md_url}. I want to ask questions about it.';
 const DEFAULT_TRIGGER_LABEL = 'Copy page';
 const DEFAULT_OPEN_IN_LABEL = 'Open with';
 const DEFAULT_PAGE_OPT_OUT = 'llmActions';

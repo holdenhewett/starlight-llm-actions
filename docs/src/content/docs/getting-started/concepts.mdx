@@ -77,9 +77,11 @@ to disable the built-in route, and point `markdownUrl` at your existing one.
 
 Every "Open in…" strategy starts from a prompt template. The default is:
 
-> Read the documentation at {url} and help me understand it.
+> Read `{md_url}`. I want to ask questions about it.
 
-`{url}` is substituted with the absolute URL of the current page. You can
+`{md_url}` is substituted with the absolute URL of the current page's `.md`
+route — LLMs that fetch URLs get clean markdown instead of rendered HTML.
+Use `{url}` instead if you need the rendered page URL. You can
 customise the prompt globally via the
 [`prompt`](/starlight-llm-actions/configuration/reference/#prompt) option, or
 per provider via

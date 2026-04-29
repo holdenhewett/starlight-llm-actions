@@ -425,7 +425,12 @@ function getImageIcon(value: string | false): string | null {
       }
 
       function resolvePrompt(template) {
-        return (template || '').replace(/\{url\}/g, window.location.href);
+        var mdUrl = markdownHref
+          ? new URL(markdownHref, window.location.origin).href
+          : window.location.href;
+        return (template || '')
+          .replace(/\{md_url\}/g, mdUrl)
+          .replace(/\{url\}/g, window.location.href);
       }
 
       function buildUrl(template, replacements) {

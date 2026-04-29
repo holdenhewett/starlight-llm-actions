@@ -95,11 +95,12 @@ change the global prompt:
 
 ```js
 starlightLlmActions({
-  prompt: 'Read this Acme docs page and answer in plain English: {url}',
+  prompt: 'Read this Acme docs page and answer in plain English: {md_url}',
 })
 ```
 
-`{url}` is substituted with the absolute URL of the current page. For
+`{md_url}` is substituted with the absolute URL of the current page's `.md`
+route (clean markdown). Use `{url}` for the rendered HTML URL instead. For
 `inline-content` providers, you can use `{prompt_with_markdown}` in the URL
 template to also include the page body.
 
