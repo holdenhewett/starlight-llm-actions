@@ -54,6 +54,31 @@ jobs:
       - name: Verify type resolution (arethetypeswrong)
         run: pnpm --filter starlight-llm-actions exec npx --yes -p @arethetypeswrong/cli attw --pack .
 
+      - name: Diagnose OIDC env + npm state
+        working-directory: packages/starlight-llm-actions
+        run: |
+          echo "=== npm/node ==="
+          echo "npm: $(npm --version)"
+          echo "node: $(node --version)"
+          echo ""
+          echo "=== OIDC env vars ==="
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL set? ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN set? ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+yes}"
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_WORKFLOW_REF: $GITHUB_WORKFLOW_REF"
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo ""
+          echo "=== .npmrc files ==="
+          for f in "$HOME/.npmrc" ".npmrc" "$RUNNER_TEMP/.npmrc"; do
+            if [ -f "$f" ]; then echo "--- $f ---"; cat "$f"; else echo "$f: (none)"; fi
+          done
+          echo ""
+          echo "=== npm config (filtered) ==="
+          npm config list -l 2>&1 | grep -iE "registry|provenance|auth|trusted|oidc" || true
+          echo ""
+          echo "=== env (filtered) ==="
+          env | grep -iE "^NPM|^NODE_AUTH|^NODE_CONFIG|^ACTIONS_ID" || true
+
       - name: Publish to npm
         working-directory: packages/starlight-llm-actions
-        run: npm publish --access public
+        run: npm publish --access public --loglevel=verbose
