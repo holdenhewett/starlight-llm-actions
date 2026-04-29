@@ -54,36 +54,6 @@ jobs:
       - name: Verify type resolution (arethetypeswrong)
         run: pnpm --filter starlight-llm-actions exec npx --yes -p @arethetypeswrong/cli attw --pack .
 
-      - name: Diagnose OIDC env + npm state
-        working-directory: packages/starlight-llm-actions
-        run: |
-          echo "=== npm/node ==="
-          echo "npm: $(npm --version)"
-          echo "node: $(node --version)"
-          echo ""
-          echo "=== OIDC env vars ==="
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL set? ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN set? ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+yes}"
-          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
-          echo "GITHUB_WORKFLOW_REF: $GITHUB_WORKFLOW_REF"
-          echo "GITHUB_REF: $GITHUB_REF"
-          echo ""
-          echo "=== .npmrc files ==="
-          for f in "$HOME/.npmrc" ".npmrc" "$RUNNER_TEMP/.npmrc"; do
-            if [ -f "$f" ]; then echo "--- $f ---"; cat "$f"; else echo "$f: (none)"; fi
-          done
-          echo ""
-          echo "=== npm config sources (long) ==="
-          npm config list -l --long 2>&1 | grep -B1 -iE "registry|provenance|auth|trusted|oidc" || true
-          echo ""
-          echo "=== /etc/npmrc + globalconfig ==="
-          for f in /etc/npmrc /usr/etc/npmrc /usr/local/etc/npmrc /opt/hostedtoolcache/node/24.14.1/x64/etc/npmrc; do
-            if [ -f "$f" ]; then echo "--- $f ---"; cat "$f"; else echo "$f: (none)"; fi
-          done
-          echo ""
-          echo "=== ALL env (npm_config_* + npm related) ==="
-          env | grep -iE "^npm_|^NPM_|^NODE_AUTH" || true
-
       - name: Publish to npm
         working-directory: packages/starlight-llm-actions
-        run: npm publish --access public --loglevel=verbose
+        run: npm publish --access public
