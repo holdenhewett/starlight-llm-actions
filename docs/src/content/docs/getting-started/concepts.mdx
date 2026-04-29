@@ -77,7 +77,7 @@ to disable the built-in route, and point `markdownUrl` at your existing one.
 
 Every "Open in…" strategy starts from a prompt template. The default is:
 
-> Read {md_url}. I want to ask questions about it.
+> Read `{md_url}`. I want to ask questions about it.
 
 `{md_url}` is substituted with the absolute URL of the current page's `.md`
 route — LLMs that fetch URLs get clean markdown instead of rendered HTML.
