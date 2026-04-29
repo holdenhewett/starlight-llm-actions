@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.1.1...v0.2.0) (2026-04-29)
+
+
+### Features
+
+* **actions:** add {md_url} placeholder and make it the default ([#16](https://github.com/holdenhewett/starlight-llm-actions/issues/16)) ([a402f52](https://github.com/holdenhewett/starlight-llm-actions/commit/a402f521b3c738497ae5efdc9ae04a5db4fab89e))
+
 ## 0.1.1 (2026-04-29)
 
 ### Bug Fixes
