@@ -4,6 +4,8 @@ import starlight from '@astrojs/starlight';
 import starlightLlmActions from 'starlight-llm-actions';
 
 export default defineConfig({
+  site: 'https://holdenhewett.github.io',
+  base: '/starlight-llm-actions/',
   integrations: [
     starlight({
       title: 'starlight-llm-actions',
