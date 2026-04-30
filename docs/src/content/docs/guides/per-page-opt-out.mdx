@@ -26,9 +26,9 @@ dropdown as configured.
 
 ## Live example
 
-The [Opt-out example page](/starlight-llm-actions/opt-out/) on this site
-sets `llmActions: false` in its frontmatter. Compare its header to any other
-page on this site — you'll see the dropdown is gone.
+The [Opt-out example page](/starlight-llm-actions/examples/opt-out/) on this
+site sets `llmActions: false` in its frontmatter. Compare its header to any
+other page on this site — you'll see the dropdown is gone.
 
 ## Customising the frontmatter key
 
@@ -67,17 +67,25 @@ Frontmatter values for the opt-out key are ignored.
 
 - **Marketing or landing pages** that don't have a meaningful markdown body.
 - **Pages with sensitive content** where exposing raw markdown is a policy
-  concern. (Note: setting `llmActions: false` only hides the dropdown — the
-  markdown route at `/{slug}.md` is still injected. To suppress the route
-  too, see [`injectRoute`](/starlight-llm-actions/configuration/reference/#injectroute).)
+  concern. (Note: `llmActions: false` hides the dropdown and the print/PDF
+  snapshot notice on this page, but the markdown route at `/{slug}.md` is
+  still injected. To suppress the route too, see
+  [`injectRoute`](/starlight-llm-actions/configuration/reference/#injectroute).)
 - **Auto-generated index pages** where every action would feel out of place.
 
 ## When *not* to use it
 
-- For "I don't want PDF on this page" — use the global
-  [`actions.printPdf`](/starlight-llm-actions/configuration/reference/#actionsprintpdf)
-  setting and let users reach the print dialog via Cmd/Ctrl+P if they need
-  it.
-- To hide the dropdown for one specific provider on one page — that level of
-  per-page customisation isn't supported. Configure providers globally via
-  [`providers`](/starlight-llm-actions/configuration/reference/#providers).
+`llmActions: false` is a blunt instrument — it hides the entire dropdown.
+For finer-grained per-page changes, use a partial override instead of `false`:
+
+- **"I don't want PDF on this page"** → set
+  [`actions.printPdf: false`](/starlight-llm-actions/examples/no-pdf/) on
+  that page only.
+- **"Hide one specific provider on this page"** → set
+  [`actions.openIn.providers.<id>: false`](/starlight-llm-actions/examples/hide-providers/)
+  on that page only.
+- **"Use a different prompt for this product's docs"** → set
+  [`prompt: '…'`](/starlight-llm-actions/examples/custom-prompt/) on that page.
+
+See the [Examples section](/starlight-llm-actions/examples/) for a page-by-page
+walkthrough of every override.

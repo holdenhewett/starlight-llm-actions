@@ -1,6 +1,7 @@
 ---
-import config from 'virtual:starlight-llm-actions/config';
-import { markdownUrlForSlug } from '../config/resolve';
+import globalConfig, { parsed as parsedGlobal } from 'virtual:starlight-llm-actions/config';
+import { markdownUrlForSlug, resolveConfig } from '../config/resolve';
+import { mergePageOverride, PageOverrideSchema } from '../config/pageOverride';
 import chatBubbleSvg from '../icons/chat-bubble.svg?raw';
 import claudeSvg from '../icons/claude.svg?raw';
 import geminiSvg from '../icons/googlegemini.svg?raw';
@@ -17,12 +18,32 @@ const BUNDLED_ICONS: Record<string, string> = {
   'cursor.svg': cursorSvg,
 };
 
-const { actions, triggerLabel, pageOptOut, markdownUrl } = config;
-
 const route = Astro.locals.starlightRoute;
 // Starlight's home-page entry has an empty id; map to 'index' so it matches
 // the file Astro generates for the corresponding `[...slug]` route.
 const slug = route?.entry?.id || 'index';
+
+// Resolve config for this page: read frontmatter override (if any), validate
+// against the page-override schema, layer it on top of the parsed global
+// config, then re-resolve. Falls back to the global resolved config when no
+// override is present.
+let config = globalConfig;
+let optedOut = false;
+
+if (globalConfig.pageOptOut !== false) {
+  // @ts-expect-error — user-defined frontmatter field, not in DocsSchema.
+  const rawOverride = route?.entry?.data?.[globalConfig.pageOptOut];
+  if (rawOverride !== undefined) {
+    const parsed = PageOverrideSchema.parse(rawOverride);
+    if (parsed === false) {
+      optedOut = true;
+    } else if (parsed !== true) {
+      config = resolveConfig(mergePageOverride(parsedGlobal, parsed));
+    }
+  }
+}
+
+const { actions, triggerLabel, markdownUrl } = config;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const markdownHref = base + markdownUrlForSlug(markdownUrl, slug);
 
@@ -36,12 +57,6 @@ const hasOpenInSection = openIn !== false && openIn.providers.length > 0;
 
 // Render nothing if all sections are disabled or the menu would be empty.
 const renderMenu = hasMarkdownSection || hasExportSection || hasOpenInSection;
-
-// Honour per-page opt-out via frontmatter, e.g. `llmActions: false`.
-const optedOut =
-  pageOptOut !== false &&
-  // @ts-expect-error — user-defined frontmatter field, not in DocsSchema.
-  route?.entry?.data?.[pageOptOut] === false;
 
 function getInlineIcon(value: string | false): string | null {
   if (value === false) return null;

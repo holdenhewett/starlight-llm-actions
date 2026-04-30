@@ -1,0 +1,42 @@
+---
+title: 'Example: Opt out entirely'
+description: This page hides the dropdown via frontmatter.
+llmActions: false
+---
+
+:::note[Notice the missing button]
+There's no dropdown next to this page's title — that's the override at
+work. Visit any other page (e.g.
+[Install](/starlight-llm-actions/getting-started/install/)) and the
+dropdown is back.
+:::
+
+This page sets `llmActions: false` in its frontmatter, so the plugin's
+dropdown does **not** render here. The page header looks identical to a
+stock Starlight site without the plugin installed.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: Opt out entirely'
+llmActions: false
+---
+```
+
+## What you should see
+
+- No "Page actions" dropdown next to the page title.
+- The rest of this site keeps the dropdown as configured.
+
+## When to use this
+
+- **Marketing or landing pages** that don't have a meaningful markdown body.
+- **Pages with sensitive content** where exposing raw markdown is a policy
+  concern. (Note: `llmActions: false` hides the dropdown and the print/PDF
+  snapshot notice on this page, but the markdown route at `/{slug}.md` is
+  still injected. To suppress the route too, see
+  [`injectRoute`](/starlight-llm-actions/configuration/reference/#injectroute).)
+- **Auto-generated index pages** where every action would feel out of place.
+
+See also: [Per-page opt-out guide](/starlight-llm-actions/guides/per-page-opt-out/).

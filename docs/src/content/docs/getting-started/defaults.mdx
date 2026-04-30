@@ -1,0 +1,43 @@
+---
+title: Default behavior
+description: What you get out of the box — every default the plugin applies if you install it with no configuration.
+---
+
+This page is the cheat sheet — a single table of every observable
+default the plugin applies at install time. It's last in **Getting
+started** on purpose: by now you've seen [how the plugin
+works](/starlight-llm-actions/getting-started/concepts/) and the
+[scenarios](/starlight-llm-actions/getting-started/use-cases/) that
+justify changing each behavior, so this table is most useful as a
+quick scan of what's on, off, or auto-injected before you write any
+config.
+
+| Option | Default | Notes |
+|---|---|---|
+| Copy as Markdown | ✅ on | Dropdown's "Copy page" item — copies the page's `.md` source to the clipboard. |
+| View as Markdown | ✅ on | Dropdown's "View as Markdown" item — opens the page's raw markdown URL in a new tab. |
+| Download as PDF | ❌ off | No PDF item appears until you set [`actions.printPdf: true`](/starlight-llm-actions/configuration/reference/#actions). |
+| **Open in…** submenu | ✅ on | Section appears in the dropdown with the default-on providers below. |
+| Default-on providers | 5 | ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity. |
+| Default-off providers | 11 | Cursor, T3 Chat, DeepSeek, DuckDuckGo, Grok, HuggingChat, Kagi, Mistral, Phind, You.com, Google AI Studio — opt in [per provider](/starlight-llm-actions/configuration/providers/#opting-in-to-a-provider). |
+| Default prompt | `` `Read {md_url}. I want to ask questions about it.` `` | Sent to every provider unless overridden. `{md_url}` is the absolute URL of the page's `.md` route. |
+| Trigger button label | `Copy page` | Button text next to the page H1. |
+| Print/PDF snapshot notice | ❌ off | No banner on printed copies until you configure [`printNotice`](/starlight-llm-actions/configuration/print-notice/). |
+| Branding on printed pages | ❌ off | No logo / site name above the H1 when printed — opt in via `printNotice.branding`. |
+| Markdown route at `/{slug}.md` | ✅ on | Auto-injected — turn off with [`injectRoute: false`](/starlight-llm-actions/configuration/reference/#injectroute) if you serve markdown yourself. |
+| Per-page opt-out via frontmatter | ✅ enabled | Set `llmActions: false` on any page to hide the dropdown there. |
+
+## Where each default lives
+
+If you want the authoritative list with every option (including ones not
+in the table above), see the
+[Configuration reference](/starlight-llm-actions/configuration/reference/).
+The table here focuses on observable defaults — what a reader sees
+when they open the dropdown or print a page — rather than every internal
+setting.
+
+If a default doesn't fit your site, the
+[Use cases](/starlight-llm-actions/getting-started/use-cases/) page
+walks through the scenarios that justify changing each one, with links
+to a [live example](/starlight-llm-actions/examples/) demonstrating the
+override.

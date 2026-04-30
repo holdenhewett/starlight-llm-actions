@@ -1,0 +1,152 @@
+---
+title: Use cases
+description: When to use each feature of starlight-llm-actions and why — PDF exports, per-page overrides, custom prompts, and snapshot notices.
+---
+
+The plugin's
+[defaults](/starlight-llm-actions/getting-started/defaults/) work for
+most documentation sites, but a few features are deliberately
+off-by-default or scoped per-page because the right choice depends on
+your audience and content. This page walks through the scenarios where
+each option earns its place, so you can pick the subset that fits your
+site without enabling everything.
+
+## AI-friendly documentation
+
+If readers ever need to feed your docs into an LLM, the plugin removes
+the friction of "select the page, copy, switch tabs, paste, hope you got
+the right context." One click on a provider opens that LLM with the page
+already loaded as context — and the **Open in…** strategies are tuned
+per-provider so the experience is the best each service supports today
+(see [Concepts](/starlight-llm-actions/getting-started/concepts/) for
+the per-provider details).
+
+Even if you don't care about the LLM submenu, the **Copy / View as
+Markdown** actions and the auto-injected `/[slug].md` route turn every
+page into a stable, plain-text endpoint — useful for AI tooling, doc
+mirroring, scripting, and accessibility.
+
+## Printable PDFs for offline and audit copies
+
+`printPdf` is **off by default** because not every documentation site
+benefits from a printable export. Enable it when at least one of these
+applies:
+
+- **Customers need offline copies.** Field engineers, regulated
+  industries, or air-gapped environments where readers can't browse the
+  live site need a deliverable they can read offline.
+- **Compliance, audit, or legal review.** Some teams must hand
+  auditors a frozen "snapshot of v1.2.3 docs as of `<date>`" — a printed
+  PDF is the most defensible record of what the docs said at a point in
+  time. Pair this with a [`printNotice`](#snapshot-warnings-on-printed-pages)
+  so the snapshot is clearly marked.
+- **Customer-deliverable reports.** Solution architects who hand a
+  customer a polished printed runbook benefit from a one-click export
+  with branding (logo + site name) baked into the print layout.
+- **Internal training or onboarding kits.** Printed copies in a
+  training binder, or PDF attachments to a curriculum LMS.
+- **Long, linear pages** like step-by-step setup guides, where users
+  often want a printed checklist they can tick through at a workstation.
+
+Skip it when your docs are short reference pages, change daily, or are
+purely conceptual — printed copies just go stale and the dropdown item
+adds visual noise. You can also enable it globally and disable it on
+individual pages that don't print well; see the
+[No PDF on this page](/starlight-llm-actions/examples/no-pdf/) example.
+
+## Snapshot warnings on printed pages
+
+Once you enable PDF export, printed copies leave your site and live
+forever. The
+[print/PDF snapshot notice](/starlight-llm-actions/configuration/print-notice/)
+prints a banner with a "Documentation Snapshot" warning, the source URL,
+and the export date — so a reader looking at a printed page next year
+can tell it's stale and where to find the live version.
+
+Turn it on when:
+
+- **Your docs change frequently.** Anything more than monthly updates
+  benefits from a "this may be outdated" warning on every printout.
+- **You're worried about printed copies circulating internally.** A
+  visible warning + URL nudges readers back to the live site.
+- **You need branded printouts.** The notice's `branding` block puts
+  your logo and site name above the H1 on every printed page —
+  useful for customer deliverables.
+
+Skip it for evergreen reference content (a printed cheatsheet is
+supposed to be portable) or for pages that are deliberately printed as
+clean reading copies. You can disable it per-page; see the
+[No print notice example](/starlight-llm-actions/examples/no-print-notice/).
+
+## Prompts tailored to your content
+
+The default prompt is "Read `{md_url}`. I want to ask questions about
+it." That's a sensible neutral default, but you can do better when you
+know your content:
+
+- **You publish for multiple products.** Scope the LLM to the right
+  product so it doesn't blur naming or APIs across products. See
+  [Custom prompt example](/starlight-llm-actions/examples/custom-prompt/).
+- **Your audience varies by section.** Tutorials might benefit from
+  "explain to a junior engineer," reference pages from "treat as
+  authoritative API spec." A page-level prompt lets each section set its
+  own voice.
+- **Some providers are coding tools, others aren't.** Cursor and
+  Copilot both perform best with a prompt focused on integration code
+  ("scaffold a project that uses this page's API"); ChatGPT and Claude
+  do better with a conversational explainer prompt. Use per-provider
+  prompts to give each tool the right framing — see the
+  [Per-provider prompt example](/starlight-llm-actions/examples/per-provider-prompt/).
+
+## Page-level overrides
+
+Most sites are happy with a single global config. Reach for per-page
+overrides when one of these conditions is true:
+
+- **Multi-product or multi-section sites.** Each product line wants
+  its own LLM scope. A global prompt would have to be uselessly generic;
+  per-page prompts let each product's pages speak for themselves.
+- **Mixed audiences on the same site.** Public marketing pages,
+  customer-facing reference, and internal-only runbooks all live in the
+  same Starlight build but want different LLM affordances. Per-page
+  config lets you keep the dropdown rich on customer docs while opting
+  out of it on marketing pages — without splitting the codebase.
+- **Compliance or legal scope changes by section.** A regulated
+  section might need only sanctioned providers visible (hide ChatGPT,
+  show enterprise Copilot). The global config stays
+  permissive; the regulated section narrows it. See the
+  [Hide specific providers example](/starlight-llm-actions/examples/hide-providers/).
+- **Some pages don't print well.** Interactive widgets, live demos, or
+  long index pages may look bad as PDF. Disable `printPdf` on just
+  those pages — see the
+  [No PDF on this page example](/starlight-llm-actions/examples/no-pdf/).
+- **Sensitive pages.** Marketing, landing pages, and pages with policy
+  reasons not to expose raw markdown can opt out entirely with
+  `llmActions: false`. The rest of the site keeps the dropdown.
+
+The trade-off: per-page overrides live in frontmatter, so changing
+behavior for a hundred pages means touching a hundred files. Reach for
+overrides when the variance is genuine ("these five pages need this");
+keep things in the global config when it's a site-wide decision.
+
+For the full schema and precedence rules, see
+[`pageOptOut`](/starlight-llm-actions/configuration/reference/#pageoptout)
+and the
+[Per-page opt-out guide](/starlight-llm-actions/guides/per-page-opt-out/).
+
+## Quick decision summary
+
+| Scenario | Feature | Default | Where to look |
+|---|---|---|---|
+| Multi-product LLM scoping | per-page `prompt` | n/a | [Custom prompt](/starlight-llm-actions/examples/custom-prompt/) |
+| Coding tools vs general LLMs | per-provider `prompt` | n/a | [Per-provider prompt](/starlight-llm-actions/examples/per-provider-prompt/) |
+| Customer-deliverable PDF | `printPdf: true` | off | [Download as PDF](/starlight-llm-actions/actions/print-pdf/) |
+| Compliance / audit snapshots | `printPdf` + `printNotice` | both off | [Print notice](/starlight-llm-actions/configuration/print-notice/) |
+| Hide dropdown on marketing pages | `llmActions: false` | n/a | [Opt out entirely](/starlight-llm-actions/examples/opt-out/) |
+| Restrict providers on regulated pages | per-page `providers.<id>: false` | n/a | [Hide providers](/starlight-llm-actions/examples/hide-providers/) |
+| Skip PDF on pages that print badly | per-page `actions.printPdf: false` | n/a | [No PDF](/starlight-llm-actions/examples/no-pdf/) |
+
+If you're not sure what to enable, the safe path is: install with
+defaults, browse the [Examples](/starlight-llm-actions/examples/)
+section, and flip on each option only when you have a concrete page
+that needs it.

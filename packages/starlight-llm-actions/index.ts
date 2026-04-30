@@ -2,6 +2,7 @@ import type { AstroIntegration } from 'astro';
 import type { StarlightPlugin } from '@astrojs/starlight/types';
 import {
   markdownUrlToRoutePattern,
+  parseConfig,
   resolveConfig,
   type ResolvedConfig,
 } from './config/resolve.js';
@@ -10,7 +11,10 @@ import { virtualConfigPlugin } from './internal/virtual-module.js';
 
 export type { StarlightLlmActionsConfig } from './config/schema.js';
 
-function createAstroIntegration(resolved: ResolvedConfig): AstroIntegration {
+function createAstroIntegration(
+  resolved: ResolvedConfig,
+  parsed: StarlightLlmActionsConfig,
+): AstroIntegration {
   return {
     name: 'starlight-llm-actions',
     hooks: {
@@ -24,7 +28,7 @@ function createAstroIntegration(resolved: ResolvedConfig): AstroIntegration {
         }
         updateConfig({
           vite: {
-            plugins: [virtualConfigPlugin(resolved)],
+            plugins: [virtualConfigPlugin(resolved, parsed)],
           },
         });
       },
@@ -39,7 +43,8 @@ export default function starlightLlmActions(
     name: 'starlight-llm-actions',
     hooks: {
       'config:setup'({ config, updateConfig, addIntegration, logger }) {
-        const resolved = resolveConfig(userConfig);
+        const parsed = parseConfig(userConfig);
+        const resolved = resolveConfig(parsed);
 
         const existingComponents = config.components ?? {};
         if (existingComponents.PageTitle) {
@@ -57,7 +62,7 @@ export default function starlightLlmActions(
           });
         }
 
-        addIntegration(createAstroIntegration(resolved));
+        addIntegration(createAstroIntegration(resolved, parsed));
       },
     },
   };

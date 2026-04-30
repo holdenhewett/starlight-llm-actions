@@ -1,9 +1,31 @@
 ---
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import PageActions from '../components/PageActions.astro';
-import config from 'virtual:starlight-llm-actions/config';
+import globalConfig, { parsed as parsedGlobal } from 'virtual:starlight-llm-actions/config';
+import { resolveConfig } from '../config/resolve';
+import { mergePageOverride, PageOverrideSchema } from '../config/pageOverride';
 
-const { printNotice } = config;
+// Mirror the per-page config resolution from PageActions.astro so the print
+// banner honors per-page overrides like `printNotice: false`. PageActions and
+// PageTitle each render independently, so each must apply overrides itself.
+const route = Astro.locals.starlightRoute;
+let config = globalConfig;
+let optedOut = false;
+
+if (globalConfig.pageOptOut !== false) {
+  // @ts-expect-error — user-defined frontmatter field, not in DocsSchema.
+  const rawOverride = route?.entry?.data?.[globalConfig.pageOptOut];
+  if (rawOverride !== undefined) {
+    const parsed = PageOverrideSchema.parse(rawOverride);
+    if (parsed === false) {
+      optedOut = true;
+    } else if (parsed !== true) {
+      config = resolveConfig(mergePageOverride(parsedGlobal, parsed));
+    }
+  }
+}
+
+const printNotice = optedOut ? null : config.printNotice;
 const branding = printNotice?.branding ?? null;
 const warning = printNotice?.warning ?? null;
 ---
