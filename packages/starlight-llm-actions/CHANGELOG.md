@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.2.0...v0.2.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* **plugin:** preserve user component overrides when injecting PageTitle ([#20](https://github.com/holdenhewett/starlight-llm-actions/issues/20)) ([afb0094](https://github.com/holdenhewett/starlight-llm-actions/commit/afb00943ce90b667c8c15a868a11c29aab1fab83))
+
 ## [0.2.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.1.1...v0.2.0) (2026-04-29)
 
 
