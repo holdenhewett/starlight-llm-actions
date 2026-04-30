@@ -1,23 +1,48 @@
 ---
 title: Providers
-description: The seven built-in LLM providers and how to customise them.
+description: Built-in LLM providers, defaults, and per-provider customisation.
 ---
 
-The plugin ships with seven built-in providers, each with a sensible default
-strategy and URL template. This page lists every default and the fields you
-can override.
+The plugin ships with **sixteen** built-in providers. Five of them are enabled
+by default; the rest are off by default and can be opted into with a single
+line of config. This page lists every default and every field you can override.
 
-## The matrix
+## Defaults at a glance
 
-| Provider | Strategy | URL template | Notes |
-| --- | --- | --- | --- |
-| **ChatGPT** | `url-prompt` | `https://chatgpt.com/?q={prompt}` | Auto-submits |
-| **Perplexity** | `url-prompt` | `https://www.perplexity.ai/?q={prompt}` | |
-| **T3 Chat** | `url-prompt` | `https://t3.chat/new?q={prompt}` | Path must be `/new` |
-| **Cursor** | `inline-content` | `https://cursor.com/link/prompt?text={prompt_with_markdown}` | 8 KB cap, falls back to `url-prompt` |
-| **Claude** | `clipboard-open` | `https://claude.ai/new` | Copy + open |
-| **Gemini** | `clipboard-open` | `https://gemini.google.com/app` | Copy + open |
-| **GitHub Copilot** | `clipboard-open` | `https://github.com/copilot` | Copy + open |
+The five providers that appear in the dropdown out of the box:
+
+| Provider | Strategy | URL template |
+| --- | --- | --- |
+| **ChatGPT** | `url-prompt` | `https://chatgpt.com/?q={prompt}` |
+| **Claude** | `clipboard-open` | `https://claude.ai/new` |
+| **Gemini** | `clipboard-open` | `https://gemini.google.com/app` |
+| **GitHub Copilot** | `url-prompt` | `https://github.com/copilot?prompt={prompt}` |
+| **Perplexity** | `url-prompt` | `https://www.perplexity.ai/?q={prompt}` |
+
+These five are the largest providers by user base; the goal is to keep the
+default dropdown short and recognisable. To use any other provider, opt in
+explicitly (see [Opting in to a provider](#opting-in-to-a-provider)).
+
+## The full catalog
+
+| Provider | Default | Strategy | URL template | Notes |
+| --- | --- | --- | --- | --- |
+| **ChatGPT** | ✅ on | `url-prompt` | `https://chatgpt.com/?q={prompt}` | Auto-submits |
+| **Claude** | ✅ on | `clipboard-open` | `https://claude.ai/new` | Web prefill broken Oct 2025 |
+| **Gemini** | ✅ on | `clipboard-open` | `https://gemini.google.com/app` | No native prefill |
+| **GitHub Copilot** | ✅ on | `url-prompt` | `https://github.com/copilot?prompt={prompt}` | Officially documented |
+| **Perplexity** | ✅ on | `url-prompt` | `https://www.perplexity.ai/?q={prompt}` | |
+| **Google AI Studio** | off | `url-prompt` | `https://ai.studio/prompts/new_chat?prompt={prompt}` | |
+| **Cursor** | off | `inline-content` | `https://cursor.com/link/prompt?text={prompt_with_markdown}` | 8 KB cap, falls back to `url-prompt` |
+| **DeepSeek** | off | `clipboard-open` | `https://chat.deepseek.com/` | No prefill |
+| **DuckDuckGo AI Chat** | off | `url-prompt` | `https://duckduckgo.com/?q={prompt}&ia=chat&duckai=1` | |
+| **Grok** | off | `url-prompt` | `https://grok.com/?q={prompt}` | |
+| **HuggingChat** | off | `clipboard-open` | `https://huggingface.co/chat/` | No prefill |
+| **Kagi Assistant** | off | `url-prompt` | `https://kagi.com/assistant?q={prompt}` | Subscribers only |
+| **Mistral Le Chat** | off | `clipboard-open` | `https://chat.mistral.ai/chat` | No prefill |
+| **Phind** | off | `clipboard-open` | `https://www.phind.com/agent` | No prefill |
+| **T3 Chat** | off | `url-prompt` | `https://t3.chat/new?q={prompt}` | Path must be `/new` |
+| **You.com** | off | `url-prompt` | `https://you.com/search?q={prompt}` | |
 
 For why each provider uses its assigned strategy, see
 [Concepts: per-provider strategies](/starlight-llm-actions/getting-started/concepts/#strategies).
@@ -26,17 +51,60 @@ For why each provider uses its assigned strategy, see
 
 When configuring `providers`, use these exact ids:
 
+- `aistudio` — Google AI Studio
 - `chatgpt`
 - `claude`
-- `gemini`
-- `copilot`
-- `perplexity`
-- `t3chat`
+- `copilot` — GitHub Copilot
 - `cursor`
+- `deepseek`
+- `duckduckgo`
+- `gemini`
+- `grok`
+- `huggingchat`
+- `kagi`
+- `mistral` — Mistral Le Chat
+- `perplexity`
+- `phind`
+- `t3chat`
+- `youcom` — You.com
+
+## Opting in to a provider
+
+Default-off providers must be opted into explicitly. Pass `true` for the
+shortest form:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        cursor: true,
+        t3chat: true,
+        kagi: true,
+      },
+    },
+  },
+})
+```
+
+Or pass an override object — that also opts the provider in:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        cursor: { maxBytes: 4000 },
+      },
+    },
+  },
+})
+```
 
 ## Disabling providers
 
-Pass `false` for any provider to remove it from the submenu:
+Pass `false` for any provider — including default-on ones — to remove it from
+the submenu:
 
 ```js
 starlightLlmActions({
@@ -141,6 +209,10 @@ starlightLlmActions({
 - An absolute URL.
 - `false` — hide the icon.
 
+A handful of providers (Google AI Studio, Grok, Phind, You.com) ship with the
+generic `chat-bubble.svg` because Simple Icons doesn't carry an official mark
+for them. Override `providers.<id>.icon` if you have your own asset.
+
 ### Per-provider prompts
 
 Each provider can use a different prompt:
@@ -171,9 +243,10 @@ providers.
 
 ## Trademark and branding note
 
-Brand names (ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity, T3 Chat,
-Cursor) and marks remain trademarks of their respective owners and appear
-nominatively in the plugin only to identify the linked services. No
-endorsement is implied. The bundled icons are from
+Brand names (ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity, Cursor,
+T3 Chat, Google AI Studio, DeepSeek, DuckDuckGo, Grok, HuggingChat, Kagi,
+Mistral, Phind, You.com) and marks remain trademarks of their respective
+owners and appear nominatively in the plugin only to identify the linked
+services. No endorsement is implied. The bundled icons are from
 [Simple Icons](https://simpleicons.org/) under CC0; to use official brand
 assets, override `providers.<id>.icon`.

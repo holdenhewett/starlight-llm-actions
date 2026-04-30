@@ -17,7 +17,8 @@ starlightLlmActions({
 ### `actions`
 
 - **Type:** [`ActionsConfig`](#actionsconfig)
-- **Default:** all on except `printPdf` (off), all built-in providers enabled
+- **Default:** all on except `printPdf` (off); five built-in providers enabled
+  by default — see [Providers](/starlight-llm-actions/configuration/providers/#defaults-at-a-glance)
 
 Controls which dropdown items render and how the **Open in…** submenu
 behaves. See [`ActionsConfig`](#actionsconfig) below.
@@ -183,8 +184,8 @@ always reachable via Cmd/Ctrl+P. See
 - **Type:** `boolean | OpenInConfig`
 - **Default:** `true`
 
-The **Open in…** submenu. `true` enables all providers with defaults; `false`
-removes the submenu. An [`OpenInConfig`](#openinconfig) object lets you
+The **Open in…** submenu. `true` enables the five default-on providers;
+`false` removes the submenu. An [`OpenInConfig`](#openinconfig) object lets you
 relabel the submenu and configure providers individually.
 
 ## `OpenInConfig`
@@ -216,7 +217,8 @@ Submenu label.
 ### `openIn.providers`
 
 - **Type:** [`ProvidersConfig`](#providers)
-- **Default:** all seven built-in providers enabled
+- **Default:** five default-on providers enabled (ChatGPT, Claude, Gemini,
+  GitHub Copilot, Perplexity); the other eleven are off until opted into.
 
 Per-provider configuration. See [`providers`](#providers) below.
 
@@ -224,24 +226,36 @@ Per-provider configuration. See [`providers`](#providers) below.
 
 Object keyed by provider id. Each value is either:
 
-- `true` — enable with defaults.
+- `true` — enable with defaults. Required for default-off providers.
 - `false` — disable.
 - A [`ProviderOverride`](#provideroverride) object — customise label, prompt,
-  URL template, strategy, etc.
+  URL template, strategy, etc. Also opts in any default-off provider.
+- `undefined` (omitted) — provider keeps its built-in default state.
 
 ```ts
 interface ProvidersConfig {
+  // Default-on
   chatgpt?:    boolean | ProviderOverride;
   claude?:     boolean | ProviderOverride;
-  gemini?:     boolean | ProviderOverride;
   copilot?:    boolean | ProviderOverride;
+  gemini?:     boolean | ProviderOverride;
   perplexity?: boolean | ProviderOverride;
-  t3chat?:     boolean | ProviderOverride;
-  cursor?:     boolean | ProviderOverride;
+  // Default-off (opt in with `true` or an override object)
+  aistudio?:    boolean | ProviderOverride;
+  cursor?:      boolean | ProviderOverride;
+  deepseek?:    boolean | ProviderOverride;
+  duckduckgo?:  boolean | ProviderOverride;
+  grok?:        boolean | ProviderOverride;
+  huggingchat?: boolean | ProviderOverride;
+  kagi?:        boolean | ProviderOverride;
+  mistral?:     boolean | ProviderOverride;
+  phind?:       boolean | ProviderOverride;
+  t3chat?:      boolean | ProviderOverride;
+  youcom?:      boolean | ProviderOverride;
 }
 ```
 
-For the seven built-in providers and their defaults, see
+For the full catalog and per-provider defaults, see
 [Configuration: Providers](/starlight-llm-actions/configuration/providers/).
 
 ## `ProviderOverride`

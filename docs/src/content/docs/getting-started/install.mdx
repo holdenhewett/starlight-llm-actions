@@ -54,7 +54,11 @@ page, with these defaults:
 - **Copy as Markdown** ✅ on
 - **View as Markdown** ✅ on
 - **Download as PDF** ❌ off (see [Print PDF](/starlight-llm-actions/actions/print-pdf/))
-- **Open in…** ✅ on, with all seven providers enabled
+- **Open in…** ✅ on, with five providers enabled by default (ChatGPT,
+  Claude, Gemini, GitHub Copilot, Perplexity). Eleven more (Cursor, T3 Chat,
+  DeepSeek, DuckDuckGo, Grok, HuggingChat, Kagi, Mistral, Phind, You.com,
+  Google AI Studio) are off by default; opt in via
+  [`providers`](/starlight-llm-actions/configuration/providers/#opting-in-to-a-provider).
 
 ## 3. Verify the install
 
@@ -82,7 +86,8 @@ The plugin does three things behind the scenes:
 2. **Injects a markdown route** at `/[slug].md` (configurable via
    [`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl))
    that serves the page's body as `text/markdown`.
-3. **Bundles seven provider icons** (Simple Icons CC0) and the small client-side
+3. **Bundles provider icons** (Simple Icons CC0; a generic chat-bubble glyph
+   for providers without a Simple Icons mark) and the small client-side
    script that runs the per-provider strategy.
 
 ## Troubleshooting

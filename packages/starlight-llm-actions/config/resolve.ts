@@ -216,6 +216,10 @@ function resolveProvider(
   if (userValue === false) return null;
 
   const builtin = BUILTIN_PROVIDERS[id];
+
+  // Default-off providers must be explicitly opted into (true, or any object).
+  if (userValue === undefined && !builtin.enabledByDefault) return null;
+
   const override =
     userValue === undefined || userValue === true ? {} : userValue;
   if (override.enabled === false) return null;

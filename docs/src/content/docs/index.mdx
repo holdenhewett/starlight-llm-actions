@@ -3,7 +3,7 @@ title: starlight-llm-actions
 description: Page Actions dropdown for Starlight — copy, view, save as PDF, and open in any LLM.
 template: splash
 hero:
-  tagline: A Page Actions dropdown for Starlight. Copy as Markdown, view raw, save as PDF, or open the current page in ChatGPT, Claude, Gemini, Copilot, Perplexity, T3 Chat, or Cursor.
+  tagline: A Page Actions dropdown for Starlight. Copy as Markdown, view raw, save as PDF, or open the current page in ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity, and a dozen other LLM chats.
   actions:
     - text: Get started
       link: /starlight-llm-actions/getting-started/install/
@@ -22,8 +22,9 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
   </Card>
   <Card title="Per-provider strategies" icon="setting">
     Each LLM gets the most reliable open-in path: prefilled URL where
-    supported (ChatGPT, Perplexity, T3 Chat, Cursor), copy-and-open
-    fallback where it isn't (Claude, Gemini, Copilot).
+    supported (ChatGPT, Perplexity, GitHub Copilot, T3 Chat, Cursor),
+    copy-and-open fallback where it isn't (Claude, Gemini, DeepSeek,
+    Mistral, and friends).
   </Card>
   <Card title="Print-aware snapshots" icon="document">
     Optional snapshot disclaimer renders only in `@media print`, with

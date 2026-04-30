@@ -12,7 +12,12 @@ at build time.
 | `githubcopilot.svg` | [Simple Icons](https://simpleicons.org/?q=copilot) | `githubcopilot` | CC0 1.0 |
 | `perplexity.svg` | [Simple Icons](https://simpleicons.org/?q=perplexity) | `perplexity` | CC0 1.0 |
 | `cursor.svg` | [Simple Icons](https://simpleicons.org/?q=cursor) | `cursor` | CC0 1.0 |
-| `chat-bubble.svg` | Original (generic glyph; fallback for ChatGPT and T3 Chat) | — | MIT (this repo) |
+| `deepseek.svg` | [Simple Icons](https://simpleicons.org/?q=deepseek) | `deepseek` | CC0 1.0 |
+| `duckduckgo.svg` | [Simple Icons](https://simpleicons.org/?q=duckduckgo) | `duckduckgo` | CC0 1.0 |
+| `huggingface.svg` | [Simple Icons](https://simpleicons.org/?q=huggingface) | `huggingface` | CC0 1.0 |
+| `kagi.svg` | [Simple Icons](https://simpleicons.org/?q=kagi) | `kagi` | CC0 1.0 |
+| `mistral.svg` | [Simple Icons](https://simpleicons.org/?q=mistral) | `mistralai` | CC0 1.0 |
+| `chat-bubble.svg` | Original (generic glyph; fallback for ChatGPT, T3 Chat, Phind, Grok, Google AI Studio, You.com) | — | MIT (this repo) |
 
 All Simple Icons SVGs are post-processed:
 
@@ -27,13 +32,16 @@ All Simple Icons SVGs are post-processed:
 
 ```sh
 # In packages/starlight-llm-actions/icons/
-for slug in claude googlegemini githubcopilot perplexity cursor; do
+for slug in claude googlegemini githubcopilot perplexity cursor deepseek duckduckgo huggingface kagi mistralai; do
+  # Save `mistralai` as `mistral.svg`; everything else uses the slug verbatim.
+  out="${slug}.svg"
+  [ "$slug" = "mistralai" ] && out="mistral.svg"
   curl -s "https://cdn.simpleicons.org/$slug" \
     | sed -e 's/<title>[^<]*<\/title>//' \
           -e 's/<svg /<svg fill="currentColor" /' \
           -e 's/ width="[0-9]*"//' \
           -e 's/ height="[0-9]*"//' \
-    > "$slug.svg"
+    > "$out"
 done
 ```
 

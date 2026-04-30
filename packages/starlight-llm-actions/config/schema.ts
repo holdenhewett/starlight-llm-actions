@@ -26,13 +26,22 @@ const ProviderConfigSchema = z.union([z.boolean(), ProviderOverrideSchema]);
 
 const ProvidersConfigSchema = z
   .object({
+    aistudio: ProviderConfigSchema.optional(),
     chatgpt: ProviderConfigSchema.optional(),
     claude: ProviderConfigSchema.optional(),
-    gemini: ProviderConfigSchema.optional(),
     copilot: ProviderConfigSchema.optional(),
-    perplexity: ProviderConfigSchema.optional(),
-    t3chat: ProviderConfigSchema.optional(),
     cursor: ProviderConfigSchema.optional(),
+    deepseek: ProviderConfigSchema.optional(),
+    duckduckgo: ProviderConfigSchema.optional(),
+    gemini: ProviderConfigSchema.optional(),
+    grok: ProviderConfigSchema.optional(),
+    huggingchat: ProviderConfigSchema.optional(),
+    kagi: ProviderConfigSchema.optional(),
+    mistral: ProviderConfigSchema.optional(),
+    perplexity: ProviderConfigSchema.optional(),
+    phind: ProviderConfigSchema.optional(),
+    t3chat: ProviderConfigSchema.optional(),
+    youcom: ProviderConfigSchema.optional(),
   })
   .strict();
 
@@ -147,13 +156,22 @@ export type StarlightLlmActionsConfig = z.input<
 >;
 
 export type ProviderId =
+  | 'aistudio'
   | 'chatgpt'
   | 'claude'
-  | 'gemini'
   | 'copilot'
+  | 'cursor'
+  | 'deepseek'
+  | 'duckduckgo'
+  | 'gemini'
+  | 'grok'
+  | 'huggingchat'
+  | 'kagi'
+  | 'mistral'
   | 'perplexity'
+  | 'phind'
   | 't3chat'
-  | 'cursor';
+  | 'youcom';
 
 export type Strategy = z.infer<typeof StrategyEnum>;
 
@@ -172,13 +190,22 @@ export interface ProviderOverride {
 export type ProviderConfig = boolean | ProviderOverride;
 
 export interface ProvidersConfig {
+  aistudio?: ProviderConfig;
   chatgpt?: ProviderConfig;
   claude?: ProviderConfig;
-  gemini?: ProviderConfig;
   copilot?: ProviderConfig;
-  perplexity?: ProviderConfig;
-  t3chat?: ProviderConfig;
   cursor?: ProviderConfig;
+  deepseek?: ProviderConfig;
+  duckduckgo?: ProviderConfig;
+  gemini?: ProviderConfig;
+  grok?: ProviderConfig;
+  huggingchat?: ProviderConfig;
+  kagi?: ProviderConfig;
+  mistral?: ProviderConfig;
+  perplexity?: ProviderConfig;
+  phind?: ProviderConfig;
+  t3chat?: ProviderConfig;
+  youcom?: ProviderConfig;
 }
 
 export interface OpenInConfig {

@@ -23,7 +23,9 @@ https://chatgpt.com/?q=<URL-encoded prompt>
 …and opens it in a new tab. The user lands directly in a session with a
 prefilled message they can submit.
 
-**Used by:** ChatGPT, Perplexity, T3 Chat, Cursor (when under the byte cap).
+**Used by:** ChatGPT, Perplexity, GitHub Copilot, T3 Chat, Cursor (when under
+the byte cap), Grok, DuckDuckGo AI Chat, Kagi Assistant, Google AI Studio,
+You.com.
 
 ### `clipboard-open`
 
@@ -36,7 +38,7 @@ The user pastes once. This is more friction than `url-prompt`, but it's the
 only honest path for providers without URL prefill — anything else would
 silently drop the page context.
 
-**Used by:** Claude, Gemini, GitHub Copilot.
+**Used by:** Claude, Gemini, DeepSeek, Mistral Le Chat, HuggingChat, Phind.
 
 ### `inline-content`
 
@@ -95,14 +97,14 @@ The customised prompt is what gets URL-encoded into the `url-prompt` and
 Strategy choice is shaped by what each provider currently supports — not by
 what would make our integration code simpler. As of late 2025 / early 2026:
 
-- **ChatGPT, Perplexity, T3 Chat** all expose `?q=` query-string prefills
-  that auto-populate the input box. `url-prompt` is the cleanest experience
-  here.
-- **Claude.ai's** `?q=` parameter broke in October 2025; the desktop deep-link
-  works but only on installed clients. **Gemini** has no documented prefill.
-  **Copilot's** `?prompt=` parameter is undocumented and not stable enough to
-  rely on. For these three, `clipboard-open` is the only path that always
-  preserves context.
+- **ChatGPT, Perplexity, T3 Chat, GitHub Copilot, Grok, DuckDuckGo, Kagi,
+  Google AI Studio, You.com** all expose query-string prefills (`?q=`,
+  `?prompt=`, etc.) that auto-populate the input box. `url-prompt` is the
+  cleanest experience here. GitHub Copilot's `?prompt=` parameter was
+  officially documented in December 2025.
+- **Claude.ai's** `?q=` parameter broke in October 2025. **Gemini, DeepSeek,
+  Mistral, HuggingChat, Phind** have no documented prefill. For these,
+  `clipboard-open` is the only path that always preserves context.
 - **Cursor** uniquely supports `inline-content` via its
   [official deeplinks API](https://docs.cursor.com/en/get-started/deeplinks),
   with an 8 KB cap.
