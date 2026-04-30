@@ -36,8 +36,12 @@ for slug in claude googlegemini githubcopilot perplexity cursor deepseek duckduc
   # Save `mistralai` as `mistral.svg`; everything else uses the slug verbatim.
   out="${slug}.svg"
   [ "$slug" = "mistralai" ] && out="mistral.svg"
+  # The CDN already includes `fill="currentColor"`, so strip any existing
+  # fill on `<svg>` first, then add ours back. Idempotent on re-runs even
+  # if the CDN's default attributes change.
   curl -s "https://cdn.simpleicons.org/$slug" \
     | sed -e 's/<title>[^<]*<\/title>//' \
+          -e 's/<svg [^>]*fill="[^"]*"/<svg/' \
           -e 's/<svg /<svg fill="currentColor" /' \
           -e 's/ width="[0-9]*"//' \
           -e 's/ height="[0-9]*"//' \
