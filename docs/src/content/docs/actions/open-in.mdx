@@ -1,31 +1,36 @@
 ---
 title: Open in…
-description: Send the current page to ChatGPT, Claude, Gemini, Copilot, Perplexity, T3 Chat, or Cursor.
+description: Send the current page to ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity, and 11 other LLM chats.
 ---
 
 The **Open in…** group is the heart of the plugin: a submenu that opens the
-current page in any of seven LLMs, using the most reliable strategy each
+current page in your chosen LLM chat, using the most reliable strategy each
 provider supports today.
 
-## Built-in providers
+The plugin ships with **sixteen** built-in providers. Five are enabled by
+default; the rest are off by default and opt-in.
+
+## Default-on providers
 
 | Provider | Strategy | Notes |
 | --- | --- | --- |
 | ChatGPT | `url-prompt` | `chatgpt.com/?q=` prefill |
-| Perplexity | `url-prompt` | `perplexity.ai/?q=` prefill |
-| T3 Chat | `url-prompt` | `t3.chat/new?q=` prefill |
-| Cursor | `inline-content` | `cursor.com/link/prompt?text=`; falls back to `url-prompt` over 8 KB |
 | Claude | `clipboard-open` | Copies prompt, opens `claude.ai/new` |
 | Gemini | `clipboard-open` | Copies prompt, opens `gemini.google.com/app` |
-| GitHub Copilot | `clipboard-open` | Copies prompt, opens `github.com/copilot` |
+| GitHub Copilot | `url-prompt` | `github.com/copilot?prompt=` prefill |
+| Perplexity | `url-prompt` | `perplexity.ai/?q=` prefill |
+
+For the full catalog (including Cursor, T3 Chat, DeepSeek, DuckDuckGo AI Chat,
+Grok, HuggingChat, Kagi, Mistral, Phind, You.com, and Google AI Studio), see
+[Configuration: Providers](/starlight-llm-actions/configuration/providers/#the-full-catalog).
 
 For an explanation of each strategy and *why* the per-provider choice was
 made, see [Concepts: per-provider strategies](/starlight-llm-actions/getting-started/concepts/#strategies).
 
 ## Default behaviour
 
-With no configuration, all seven providers are enabled and the submenu is
-labelled **Open in…**.
+With no configuration, the five default-on providers are enabled and the
+submenu is labelled **Open in…**.
 
 ```js
 starlightLlmActions()
@@ -61,6 +66,25 @@ starlightLlmActions({
 })
 ```
 
+## Opt in to default-off providers
+
+Default-off providers (Cursor, T3 Chat, Kagi, Grok, etc.) require an explicit
+`true` (or an override object) to appear in the submenu:
+
+```js
+starlightLlmActions({
+  actions: {
+    openIn: {
+      providers: {
+        cursor: true,
+        t3chat: true,
+        kagi: true,
+      },
+    },
+  },
+})
+```
+
 ## Customise a provider
 
 Each provider accepts a full
@@ -76,6 +100,7 @@ starlightLlmActions({
           prompt: 'Summarise the linked Acme docs page: {url}',
         },
         cursor: {
+          // Passing an override object also opts a default-off provider in.
           maxBytes: 4000, // tighter cap than the 8 KB default
           fallbackStrategy: 'clipboard-open',
         },

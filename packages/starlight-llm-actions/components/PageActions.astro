@@ -148,32 +148,34 @@ function getImageIcon(value: string | false): string | null {
               Copies page as Markdown to your clipboard
             </div>
           )}
-          {openIn.providers.map((p) => {
-            const inlineIcon = getInlineIcon(p.icon);
-            const imageIcon = getImageIcon(p.icon);
-            return (
-              <button class="page-actions-item" role="menuitem" tabindex="-1"
-                data-action="provider"
-                data-provider-id={p.id}
-                data-strategy={p.strategy}
-                data-prompt={p.prompt}
-                data-url-template={p.urlTemplate}
-                data-max-bytes={p.maxBytes ?? ''}
-                data-fallback-strategy={p.fallbackStrategy ?? ''}
-              >
-                {p.icon !== false && (
-                  <span class="item-icon">
-                    {inlineIcon && <Fragment set:html={inlineIcon} />}
-                    {imageIcon && <img src={imageIcon} alt="" width="16" height="16" />}
+          <div class="openin-list">
+            {openIn.providers.map((p) => {
+              const inlineIcon = getInlineIcon(p.icon);
+              const imageIcon = getImageIcon(p.icon);
+              return (
+                <button class="page-actions-item" role="menuitem" tabindex="-1"
+                  data-action="provider"
+                  data-provider-id={p.id}
+                  data-strategy={p.strategy}
+                  data-prompt={p.prompt}
+                  data-url-template={p.urlTemplate}
+                  data-max-bytes={p.maxBytes ?? ''}
+                  data-fallback-strategy={p.fallbackStrategy ?? ''}
+                >
+                  {p.icon !== false && (
+                    <span class="item-icon">
+                      {inlineIcon && <Fragment set:html={inlineIcon} />}
+                      {imageIcon && <img src={imageIcon} alt="" width="16" height="16" />}
+                    </span>
+                  )}
+                  <span class="item-text">
+                    <span class="item-title">Open in {p.label}</span>
+                    <span class="item-desc">{p.description}</span>
                   </span>
-                )}
-                <span class="item-text">
-                  <span class="item-title">Open in {p.label}</span>
-                  <span class="item-desc">{p.description}</span>
-                </span>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </>
       )}
     </div>
@@ -238,6 +240,43 @@ function getImageIcon(value: string | false): string | null {
     border-radius: 0.75rem;
     background: var(--sl-color-bg-nav);
     box-shadow: var(--sl-shadow-lg);
+    /* Safety net for very short viewports — whole menu can scroll if even
+       the fixed sections plus a single provider would overflow. The
+       providers section has its own tighter cap below. */
+    max-height: calc(100vh - 5rem);
+    overflow-y: auto;
+  }
+
+  .openin-list {
+    /* Cap providers list at ~6 items on tall screens; shrink on small ones.
+       Section label and hint stay pinned outside this scroll area. */
+    max-height: min(50vh, 18rem);
+    overflow-y: auto;
+  }
+
+  /* Bottom-edge fade hints there's more below — only when actually scrollable
+     (toggled by JS so non-overflowing lists don't ghost their last item). */
+  .openin-list[data-scrollable="true"] {
+    mask-image: linear-gradient(to bottom, black calc(100% - 1rem), transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 1rem), transparent);
+  }
+
+  /* Slim, theme-aware scrollbar for both scroll containers. */
+  .page-actions-menu,
+  .openin-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sl-color-gray-5) transparent;
+  }
+
+  .page-actions-menu::-webkit-scrollbar,
+  .openin-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .page-actions-menu::-webkit-scrollbar-thumb,
+  .openin-list::-webkit-scrollbar-thumb {
+    background: var(--sl-color-gray-5);
+    border-radius: 3px;
   }
 
   .section-divider {
@@ -358,13 +397,21 @@ function getImageIcon(value: string | false): string | null {
 
       var trigger = container.querySelector('.page-actions-trigger');
       var menu = container.querySelector('.page-actions-menu');
+      var openinList = container.querySelector('.openin-list');
       var items = Array.prototype.slice.call(container.querySelectorAll('[role="menuitem"]'));
       var markdownHref = container.dataset.markdownHref || '';
+
+      function updateScrollAffordance() {
+        if (!openinList) return;
+        var scrollable = openinList.scrollHeight > openinList.clientHeight + 1;
+        openinList.setAttribute('data-scrollable', scrollable ? 'true' : 'false');
+      }
 
       function open() {
         container.dataset.state = 'open';
         trigger.setAttribute('aria-expanded', 'true');
         menu.removeAttribute('hidden');
+        updateScrollAffordance();
         if (items[0]) items[0].focus();
       }
 

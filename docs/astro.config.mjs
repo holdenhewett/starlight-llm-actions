@@ -22,6 +22,24 @@ export default defineConfig({
           actions: {
             // Re-enable PDF in the playground so the dropdown button is testable.
             printPdf: true,
+            openIn: {
+              // Playground only: opt in to every default-off provider so the
+              // full catalog is visible in the submenu. Real sites should pick
+              // the subset they actually want.
+              providers: {
+                aistudio: true,
+                cursor: true,
+                deepseek: true,
+                duckduckgo: true,
+                grok: true,
+                huggingchat: true,
+                kagi: true,
+                mistral: true,
+                phind: true,
+                t3chat: true,
+                youcom: true,
+              },
+            },
           },
           printNotice: {
             branding: {
