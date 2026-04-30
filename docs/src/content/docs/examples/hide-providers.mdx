@@ -1,0 +1,126 @@
+---
+title: 'Example: Hide specific providers'
+description: This page hides every provider except GitHub Copilot and Cursor.
+llmActions:
+  actions:
+    openIn:
+      providers:
+        chatgpt: false
+        claude: false
+        gemini: false
+        perplexity: false
+        aistudio: false
+        deepseek: false
+        duckduckgo: false
+        grok: false
+        huggingchat: false
+        kagi: false
+        mistral: false
+        phind: false
+        t3chat: false
+        youcom: false
+---
+
+:::tip[Try it on this page]
+Open the dropdown next to this page's title and expand **Open in…**.
+Only **GitHub Copilot** and **Cursor** appear — every other provider is
+hidden on this page.
+:::
+
+This page hides every provider in the **Open in…** submenu **except**
+GitHub Copilot and Cursor — a realistic "code-editor-only" scenario for
+SDK reference pages or internal docs where only sanctioned coding tools
+are approved.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: Hide specific providers'
+llmActions:
+  actions:
+    openIn:
+      providers:
+        chatgpt: false
+        claude: false
+        gemini: false
+        perplexity: false
+        aistudio: false
+        deepseek: false
+        duckduckgo: false
+        grok: false
+        huggingchat: false
+        kagi: false
+        mistral: false
+        phind: false
+        t3chat: false
+        youcom: false
+---
+```
+
+## What you should see
+
+Open the dropdown above and expand **Open in…**. Only two providers
+appear:
+
+- **GitHub Copilot**
+- **Cursor**
+
+Compare with [any other page](/starlight-llm-actions/getting-started/install/)
+on this site — there the submenu lists 16 providers.
+
+## What happens when you click each one
+
+### Click "Open in… → GitHub Copilot"
+
+Copilot uses the **`url-prompt`** strategy: the configured prompt is
+URL-encoded and appended to a deeplink that opens GitHub Copilot Chat
+with the prompt prefilled.
+
+A new tab opens at:
+
+```
+https://github.com/copilot?prompt=<encoded prompt referencing this page>
+```
+
+Copilot Chat loads in your browser with the prompt ready to send. You
+can edit it before sending or send it as-is.
+
+### Click "Open in… → Cursor"
+
+Cursor uses the **`inline-content`** strategy: the prompt **plus the
+page's full Markdown** is encoded into Cursor's deeplink so the
+desktop app receives the page content directly — no extra fetch
+needed.
+
+A new tab opens (and immediately hands off to the Cursor app) at:
+
+```
+https://cursor.com/link/prompt?text=<prompt + entire page markdown>
+```
+
+Cursor opens with both the prompt and the page's text in scope. Note:
+Cursor caps deeplinks at ~8KB; if a page exceeds that, the plugin falls
+back to the `url-prompt` strategy automatically (prompt only, no
+embedded markdown).
+
+## When to use this
+
+- **SDK reference pages** that should funnel users to a coding-focused
+  provider rather than a general-purpose chat.
+- **Internal-only pages** where only some LLM providers are approved
+  for use with this content.
+- **Compliance-sensitive sections** where third-party providers should
+  be hidden but a sanctioned tool (e.g. enterprise Copilot) stays.
+
+## Tip: this is the "inverted opt-in" pattern
+
+Per-page provider entries are a **partial overlay** — providers you
+don't mention inherit from the global config. So to hide everything
+except a few, you list every unwanted provider with `false`.
+
+This is verbose but explicit. The plugin doesn't currently expose a
+`providers.only: ['copilot', 'cursor']` shorthand. If your site needs
+this kind of allowlist on many pages, the cleanest pattern is to set
+the providers you want **off-by-default in the global config** and
+then opt them back in only on the pages where they're appropriate.

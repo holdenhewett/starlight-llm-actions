@@ -1,0 +1,40 @@
+---
+title: 'Example: Custom trigger label'
+description: This page renames the dropdown trigger to fit the page context.
+llmActions:
+  triggerLabel: 'Open this guide'
+---
+
+:::tip[Try it on this page]
+The dropdown trigger to the right of this page's title reads
+**Open this guide** instead of the site-wide default
+([Install](/starlight-llm-actions/getting-started/install/) shows the
+default for comparison). That's the only override on this page.
+:::
+
+This page sets a different label on the dropdown trigger button. The rest
+of the dropdown's behavior is unchanged.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: Custom trigger label'
+llmActions:
+  triggerLabel: 'Open this guide'
+---
+```
+
+## What you should see
+
+- The button next to the page title reads **Open this guide** instead of
+  the default label used everywhere else on the site.
+
+## When to use this
+
+- **Tutorial pages** where "Open this tutorial in…" reads more naturally
+  than the global default.
+- **Reference pages** where you want a verb that signals "interactive
+  exploration" rather than "copy this content."
+- **Localised pages** that need a different label without touching the
+  global config.

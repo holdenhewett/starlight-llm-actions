@@ -37,6 +37,8 @@
     "build": "tsc -p tsconfig.build.json --noCheck && node scripts/copy-assets.mjs",
     "dev": "tsc -p tsconfig.build.json --noCheck --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },
@@ -44,6 +46,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "default": "./dist/schema.js"
     },
     "./route": "./dist/route.ts",
     "./overrides/PageTitle.astro": "./dist/overrides/PageTitle.astro"
@@ -69,5 +75,8 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "devDependencies": {
+    "vitest": "^4.1.5"
   }
 }

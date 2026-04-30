@@ -82,7 +82,7 @@ export interface ResolvedConfig {
 
 const DEFAULT_PROMPT = 'Read {md_url}. I want to ask questions about it.';
 const DEFAULT_TRIGGER_LABEL = 'Copy page';
-const DEFAULT_OPEN_IN_LABEL = 'Open with';
+const DEFAULT_OPEN_IN_LABEL = 'Open in…';
 const DEFAULT_PAGE_OPT_OUT = 'llmActions';
 const DEFAULT_MARKDOWN_URL = '/{slug}.md';
 const DEFAULT_PRINT_NOTICE_TITLE = 'Documentation Snapshot';
@@ -93,10 +93,22 @@ const DEFAULT_PRINT_NOTICE_URL_LABEL = 'Live version: ';
 const DEFAULT_PRINT_NOTICE_DATE_LABEL = 'Exported: ';
 const DEFAULT_PRINT_NOTICE_LOGO_HEIGHT = '1.5rem';
 
+/**
+ * Validate a user config against the Zod schema and return the parsed shape.
+ * Exposed so that per-page code can layer a page override on top of the
+ * validated user config and re-run `resolveConfig` to produce a per-page
+ * `ResolvedConfig` — without re-parsing the global config from scratch.
+ */
+export function parseConfig(
+  userConfig: StarlightLlmActionsConfig = {},
+): StarlightLlmActionsConfig {
+  return StarlightLlmActionsConfigSchema.parse(userConfig);
+}
+
 export function resolveConfig(
   userConfig: StarlightLlmActionsConfig = {},
 ): ResolvedConfig {
-  const parsed = StarlightLlmActionsConfigSchema.parse(userConfig);
+  const parsed = parseConfig(userConfig);
 
   const prompt = parsed.prompt ?? DEFAULT_PROMPT;
   const triggerLabel = parsed.triggerLabel ?? DEFAULT_TRIGGER_LABEL;

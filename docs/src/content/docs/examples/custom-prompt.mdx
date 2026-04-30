@@ -1,0 +1,52 @@
+---
+title: 'Example: Custom prompt'
+description: This page sets a page-specific prompt that all providers receive.
+llmActions:
+  prompt: |
+    You are reading the Acme Cloud Auth product documentation.
+    Treat questions as scoped to Acme Cloud Auth unless told otherwise.
+    Page: {md_url}
+---
+
+:::tip[Try it on this page]
+Open the dropdown next to this page's title and click any provider in
+**Open in…**. The URL the provider opens carries this page's
+custom prompt — not the site-wide default.
+:::
+
+This page demonstrates the headline use case for per-page overrides: a
+**multi-product** documentation site where each product needs a different
+prompt to scope the LLM's context.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: Custom prompt'
+llmActions:
+  prompt: |
+    You are reading the Acme Cloud Auth product documentation.
+    Treat questions as scoped to Acme Cloud Auth unless told otherwise.
+    Page: {md_url}
+---
+```
+
+## What you should see
+
+- Open the dropdown above and pick any provider in the **Open in…** submenu.
+- The URL the provider opens contains an encoded prompt that starts with
+  `You are reading the Acme Cloud Auth product documentation`, not the
+  global default.
+
+## When to use this
+
+- **Multi-product sites:** scope each product's pages to their own context
+  so an LLM doesn't blur boundaries between products.
+- **Domain-specific sections:** API reference pages might want a prompt
+  oriented around code generation; conceptual pages might prefer plain-English
+  explanations.
+- **Personas:** prepend role/audience context (`You are helping a junior
+  engineer integrate the SDK…`).
+
+The `{md_url}` and `{url}` placeholders work the same as in the global
+[`prompt`](/starlight-llm-actions/configuration/reference/#prompt) option.

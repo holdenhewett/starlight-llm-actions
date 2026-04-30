@@ -1,0 +1,59 @@
+---
+title: 'Example: Per-provider prompt'
+description: This page sends one provider a different prompt from the others.
+llmActions:
+  prompt: 'General context for this page: {md_url}'
+  actions:
+    openIn:
+      providers:
+        cursor:
+          prompt: 'Use this docs page to scaffold an Acme SDK integration in a fresh project.'
+---
+
+:::tip[Try it on this page]
+Open the dropdown next to this page's title. Clicking **Cursor** sends a
+coding-focused prompt; clicking any other provider sends this page's
+general-purpose prompt.
+:::
+
+This page combines a page-level prompt **and** a per-provider prompt for
+Cursor specifically — the deepest layer of the precedence model.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: Per-provider prompt'
+llmActions:
+  prompt: 'General context for this page: {md_url}'
+  actions:
+    openIn:
+      providers:
+        cursor:
+          prompt: 'Use this docs page to scaffold an Acme SDK integration in a fresh project.'
+---
+```
+
+## What you should see
+
+- Click **Open in… → Cursor**: the prompt sent is the SDK-scaffolding one.
+- Click **Open in…** any other provider (ChatGPT, Claude, Gemini, …): the
+  prompt sent is the page-level "General context for this page" one.
+
+## When to use this
+
+- **Code editors get coding prompts.** Cursor / Copilot benefit from a
+  prompt focused on integration code; general-purpose chats benefit from a
+  conversational prompt.
+- **Demos vs. reference.** A demo page might prompt Cursor to "build the
+  example in a new project" while telling ChatGPT "explain this page line
+  by line."
+
+## How precedence works (most-specific wins)
+
+1. **Per-page + per-provider** prompt — what Cursor uses on this page.
+2. **Per-page** top-level prompt — what every other provider uses on this
+   page.
+3. **Global per-provider** prompt — would be used if no per-page prompt
+   were set for that provider.
+4. **Global** top-level prompt — final fallback.

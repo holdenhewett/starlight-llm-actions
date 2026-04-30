@@ -63,6 +63,8 @@ export default defineConfig({
           items: [
             { label: 'Install', slug: 'getting-started/install' },
             { label: 'Concepts', slug: 'getting-started/concepts' },
+            { label: 'Use cases', slug: 'getting-started/use-cases' },
+            { label: 'Default behavior', slug: 'getting-started/defaults' },
           ],
         },
         {
@@ -88,7 +90,20 @@ export default defineConfig({
             { label: 'Per-page opt-out', slug: 'guides/per-page-opt-out' },
           ],
         },
-        { label: 'Opt-out example', slug: 'opt-out' },
+        {
+          label: 'Examples',
+          items: [
+            { label: 'Overview', slug: 'examples' },
+            { label: 'Opt out entirely', slug: 'examples/opt-out' },
+            { label: 'Custom prompt', slug: 'examples/custom-prompt' },
+            { label: 'Custom trigger label', slug: 'examples/custom-trigger-label' },
+            { label: 'Hide specific providers', slug: 'examples/hide-providers' },
+            { label: 'Per-provider prompt', slug: 'examples/per-provider-prompt' },
+            { label: 'No PDF on this page', slug: 'examples/no-pdf' },
+            { label: 'No print notice', slug: 'examples/no-print-notice' },
+            { label: 'Mixed overrides', slug: 'examples/mixed' },
+          ],
+        },
       ],
     }),
   ],

@@ -1,0 +1,47 @@
+---
+title: 'Example: No PDF on this page'
+description: This page disables the Download as PDF item even though it's enabled globally.
+llmActions:
+  actions:
+    printPdf: false
+---
+
+:::tip[Try it on this page]
+Open the dropdown next to this page's title. The **Download as PDF**
+item is gone — it's disabled on this page only. Compare with
+[Install](/starlight-llm-actions/getting-started/install/), where the
+PDF item is back.
+:::
+
+This site has `printPdf: true` in its global config (see
+[`docs/astro.config.mjs`](https://github.com/holdenhewett/starlight-llm-actions/blob/main/docs/astro.config.mjs)),
+so the **Download as PDF** item appears on every page — except this one.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: No PDF on this page'
+llmActions:
+  actions:
+    printPdf: false
+---
+```
+
+## What you should see
+
+- The dropdown above does not include a **Download as PDF** item.
+- Visit any other page on this site (e.g. [Install](/starlight-llm-actions/getting-started/install/))
+  and **Download as PDF** is back.
+
+## When to use this
+
+- **Pages that don't print well:** interactive widgets, live demos, or
+  long index pages where a PDF export would be confusing.
+- **Pages with content that shouldn't be archived offline** (e.g. live
+  status dashboards or pages whose value depends on freshness).
+
+Note: hiding the dropdown's PDF button doesn't prevent users from printing
+via Cmd/Ctrl+P. To prevent printing entirely, scope the page's CSS with a
+`@media print { display: none }` rule on the body — out of scope for this
+plugin.

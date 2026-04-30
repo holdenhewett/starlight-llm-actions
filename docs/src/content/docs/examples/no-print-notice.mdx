@@ -1,0 +1,45 @@
+---
+title: 'Example: No print notice'
+description: This page suppresses the print/PDF snapshot warning even though it's enabled globally.
+llmActions:
+  printNotice: false
+---
+
+:::tip[Try it on this page]
+Press Cmd/Ctrl+P (or click **Download as PDF** in the dropdown next to
+this page's title). There's no "Documentation Snapshot" warning and no
+branding row above the H1 — both are suppressed on this page. Print
+[Install](/starlight-llm-actions/getting-started/install/) for
+comparison: the warning and branding both appear.
+:::
+
+This site has [`printNotice`](/starlight-llm-actions/configuration/print-notice/)
+configured globally, so most pages show a snapshot warning when printed or
+exported as PDF. This page disables the notice for itself only.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: No print notice'
+llmActions:
+  printNotice: false
+---
+```
+
+## What you should see
+
+- Print this page (Cmd/Ctrl+P) or use the dropdown's **Download as PDF**
+  item: there is **no** "Documentation Snapshot" warning, **no** branding
+  row above the page H1.
+- Print [Install](/starlight-llm-actions/getting-started/install/) for
+  comparison: the warning and branding both appear.
+
+## When to use this
+
+- **Evergreen reference pages** whose content rarely changes — the snapshot
+  warning is pessimistic and may distract more than it helps.
+- **Marketing or front-matter pages** where branded printouts are the goal
+  and a warning admonition would clutter the layout.
+- **Print-targeted pages** like printable cheatsheets where you want a
+  clean export.

@@ -1,0 +1,51 @@
+---
+title: Examples
+description: Live example pages demonstrating each per-page override.
+---
+
+These pages use the per-page override feature to demonstrate what each
+override surface does. Each example sets a different `llmActions:`
+frontmatter shape; visit the page and compare its dropdown (or its absence)
+against any other page on this site.
+
+## What you can override per page
+
+Each frontmatter override is documented on its own example page. Open the
+page, click the dropdown, and inspect what changed.
+
+| Page | Frontmatter |
+|---|---|
+| [Opt out entirely](/starlight-llm-actions/examples/opt-out/) | `llmActions: false` |
+| [Custom prompt](/starlight-llm-actions/examples/custom-prompt/) | `llmActions: { prompt: '…' }` |
+| [Custom trigger label](/starlight-llm-actions/examples/custom-trigger-label/) | `llmActions: { triggerLabel: '…' }` |
+| [Hide specific providers](/starlight-llm-actions/examples/hide-providers/) | `llmActions.actions.openIn.providers.<id>: false` |
+| [Per-provider prompt](/starlight-llm-actions/examples/per-provider-prompt/) | `llmActions.actions.openIn.providers.<id>.prompt: '…'` |
+| [No PDF on this page](/starlight-llm-actions/examples/no-pdf/) | `llmActions.actions.printPdf: false` |
+| [No print notice](/starlight-llm-actions/examples/no-print-notice/) | `llmActions.printNotice: false` |
+| [Mixed overrides](/starlight-llm-actions/examples/mixed/) | combination of several |
+
+## How precedence works
+
+When a page sets a `prompt`, the layered precedence (most-specific wins) is:
+
+1. Per-page **and** per-provider prompt
+2. Per-page top-level prompt
+3. Global per-provider prompt
+4. Global top-level prompt
+
+So a page-level `prompt` overrides the global default, but does **not**
+override a per-provider prompt that was explicitly set in the global config.
+The [Per-provider prompt example](/starlight-llm-actions/examples/per-provider-prompt/)
+walks through this case.
+
+## Tip: use `llmActions: true` to document intent
+
+`llmActions: true` is the same as omitting the key — the page inherits the
+global config — but it lets you record intent in the frontmatter:
+
+```mdx
+---
+title: SDK quickstart
+llmActions: true # AI tools enabled here
+---
+```

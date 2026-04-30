@@ -1,0 +1,63 @@
+---
+title: 'Example: Mixed overrides'
+description: This page combines several per-page overrides at once.
+llmActions:
+  prompt: 'You are reading the Acme Edge networking docs. Page: {md_url}'
+  triggerLabel: 'Open this guide'
+  actions:
+    printPdf: false
+    openIn:
+      providers:
+        chatgpt: false
+        cursor:
+          prompt: 'Scaffold a new Acme Edge integration based on this page.'
+---
+
+:::tip[Try it on this page]
+Look at the dropdown next to this page's title. Its button reads
+**Open this guide**, the **Download as PDF** item is missing,
+**ChatGPT** is gone from the submenu, and clicking **Cursor** sends a
+different prompt than the others.
+:::
+
+This page is closer to a realistic per-page setup: it scopes the prompt to
+a specific product, renames the trigger button, hides the PDF item, drops
+ChatGPT from the submenu, and gives Cursor its own coding-focused prompt.
+
+## What's set
+
+```mdx title="this page's frontmatter"
+---
+title: 'Example: Mixed overrides'
+llmActions:
+  prompt: 'You are reading the Acme Edge networking docs. Page: {md_url}'
+  triggerLabel: 'Open this guide'
+  actions:
+    printPdf: false
+    openIn:
+      providers:
+        chatgpt: false
+        cursor:
+          prompt: 'Scaffold a new Acme Edge integration based on this page.'
+---
+```
+
+## What you should see
+
+- The dropdown's trigger button reads **Open this guide**.
+- The dropdown has no **Download as PDF** item.
+- The **Open in…** submenu is missing **ChatGPT**.
+- Clicking **Cursor** sends the SDK-scaffolding prompt.
+- Clicking any other provider sends the Acme Edge prompt.
+
+## Why this matters
+
+Each override is independent. Mix and match — page-level prompt **plus**
+per-provider prompt **plus** action toggles all coexist, with the
+[four-layer precedence rule](/starlight-llm-actions/examples/per-provider-prompt/#how-precedence-works-most-specific-wins)
+deciding the prompt sent to each provider.
+
+If a particular combination doesn't behave as you expect, file an
+[issue](https://github.com/holdenhewett/starlight-llm-actions/issues) with
+your frontmatter — the merge has unit tests for the documented precedence
+rules but new combinations are always worth verifying.
