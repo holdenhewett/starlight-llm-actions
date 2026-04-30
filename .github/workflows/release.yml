@@ -20,8 +20,8 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs['packages/starlight-llm-actions--tag_name'] }}
     steps:
       - id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
@@ -34,7 +34,7 @@ jobs:
     if: |
       always() &&
       (
-        (github.event_name == 'push' && needs.release-please.outputs.release_created == 'true') ||
+        (github.event_name == 'push' && needs.release-please.outputs.releases_created == 'true') ||
         (github.event_name == 'workflow_dispatch' && inputs.tag != '')
       )
     runs-on: ubuntu-latest
