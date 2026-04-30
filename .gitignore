@@ -9,3 +9,4 @@ dist/
 *.tsbuildinfo
 *.tgz
 coverage/
+.vscode/
