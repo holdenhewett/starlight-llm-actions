@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.2.1...v0.3.0) (2026-04-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **providers:** Cursor and T3 Chat are now default-off. Sites relying on them appearing automatically must opt in:
+
+### Features
+
+* **deps:** upgrade zod to v4 ([#23](https://github.com/holdenhewett/starlight-llm-actions/issues/23)) ([cbd7931](https://github.com/holdenhewett/starlight-llm-actions/commit/cbd7931a121d76bf68ced4b31d67fbf02eec6787))
+* **providers:** expand catalog to 16 LLM chat providers ([#25](https://github.com/holdenhewett/starlight-llm-actions/issues/25)) ([698fae8](https://github.com/holdenhewett/starlight-llm-actions/commit/698fae89f857351b4d34d2064fab4b8c7f6ce1da))
+
 ## [0.2.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.2.0...v0.2.1) (2026-04-29)
 
 
