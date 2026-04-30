@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.3.0...v0.4.0) (2026-04-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** Consumers must extend their content collection schema with `pageOverrideSchema` from `starlight-llm-actions/schema` for frontmatter overrides to type-check. Sites that don't use frontmatter overrides are unaffected at runtime.
+
+### Features
+
+* **config:** per-page overrides via frontmatter (closes [#26](https://github.com/holdenhewett/starlight-llm-actions/issues/26)) ([#27](https://github.com/holdenhewett/starlight-llm-actions/issues/27)) ([92bb3e4](https://github.com/holdenhewett/starlight-llm-actions/commit/92bb3e4832248fe4d06fc042daf7ed03c3186a32))
+
 ## [0.3.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.2.1...v0.3.0) (2026-04-30)
 
 
