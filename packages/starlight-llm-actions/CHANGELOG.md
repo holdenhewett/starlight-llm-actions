@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.5.0...v0.5.1) (2026-05-01)
+
+
+### Bug Fixes
+
+* exclude components/PageActions.astro from attw entrypoint checks ([#32](https://github.com/holdenhewett/starlight-llm-actions/issues/32)) ([6cb5b8e](https://github.com/holdenhewett/starlight-llm-actions/commit/6cb5b8e6ae42cc1f7d3c4a55f7a5872fc2079c82))
+
 ## [0.5.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.4.0...v0.5.0) (2026-05-01)
 
 
