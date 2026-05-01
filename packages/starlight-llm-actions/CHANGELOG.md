@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.4.0...v0.5.0) (2026-05-01)
+
+
+### Features
+
+* export standalone PageActions component and CSS variable system ([#30](https://github.com/holdenhewett/starlight-llm-actions/issues/30)) ([688a82f](https://github.com/holdenhewett/starlight-llm-actions/commit/688a82fa6571a26aa6e03b6157b18b93e24349f9))
+
 ## [0.4.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.3.0...v0.4.0) (2026-04-30)
 
 
