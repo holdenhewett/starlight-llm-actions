@@ -52,7 +52,8 @@
       "default": "./dist/schema.js"
     },
     "./route": "./dist/route.ts",
-    "./overrides/PageTitle.astro": "./dist/overrides/PageTitle.astro"
+    "./overrides/PageTitle.astro": "./dist/overrides/PageTitle.astro",
+    "./components/PageActions.astro": "./dist/components/PageActions.astro"
   },
   "files": [
     "dist",

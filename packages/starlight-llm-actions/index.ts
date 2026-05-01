@@ -14,11 +14,19 @@ export type { StarlightLlmActionsConfig } from './config/schema.js';
 function createAstroIntegration(
   resolved: ResolvedConfig,
   parsed: StarlightLlmActionsConfig,
+  pageTitleConflict: boolean,
 ): AstroIntegration {
   return {
     name: 'starlight-llm-actions',
     hooks: {
-      'astro:config:setup'({ injectRoute, updateConfig }) {
+      'astro:config:setup'({ injectRoute, updateConfig, command, logger }) {
+        if (pageTitleConflict && command === 'dev') {
+          logger.warn(
+            'A custom PageTitle override was detected. The automatic PageTitle injection has been skipped. ' +
+              'To use page actions, import the component directly in your PageTitle override:\n' +
+              "  import PageActions from 'starlight-llm-actions/components/PageActions.astro'",
+          );
+        }
         if (resolved.injectRoute) {
           injectRoute({
             pattern: markdownUrlToRoutePattern(resolved.markdownUrl),
@@ -42,18 +50,14 @@ export default function starlightLlmActions(
   return {
     name: 'starlight-llm-actions',
     hooks: {
-      'config:setup'({ config, updateConfig, addIntegration, logger }) {
+      'config:setup'({ config, updateConfig, addIntegration }) {
         const parsed = parseConfig(userConfig);
         const resolved = resolveConfig(parsed);
 
         const existingComponents = config.components ?? {};
-        if (existingComponents.PageTitle) {
-          logger.warn(
-            'Skipping `PageTitle` override: another plugin or your site config has already overridden it. ' +
-              'The Page Actions menu will not be rendered. ' +
-              "To keep the menu, render `starlight-llm-actions`'s `PageActions` component from inside your own `PageTitle` override.",
-          );
-        } else {
+        const pageTitleConflict = !!existingComponents.PageTitle;
+
+        if (!pageTitleConflict) {
           updateConfig({
             components: {
               ...existingComponents,
@@ -62,7 +66,7 @@ export default function starlightLlmActions(
           });
         }
 
-        addIntegration(createAstroIntegration(resolved, parsed));
+        addIntegration(createAstroIntegration(resolved, parsed, pageTitleConflict));
       },
     },
   };
