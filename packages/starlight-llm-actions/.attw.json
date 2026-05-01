@@ -1,5 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/arethetypeswrong/arethetypeswrong.github.io/main/packages/cli/attw.schema.json",
   "profile": "esm-only",
-  "excludeEntrypoints": ["./overrides/PageTitle.astro", "./route"]
+  "excludeEntrypoints": ["./overrides/PageTitle.astro", "./components/PageActions.astro", "./route"]
 }
