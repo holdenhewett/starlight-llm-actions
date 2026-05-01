@@ -125,7 +125,7 @@ The plugin scopes its styles with a set of `--llm-*` custom properties declared 
 | `--llm-text-sm` | `var(--sl-text-sm)` |
 | `--llm-text-xs` | `var(--sl-text-xs)` |
 | `--llm-radius` | `0.375rem` |
-| `--llm-shadow` | `none` |
+| `--llm-shadow` | `var(--sl-shadow-lg)` |
 
 Override any of these in your site's custom CSS to retheme the plugin without touching internal selectors:
 
