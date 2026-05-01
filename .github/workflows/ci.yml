@@ -43,5 +43,8 @@ jobs:
       - name: Lint package metadata (publint)
         run: pnpm --filter starlight-llm-actions exec publint .
 
+      - name: Verify type resolution (arethetypeswrong)
+        run: pnpm --filter starlight-llm-actions exec npx --yes -p @arethetypeswrong/cli attw --pack .
+
       - name: Build docs playground
         run: pnpm --filter docs build
