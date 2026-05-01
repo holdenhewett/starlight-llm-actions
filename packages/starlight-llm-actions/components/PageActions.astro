@@ -72,7 +72,7 @@ function getImageIcon(value: string | false): string | null {
 ---
 
 {!optedOut && renderMenu && (
-  <div class="page-actions" data-state="closed" data-markdown-href={markdownHref}>
+  <div class="page-actions sl-llm-actions" data-state="closed" data-markdown-href={markdownHref}>
     <button class="page-actions-trigger" type="button"
       aria-label={triggerLabel} aria-expanded="false" aria-haspopup="menu">
       <svg class="trigger-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"
@@ -198,6 +198,21 @@ function getImageIcon(value: string | false): string | null {
 )}
 
 <style>
+  /* Plugin-scoped design tokens. Override any of these on .sl-llm-actions to
+     retheme without touching internal selectors. */
+  .sl-llm-actions {
+    --llm-bg:        var(--sl-color-bg-nav);
+    --llm-text:      var(--sl-color-text);
+    --llm-text-muted: var(--sl-color-gray-3);
+    --llm-border:    var(--sl-color-hairline);
+    --llm-accent:    var(--sl-color-accent);
+    --llm-font:      var(--sl-font-system);
+    --llm-text-sm:   var(--sl-text-sm);
+    --llm-text-xs:   var(--sl-text-xs);
+    --llm-radius:    0.375rem;
+    --llm-shadow:    none;
+  }
+
   .page-actions {
     position: relative;
     flex-shrink: 0;
@@ -209,24 +224,24 @@ function getImageIcon(value: string | false): string | null {
     gap: 0.375rem;
     height: 2.25rem;
     padding: 0 0.625rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border: 1px solid var(--llm-border);
+    border-radius: var(--llm-radius);
     background: transparent;
-    color: var(--sl-color-white);
-    font-size: 0.8125rem;
-    font-family: inherit;
+    color: var(--llm-text);
+    font-size: var(--llm-text-sm);
+    font-family: var(--llm-font);
     cursor: pointer;
     transition: background-color 0.15s, border-color 0.15s;
     white-space: nowrap;
   }
 
   .page-actions-trigger:hover {
-    background: var(--sl-color-gray-5);
-    border-color: var(--sl-color-gray-4);
+    background: var(--llm-border);
+    border-color: var(--llm-border);
   }
 
   .page-actions-trigger:focus-visible {
-    outline: 2px solid var(--sl-color-accent);
+    outline: 2px solid var(--llm-accent);
     outline-offset: 2px;
   }
 
@@ -251,10 +266,10 @@ function getImageIcon(value: string | false): string | null {
     width: 280px;
     margin-top: 0.375rem;
     padding: 0.375rem;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
-    background: var(--sl-color-bg-nav);
-    box-shadow: var(--sl-shadow-lg);
+    border: 1px solid var(--llm-border);
+    border-radius: calc(var(--llm-radius) * 2);
+    background: var(--llm-bg);
+    box-shadow: var(--llm-shadow);
     /* Safety net for very short viewports — whole menu can scroll if even
        the fixed sections plus a single provider would overflow. The
        providers section has its own tighter cap below. */
@@ -280,7 +295,7 @@ function getImageIcon(value: string | false): string | null {
   .page-actions-menu,
   .openin-list {
     scrollbar-width: thin;
-    scrollbar-color: var(--sl-color-gray-5) transparent;
+    scrollbar-color: var(--llm-border) transparent;
   }
 
   .page-actions-menu::-webkit-scrollbar,
@@ -290,31 +305,31 @@ function getImageIcon(value: string | false): string | null {
 
   .page-actions-menu::-webkit-scrollbar-thumb,
   .openin-list::-webkit-scrollbar-thumb {
-    background: var(--sl-color-gray-5);
+    background: var(--llm-border);
     border-radius: 3px;
   }
 
   .section-divider {
     height: 1px;
     margin: 0.25rem 0.625rem;
-    background: var(--sl-color-gray-5);
+    background: var(--llm-border);
   }
 
   .section-label {
     padding: 0.375rem 0.625rem 0.125rem;
-    font-size: 0.6875rem;
+    font-size: var(--llm-text-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--sl-color-gray-3);
+    color: var(--llm-text-muted);
     user-select: none;
   }
 
   .section-hint {
     padding: 0 0.625rem 0.25rem;
-    font-size: 0.6875rem;
+    font-size: var(--llm-text-xs);
     line-height: 1.3;
-    color: var(--sl-color-gray-3);
+    color: var(--llm-text-muted);
     font-style: italic;
     user-select: none;
   }
@@ -326,10 +341,10 @@ function getImageIcon(value: string | false): string | null {
     width: 100%;
     padding: 0.5rem 0.625rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--llm-radius);
     background: transparent;
-    color: var(--sl-color-white);
-    font-family: inherit;
+    color: var(--llm-text);
+    font-family: var(--llm-font);
     cursor: pointer;
     text-align: left;
     transition: background-color 0.1s;
@@ -337,7 +352,7 @@ function getImageIcon(value: string | false): string | null {
 
   .page-actions-item:hover,
   .page-actions-item:focus-visible {
-    background: var(--sl-color-gray-5);
+    background: var(--llm-border);
     outline: none;
   }
 
@@ -365,12 +380,12 @@ function getImageIcon(value: string | false): string | null {
     gap: 0.0625rem;
   }
 
-  .item-title { font-size: 0.8125rem; line-height: 1.3; }
+  .item-title { font-size: var(--llm-text-sm); line-height: 1.3; }
 
   .item-desc {
-    font-size: 0.6875rem;
+    font-size: var(--llm-text-xs);
     line-height: 1.3;
-    color: var(--sl-color-gray-3);
+    color: var(--llm-text-muted);
   }
 
   .item-external { flex-shrink: 0; opacity: 0.4; }
@@ -379,17 +394,19 @@ function getImageIcon(value: string | false): string | null {
     .page-actions { display: none !important; }
   }
 
+  /* Toast is appended to <body> and cannot inherit .sl-llm-actions variables,
+     so it continues to reference Starlight tokens directly. */
   :global(.page-actions-toast) {
     position: fixed;
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%) translateY(0.5rem);
     padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     background: var(--sl-color-bg-nav);
-    border: 1px solid var(--sl-color-gray-5);
-    color: var(--sl-color-white);
-    font-size: 0.8125rem;
+    border: 1px solid var(--sl-color-hairline);
+    color: var(--sl-color-text);
+    font-size: var(--sl-text-sm);
     box-shadow: var(--sl-shadow-lg);
     opacity: 0;
     transition: opacity 0.2s, transform 0.2s;

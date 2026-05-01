@@ -90,6 +90,53 @@ For the full configuration reference — including per-provider overrides, the
 print/PDF snapshot disclaimer, and the markdown URL template — see the
 [configuration docs](https://holdenhewett.github.io/starlight-llm-actions/configuration/reference/).
 
+## Customization
+
+### Using a custom `PageTitle` override
+
+If your Starlight config already has a custom `PageTitle` component, the plugin skips its automatic injection and logs a dev-mode warning. Import `PageActions` directly inside your override instead:
+
+```astro
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import PageActions from 'starlight-llm-actions/components/PageActions.astro';
+---
+
+<div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+  <Default {...Astro.props}><slot /></Default>
+  <PageActions />
+</div>
+```
+
+The plugin integration still handles route injection and config resolution — only the UI placement is up to you.
+
+### CSS variables
+
+The plugin scopes its styles with a set of `--llm-*` custom properties declared on the `.sl-llm-actions` root element. These default to the equivalent Starlight design tokens, so the plugin looks native on any theme without extra configuration.
+
+| Variable | Default |
+|---|---|
+| `--llm-bg` | `var(--sl-color-bg-nav)` |
+| `--llm-text` | `var(--sl-color-text)` |
+| `--llm-text-muted` | `var(--sl-color-gray-3)` |
+| `--llm-border` | `var(--sl-color-hairline)` |
+| `--llm-accent` | `var(--sl-color-accent)` |
+| `--llm-font` | `var(--sl-font-system)` |
+| `--llm-text-sm` | `var(--sl-text-sm)` |
+| `--llm-text-xs` | `var(--sl-text-xs)` |
+| `--llm-radius` | `0.375rem` |
+| `--llm-shadow` | `none` |
+
+Override any of these in your site's custom CSS to retheme the plugin without touching internal selectors:
+
+```css
+.sl-llm-actions {
+  --llm-bg:     var(--my-surface-card);
+  --llm-border: var(--my-border-default);
+  --llm-shadow: var(--my-shadow-dropdown);
+}
+```
+
 ## License
 
 Licensed under the MIT License, Copyright © Holden Hewett.
