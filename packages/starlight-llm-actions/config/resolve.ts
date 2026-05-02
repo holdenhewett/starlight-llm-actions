@@ -78,6 +78,8 @@ export interface ResolvedConfig {
   injectRoute: boolean;
   /** Snapshot disclaimer for printed/PDF output. `null` when disabled. */
   printNotice: ResolvedPrintNotice | null;
+  /** How the dropdown opens. `'click'` is the default. */
+  trigger: 'click' | 'hover';
 }
 
 const DEFAULT_PROMPT = 'Read {md_url}. I want to ask questions about it.';
@@ -130,6 +132,7 @@ export function resolveConfig(
     markdownUrl,
     injectRoute: parsed.injectRoute ?? true,
     printNotice: resolvePrintNotice(parsed.printNotice),
+    trigger: parsed.trigger ?? 'click',
   };
 }
 

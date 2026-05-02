@@ -148,6 +148,13 @@ export const StarlightLlmActionsConfigSchema = z
      * - Pass `false` (or omit) to disable.
      */
     printNotice: PrintNoticeSchema.optional(),
+    /**
+     * How the actions dropdown opens.
+     * - `'click'` (default): button click toggles the menu open/closed.
+     * - `'hover'`: CSS `:hover` / `:focus-within` opens the menu; clicking
+     *   "pins" it open so it stays visible after the cursor moves away.
+     */
+    trigger: z.enum(['click', 'hover']).optional(),
   })
   .strict();
 
