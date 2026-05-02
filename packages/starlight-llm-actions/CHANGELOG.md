@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.5.1...v0.6.0) (2026-05-02)
+
+
+### Features
+
+* add trigger option and three new CSS custom properties ([#35](https://github.com/holdenhewett/starlight-llm-actions/issues/35)) ([ff066bc](https://github.com/holdenhewett/starlight-llm-actions/commit/ff066bcfa8499660b6a75ea0a83f7e81a6da6e91))
+
 ## [0.5.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.5.0...v0.5.1) (2026-05-01)
 
 
