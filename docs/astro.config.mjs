@@ -88,6 +88,7 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { label: 'Per-page opt-out', slug: 'guides/per-page-opt-out' },
+            { label: 'CSS customization', slug: 'guides/css-customization' },
           ],
         },
         {
