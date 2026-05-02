@@ -1,6 +1,6 @@
 {
   "name": "starlight-llm-actions",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "description": "Starlight plugin: Page Actions dropdown with Copy/View/PDF and Open-in-LLM buttons (ChatGPT, Claude, Gemini, Perplexity, T3 Chat, Cursor, Copilot).",
   "license": "MIT",
