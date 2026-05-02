@@ -106,6 +106,25 @@ starlightLlmActions({
 })
 ```
 
+### `trigger`
+
+- **Type:** `'click' | 'hover'`
+- **Default:** `'click'`
+
+Controls how the dropdown opens.
+
+- `'click'` — the default. The trigger button must be clicked to open the
+  menu; a second click closes it.
+- `'hover'` — the menu opens when the cursor hovers over the trigger button.
+  Clicking pins the menu open so it stays visible while you interact with it;
+  a second click closes it. Keyboard navigation is identical in both modes.
+
+```js
+starlightLlmActions({
+  trigger: 'hover',
+})
+```
+
 ### `pageOptOut`
 
 - **Type:** `string | false`
