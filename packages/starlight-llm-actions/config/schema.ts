@@ -155,6 +155,23 @@ export const StarlightLlmActionsConfigSchema = z
      *   "pins" it open so it stays visible after the cursor moves away.
      */
     trigger: z.enum(['click', 'hover']).optional(),
+    /**
+     * Whether to close the Page Actions dropdown after an action is clicked.
+     * Defaults to `true`. Set to `false` to keep the menu open (useful when
+     * chaining multiple actions). Has no effect when `trigger` is `'hover'`.
+     */
+    closeOnAction: z.boolean().optional(),
+    /**
+     * Milliseconds to wait after showing the toast before opening a new tab
+     * in `clipboard-open` strategy actions. Allows the toast to render before
+     * focus shifts away. Must be a non-negative integer. Defaults to `300`.
+     */
+    preOpenDelay: z.number().int().min(0).optional(),
+    /**
+     * How long (in milliseconds) the toast notification stays visible after an
+     * action completes. Must be a positive integer. Defaults to `3000`.
+     */
+    toastDuration: z.number().int().positive().optional(),
   })
   .strict();
 
