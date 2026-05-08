@@ -43,7 +43,7 @@ if (globalConfig.pageOptOut !== false) {
   }
 }
 
-const { actions, triggerLabel, markdownUrl, trigger } = config;
+const { actions, triggerLabel, markdownUrl, trigger, closeOnAction, toastDuration, preOpenDelay } = config;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const markdownHref = base + markdownUrlForSlug(markdownUrl, slug);
 
@@ -72,7 +72,7 @@ function getImageIcon(value: string | false): string | null {
 ---
 
 {!optedOut && renderMenu && (
-  <div class="page-actions sl-llm-actions" data-state="closed" data-trigger={trigger} data-markdown-href={markdownHref}>
+  <div class="page-actions sl-llm-actions" data-state="closed" data-trigger={trigger} data-markdown-href={markdownHref} data-close-on-action={closeOnAction} data-toast-duration={toastDuration} data-pre-open-delay={preOpenDelay}>
     <button class="page-actions-trigger" type="button"
       aria-label={triggerLabel} aria-expanded="false" aria-haspopup="menu">
       <svg class="trigger-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"
@@ -462,6 +462,9 @@ function getImageIcon(value: string | false): string | null {
       var items = Array.prototype.slice.call(container.querySelectorAll('[role="menuitem"]'));
       var markdownHref = container.dataset.markdownHref || '';
       var isHover = container.dataset.trigger === 'hover';
+      var closeOnAction = container.dataset.closeOnAction !== 'false';
+      var toastDuration = parseInt(container.dataset.toastDuration || '3000', 10);
+      var preOpenDelay = parseInt(container.dataset.preOpenDelay || '300', 10);
 
       function updateScrollAffordance() {
         if (!openinList) return;
@@ -515,7 +518,7 @@ function getImageIcon(value: string | false): string | null {
         });
       }
 
-      function showToast(message) {
+      function showToast(message, duration) {
         var existing = document.querySelector('.page-actions-toast');
         if (existing) existing.remove();
         var toast = document.createElement('div');
@@ -530,7 +533,7 @@ function getImageIcon(value: string | false): string | null {
         setTimeout(function () {
           toast.classList.remove('visible');
           setTimeout(function () { toast.remove(); }, 300);
-        }, 2500);
+        }, duration);
       }
 
       function resolvePrompt(template) {
@@ -575,19 +578,19 @@ function getImageIcon(value: string | false): string | null {
                 var promptOnly = buildUrl(template, { prompt_with_markdown: prompt, prompt: prompt });
                 navigator.clipboard.writeText(md).then(function () {
                   window.open(promptOnly, '_blank');
-                  showToast('Page too large — markdown copied to clipboard');
+                  showToast('Page too large — markdown copied to clipboard', toastDuration);
                 });
               } else if (fallback === 'clipboard-open') {
                 var baseUrl = template.split('?')[0];
                 navigator.clipboard.writeText(combined).then(function () {
-                  window.open(baseUrl, '_blank');
-                  showToast('Copied & opening…');
+                  showToast('Copied & opening…', toastDuration);
+                  setTimeout(function () { window.open(baseUrl, '_blank'); }, preOpenDelay);
                 });
               } else {
                 window.open(fullUrl, '_blank');
               }
             })
-            .catch(function () { showToast('Failed to load page'); });
+            .catch(function () { showToast('Failed to load page', toastDuration); });
           return;
         }
 
@@ -596,11 +599,11 @@ function getImageIcon(value: string | false): string | null {
             .then(function (md) {
               var ctx = prompt + '\n\n' + md;
               return navigator.clipboard.writeText(ctx).then(function () {
-                window.open(template, '_blank');
-                showToast('Copied & opening…');
+                showToast('Copied & opening…', toastDuration);
+                setTimeout(function () { window.open(template, '_blank'); }, preOpenDelay);
               });
             })
-            .catch(function () { showToast('Failed to copy'); });
+            .catch(function () { showToast('Failed to copy', toastDuration); });
         }
       }
 
@@ -610,21 +613,21 @@ function getImageIcon(value: string | false): string | null {
           case 'copy-md':
             fetchMarkdown()
               .then(function (md) { return navigator.clipboard.writeText(md); })
-              .then(function () { showToast('Copied as Markdown'); })
-              .catch(function () { showToast('Failed to copy'); });
+              .then(function () { showToast('Copied as Markdown', toastDuration); })
+              .catch(function () { showToast('Failed to copy', toastDuration); });
             break;
           case 'view-md':
             window.open(markdownHref, '_blank');
             break;
           case 'pdf':
-            showToast('Opening print dialog…');
+            showToast('Opening print dialog…', toastDuration);
             setTimeout(function () { window.print(); }, 100);
             break;
           case 'provider':
             handleProvider(item);
             break;
         }
-        close();
+        if (closeOnAction) close();
       }
 
       items.forEach(function (item) {

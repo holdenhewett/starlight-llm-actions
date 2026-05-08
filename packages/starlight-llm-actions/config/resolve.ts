@@ -80,6 +80,12 @@ export interface ResolvedConfig {
   printNotice: ResolvedPrintNotice | null;
   /** How the dropdown opens. `'click'` is the default. */
   trigger: 'click' | 'hover';
+  /** Whether the dropdown closes after an action click. Defaults to `true`. */
+  closeOnAction: boolean;
+  /** Milliseconds the toast notification stays visible. Defaults to `3000`. */
+  toastDuration: number;
+  /** Milliseconds before opening a new tab in clipboard-open actions. Defaults to `300`. */
+  preOpenDelay: number;
 }
 
 const DEFAULT_PROMPT = 'Read {md_url}. I want to ask questions about it.';
@@ -133,6 +139,9 @@ export function resolveConfig(
     injectRoute: parsed.injectRoute ?? true,
     printNotice: resolvePrintNotice(parsed.printNotice),
     trigger: parsed.trigger ?? 'click',
+    closeOnAction: parsed.closeOnAction ?? true,
+    toastDuration: parsed.toastDuration ?? 3000,
+    preOpenDelay: parsed.preOpenDelay ?? 300,
   };
 }
 

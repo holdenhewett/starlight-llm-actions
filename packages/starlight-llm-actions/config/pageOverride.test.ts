@@ -5,6 +5,7 @@ import {
   type PageOverrideObject,
 } from './pageOverride.js';
 import { parseConfig, resolveConfig } from './resolve.js';
+import { StarlightLlmActionsConfigSchema } from './schema.js';
 import type { StarlightLlmActionsConfig } from './schema.js';
 
 /**
@@ -310,5 +311,83 @@ describe('mergePageOverride — empty / no-op cases', () => {
     const direct = resolveConfig(global);
     const merged = resolvePage(global, {});
     expect(merged).toEqual(direct);
+  });
+});
+
+describe('preOpenDelay option', () => {
+  it('defaults to 300 when omitted', () => {
+    expect(resolveConfig({}).preOpenDelay).toBe(300);
+  });
+
+  it('returns 0 when set to 0', () => {
+    expect(resolveConfig({ preOpenDelay: 0 }).preOpenDelay).toBe(0);
+  });
+
+  it('rejects negative preOpenDelay', () => {
+    expect(() =>
+      StarlightLlmActionsConfigSchema.parse({ preOpenDelay: -1 }),
+    ).toThrow();
+  });
+
+  it('rejects non-integer preOpenDelay', () => {
+    expect(() =>
+      StarlightLlmActionsConfigSchema.parse({ preOpenDelay: 1.5 }),
+    ).toThrow();
+  });
+
+  it('PageOverrideSchema rejects preOpenDelay (build-time only)', () => {
+    expect(() =>
+      PageOverrideSchema.parse({ preOpenDelay: 100 }),
+    ).toThrow();
+  });
+});
+
+describe('closeOnAction option', () => {
+  it('defaults to true when omitted', () => {
+    expect(resolveConfig({}).closeOnAction).toBe(true);
+  });
+
+  it('returns false when set to false', () => {
+    expect(resolveConfig({ closeOnAction: false }).closeOnAction).toBe(false);
+  });
+
+  it('rejects non-boolean closeOnAction', () => {
+    expect(() =>
+      StarlightLlmActionsConfigSchema.parse({ closeOnAction: 'yes' }),
+    ).toThrow();
+  });
+
+  it('PageOverrideSchema rejects closeOnAction (build-time only)', () => {
+    expect(() =>
+      PageOverrideSchema.parse({ closeOnAction: false }),
+    ).toThrow();
+  });
+});
+
+describe('toastDuration option', () => {
+  it('defaults to 3000 when omitted', () => {
+    expect(resolveConfig({}).toastDuration).toBe(3000);
+  });
+
+  it('returns the provided value when set', () => {
+    expect(resolveConfig({ toastDuration: 5000 }).toastDuration).toBe(5000);
+  });
+
+  it('rejects non-integer toastDuration', () => {
+    expect(() =>
+      StarlightLlmActionsConfigSchema.parse({ toastDuration: 1.5 }),
+    ).toThrow();
+  });
+
+  it('rejects zero toastDuration', () => {
+    expect(() =>
+      StarlightLlmActionsConfigSchema.parse({ toastDuration: 0 }),
+    ).toThrow();
+  });
+
+  it('PageOverrideSchema rejects toastDuration (build-time only)', () => {
+    expect(() =>
+      PageOverrideSchema.parse({ toastDuration: 3000 }),
+    ).toThrow();
   });
 });
