@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.7.0...v0.8.0) (2026-05-08)
+
+
+### Features
+
+* add closeOnAction, toastDuration, and preOpenDelay options ([#44](https://github.com/holdenhewett/starlight-llm-actions/issues/44)) ([0fc9d14](https://github.com/holdenhewett/starlight-llm-actions/commit/0fc9d149d089614072a78710347b0202aeb606fb))
+
 ## [0.7.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.6.0...v0.7.0) (2026-05-02)
 
 
