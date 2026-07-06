@@ -31,7 +31,7 @@ export function virtualConfigPlugin(
       return null;
     },
     load(id) {
-      if (id === RESOLVED_ID) return moduleSource;
+      if (id === RESOLVED_ID) return { code: moduleSource, moduleType: 'js' };
       return null;
     },
   };
