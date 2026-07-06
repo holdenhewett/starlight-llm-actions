@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.8.0...v0.9.0) (2026-07-06)
+
+
+### Features
+
+* support Astro 7 and Starlight 0.41 ([#60](https://github.com/holdenhewett/starlight-llm-actions/issues/60)) ([0e2e010](https://github.com/holdenhewett/starlight-llm-actions/commit/0e2e010c852bf7b08cba1128d34d8bf3458b40db))
+
 ## [0.8.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.7.0...v0.8.0) (2026-05-08)
 
 
