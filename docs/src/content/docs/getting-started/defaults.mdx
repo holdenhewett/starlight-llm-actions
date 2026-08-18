@@ -15,7 +15,7 @@ config.
 | Option | Default | Notes |
 |---|---|---|
 | Copy as Markdown | ✅ on | Dropdown's "Copy page" item — copies the page's `.md` source to the clipboard. |
-| View as Markdown | ✅ on | Dropdown's "View as Markdown" item — opens the page's raw markdown URL in a new tab. |
+| View as Markdown | ✅ on | Dropdown's "View as Markdown" item — opens the page's markdown URL in a new tab. |
 | Download as PDF | ❌ off | No PDF item appears until you set [`actions.printPdf: true`](/starlight-llm-actions/configuration/reference/#actions). |
 | **Open in…** submenu | ✅ on | Section appears in the dropdown with the default-on providers below. |
 | Default-on providers | 5 | ChatGPT, Claude, Gemini, GitHub Copilot, Perplexity. |
@@ -25,6 +25,8 @@ config.
 | Print/PDF snapshot notice | ❌ off | No banner on printed copies until you configure [`printNotice`](/starlight-llm-actions/configuration/print-notice/). |
 | Branding on printed pages | ❌ off | No logo / site name above the H1 when printed — opt in via `printNotice.branding`. |
 | Markdown route at `/{slug}.md` | ✅ on | Auto-injected — turn off with [`injectRoute: false`](/starlight-llm-actions/configuration/reference/#injectroute) if you serve markdown yourself. |
+| Markdown rendering | `'raw'` | The route serves each page's markdown source as authored. Set [`renderMarkdown: 'simple'`](/starlight-llm-actions/configuration/reference/#rendermarkdown) to serve flattened Markdown instead. |
+| Markdown `alternate` link | ❌ off | No `<link rel="alternate" type="text/markdown">` in the page `<head>` until you set [`linkAlternate: true`](/starlight-llm-actions/configuration/reference/#linkalternate). |
 | Per-page opt-out via frontmatter | ✅ enabled | Set `llmActions: false` on any page to hide the dropdown there. |
 
 ## Where each default lives
