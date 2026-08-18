@@ -71,6 +71,59 @@ starlightLlmActions({
 })
 ```
 
+### `renderMarkdown`
+
+- **Type:** `'raw' | 'simple' | { module: string }` — see
+  [`RenderMarkdownConfig`](#rendermarkdownconfig)
+- **Default:** `'raw'`
+
+How the injected route renders each page body. The default emits the page's
+unprocessed source, which on an MDX-heavy site means import statements and
+component tags rather than prose an AI agent can read directly.
+
+```js
+starlightLlmActions({
+  renderMarkdown: 'simple',
+})
+```
+
+`'simple'` renders the page the way Starlight does and flattens the result back
+to plain Markdown, so components resolve to lists, code fences, and headings.
+It requires optional dependencies you install yourself. See
+[`RenderMarkdownConfig`](#rendermarkdownconfig) below.
+
+With [`injectRoute: false`](#injectroute) there is no route for the plugin to
+render, so the setting changes nothing about your output — but `'simple'` still
+requires its dependencies to be installed whenever it is set.
+
+### `linkAlternate`
+
+- **Type:** `boolean | `[`LinkAlternateConfig`](#linkalternateconfig)
+- **Default:** `false`
+
+Inject a per-page alternate-link tag pointing at that page's Markdown URL, so
+crawlers and agents can discover the Markdown without knowing the plugin's URL
+convention.
+
+```js
+starlightLlmActions({
+  linkAlternate: true,
+})
+```
+
+Every non-draft page then carries:
+
+```html
+<link rel="alternate" type="text/markdown" href="/guides/example.md" />
+```
+
+The href follows [`markdownUrl`](#markdownurl) and respects Astro's `base`, and
+non-ASCII slugs are percent-encoded.
+
+Two kinds of page get no tag, because the injected route generates no Markdown
+for them: drafts, and the 404 page. See
+[`LinkAlternateConfig`](#linkalternateconfig) below.
+
 ### `prompt`
 
 - **Type:** `string`
@@ -122,6 +175,51 @@ Controls how the dropdown opens.
 ```js
 starlightLlmActions({
   trigger: 'hover',
+})
+```
+
+### `closeOnAction`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Whether the dropdown closes after an item is clicked. Set to `false` to keep
+the menu open, which is useful when chaining several actions in a row.
+
+Has no effect when [`trigger`](#trigger) is `'hover'`.
+
+```js
+starlightLlmActions({
+  closeOnAction: false,
+})
+```
+
+### `toastDuration`
+
+- **Type:** `number` (positive integer, milliseconds)
+- **Default:** `3000`
+
+How long the toast notification stays visible after an action completes.
+
+```js
+starlightLlmActions({
+  toastDuration: 5000,
+})
+```
+
+### `preOpenDelay`
+
+- **Type:** `number` (non-negative integer, milliseconds)
+- **Default:** `300`
+
+How long to wait after showing the toast before opening a new tab, for
+providers using the `clipboard-open` [strategy](#strategy). The delay gives the
+toast time to render before focus shifts away; set it to `0` to open
+immediately.
+
+```js
+starlightLlmActions({
+  preOpenDelay: 0,
 })
 ```
 
@@ -346,6 +444,125 @@ default is `'url-prompt'`.
 - An SVG filename under the package's `icons/` folder (e.g. `'cursor.svg'`).
 - An absolute URL.
 - `false` — hide the icon.
+
+## `RenderMarkdownConfig`
+
+```ts
+type RenderMarkdownConfig = 'raw' | 'simple' | RenderMarkdownModule;
+
+interface RenderMarkdownModule {
+  module: string;
+}
+```
+
+### `'raw'`
+
+The default. Emits the Content Collection entry's body verbatim — the original
+Markdown or MDX source, imports and component tags included.
+
+### `'simple'`
+
+Renders the page to HTML the way Starlight does, then flattens that HTML back
+to plain Markdown. Starlight's `<Tabs>`, `<FileTree>`, `<Steps>`, and Expressive
+Code blocks arrive as ordinary Markdown lists, code fences, and headings instead
+of component tags.
+
+Unknown custom elements are unwrapped, keeping their text content. Add
+`data-mdast="ignore"` to any element whose rendered output is pure chrome to
+drop it and its children entirely.
+
+The flattening pipeline is heavy, so the plugin does not install it for you:
+
+```sh
+npm install @astrojs/mdx unified rehype-parse rehype-remark remark-gfm remark-stringify hast-util-select unist-util-remove
+```
+
+If any are missing, the build fails at config time and names the exact install
+command, rather than failing partway through page rendering.
+
+:::caution[Framework components are not supported]
+`'simple'` renders through an Astro container that registers only the MDX
+renderer. A page using a React, Vue, Svelte, or Solid component throws during
+rendering.
+
+That failure is caught per page: the plugin logs a warning naming the page and
+falls back to that page's raw source. One such page never fails the build or
+affects the rest of the site.
+:::
+
+### `{ module }`
+
+- **Type:** `string`
+
+Module specifier for your own renderer, whose default export is a
+`MarkdownRenderer`. Relative paths resolve against your Astro project root.
+
+```js
+starlightLlmActions({
+  renderMarkdown: { module: './src/render-markdown.ts' },
+})
+```
+
+```ts
+// src/render-markdown.ts
+import type { MarkdownRenderer } from 'starlight-llm-actions';
+
+const render: MarkdownRenderer = async (entry, context) => {
+  return entry.body ?? '';
+};
+
+export default render;
+```
+
+Return the **body only** — the route still prepends the `# title` heading and
+the description blockquote. Throwing falls back to that page's raw source with a
+warning, exactly as `'simple'` does.
+
+The value must be a module specifier rather than a function, because plugin
+config is serialized on its way into the injected route and a function cannot
+survive that trip.
+
+## `LinkAlternateConfig`
+
+```ts
+interface LinkAlternateConfig {
+  type?: string;      // default: 'text/markdown'
+  absolute?: boolean; // default: false
+}
+```
+
+Passing `true` instead of an object is shorthand for `{}` — enabled with both
+defaults.
+
+### `linkAlternate.type`
+
+- **Type:** `string`
+- **Default:** `'text/markdown'`
+
+The tag's `type` attribute. Change it if your
+[`markdownUrl`](#markdownurl) serves something else, e.g. `'text/plain'` for a
+`.txt` template.
+
+### `linkAlternate.absolute`
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+Emit a full URL instead of a root-relative path. The origin comes from `site`
+in your Astro config; the plugin throws at config time if `site` is unset,
+rather than emitting a broken href.
+
+```js
+// astro.config.mjs
+export default defineConfig({
+  site: 'https://example.com',
+  // …
+});
+```
+
+```html
+<link rel="alternate" type="text/markdown" href="https://example.com/guides/example.md" />
+```
 
 ## `PrintNoticeConfig`
 

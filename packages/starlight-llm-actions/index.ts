@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import type { AstroIntegration } from 'astro';
 import type { StarlightPlugin } from '@astrojs/starlight/types';
 import {
@@ -7,13 +8,20 @@ import {
   type ResolvedConfig,
 } from './config/resolve.js';
 import type { StarlightLlmActionsConfig } from './config/schema.js';
+import {
+  findMissingSimpleDeps,
+  missingSimpleDepsMessage,
+  rendererSpecifier,
+} from './internal/renderer.js';
 import { virtualConfigPlugin } from './internal/virtual-module.js';
 
 export type { StarlightLlmActionsConfig } from './config/schema.js';
+export type { MarkdownRenderer } from './internal/renderer.js';
 
 function createAstroIntegration(
   resolved: ResolvedConfig,
   parsed: StarlightLlmActionsConfig,
+  rendererModule: string | null,
   pageTitleConflict: boolean,
 ): AstroIntegration {
   return {
@@ -36,7 +44,7 @@ function createAstroIntegration(
         }
         updateConfig({
           vite: {
-            plugins: [virtualConfigPlugin(resolved, parsed)],
+            plugins: [virtualConfigPlugin(resolved, parsed, rendererModule)],
           },
         });
       },
@@ -50,9 +58,43 @@ export default function starlightLlmActions(
   return {
     name: 'starlight-llm-actions',
     hooks: {
-      'config:setup'({ config, updateConfig, addIntegration }) {
+      'config:setup'({
+        config,
+        updateConfig,
+        addIntegration,
+        addRouteMiddleware,
+        astroConfig,
+      }) {
         const parsed = parseConfig(userConfig);
         const resolved = resolveConfig(parsed);
+
+        if (resolved.renderMarkdown.mode === 'simple') {
+          // Resolve from the project root, not from this package: that is where
+          // Vite will resolve the renderer's own bare imports from, so it is the
+          // only check that predicts whether the build will actually succeed.
+          const requireFromRoot = createRequire(
+            new URL('package.json', astroConfig.root),
+          );
+          const missing = findMissingSimpleDeps((specifier) =>
+            requireFromRoot.resolve(specifier),
+          );
+          if (missing.length > 0) {
+            throw new Error(missingSimpleDepsMessage(missing));
+          }
+        }
+
+        if (resolved.linkAlternate?.absolute && !astroConfig.site) {
+          throw new Error(
+            'starlight-llm-actions: `linkAlternate.absolute` needs an absolute URL to build from, ' +
+              'but `site` is not set in your Astro config.\n' +
+              "Set `site` (e.g. site: 'https://example.com'), or drop `absolute` to emit a root-relative href.",
+          );
+        }
+
+        const rendererModule = rendererSpecifier(
+          resolved.renderMarkdown,
+          astroConfig.root,
+        );
 
         const existingComponents = config.components ?? {};
         const pageTitleConflict = !!existingComponents.PageTitle;
@@ -66,7 +108,20 @@ export default function starlightLlmActions(
           });
         }
 
-        addIntegration(createAstroIntegration(resolved, parsed, pageTitleConflict));
+        if (resolved.linkAlternate) {
+          addRouteMiddleware({
+            entrypoint: 'starlight-llm-actions/route-middleware',
+          });
+        }
+
+        addIntegration(
+          createAstroIntegration(
+            resolved,
+            parsed,
+            rendererModule,
+            pageTitleConflict,
+          ),
+        );
       },
     },
   };

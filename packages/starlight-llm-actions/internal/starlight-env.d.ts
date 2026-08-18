@@ -16,6 +16,36 @@ declare namespace StarlightApp {
   interface I18n {}
 }
 
+// Starlight registers `locals.starlightRoute` from `locals.d.ts`, an ambient
+// file no package export references, so an isolated typecheck never picks it
+// up. `route-middleware.ts` needs it.
+//
+// Declared structurally rather than as `StarlightRouteData`: that type lives in
+// Starlight's raw source, and pulling it in drags along `astro:content` types
+// that only exist after `astro sync`. Only the members the middleware touches
+// are listed; the real type is a superset, and it is the real type that applies
+// in a consumer's build.
+declare namespace App {
+  interface Locals {
+    starlightRoute: {
+      entry: { id: string; data: { draft: boolean } };
+      head: Array<{
+        tag:
+          | 'title'
+          | 'base'
+          | 'link'
+          | 'style'
+          | 'meta'
+          | 'script'
+          | 'noscript'
+          | 'template';
+        attrs?: Record<string, string | boolean | undefined>;
+        content?: string;
+      }>;
+    };
+  }
+}
+
 declare module 'virtual:starlight/user-config' {
   const Config: any;
   export default Config;

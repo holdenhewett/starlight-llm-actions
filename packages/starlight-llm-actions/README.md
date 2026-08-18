@@ -84,11 +84,134 @@ starlightLlmActions({
 })
 ```
 
+### Choosing what the Markdown route emits
+
+By default the injected `.md` route serves the page's **unprocessed source** —
+which on an MDX-heavy site means import statements and JSX component tags that
+an AI agent has to guess its way through. `renderMarkdown` controls that:
+
+```js
+starlightLlmActions({
+  renderMarkdown: 'simple',
+})
+```
+
+| Value | Behavior |
+| --- | --- |
+| `'raw'` _(default)_ | Emit `entry.body` verbatim — the original Markdown/MDX source. |
+| `'simple'` | Render the page to HTML the way Starlight does, then flatten that HTML back to plain Markdown. |
+| `{ module: '…' }` | Use your own renderer. See below. |
+
+`'simple'` resolves components to their rendered output, so Starlight's
+`<Tabs>`, `<FileTree>`, `<Steps>`, and Expressive Code blocks arrive as ordinary
+Markdown lists, code fences, and headings rather than as component tags. Unknown
+custom elements are unwrapped, keeping their text content. Add
+`data-mdast="ignore"` to any element whose rendered output is pure chrome to drop
+it entirely.
+
+Because the flattening pipeline is heavy and most sites won't want it,
+`'simple'` requires optional dependencies that the plugin does not install for
+you:
+
+```sh
+npm install @astrojs/mdx unified rehype-parse rehype-remark remark-gfm remark-stringify hast-util-select unist-util-remove
+```
+
+If any are missing the build fails at config time with the exact install command,
+rather than partway through page rendering.
+
+**Limitation:** `'simple'` renders through an Astro container that only registers
+the MDX renderer. A page using a framework component (React, Vue, Svelte, Solid)
+will throw during rendering. That failure is caught per page — the plugin logs a
+warning naming the page and falls back to that page's raw source, so one such
+page never fails the build or affects the rest of the site.
+
+#### Custom renderers
+
+`{ module }` points at a module whose default export is a `MarkdownRenderer`.
+The value must be a module specifier, not a function: plugin config is
+serialized on its way into the injected route, and a function cannot survive
+that trip. Relative paths resolve against your Astro project root.
+
+```js
+starlightLlmActions({
+  renderMarkdown: { module: './src/render-markdown.ts' },
+})
+```
+
+```ts
+// src/render-markdown.ts
+import type { MarkdownRenderer } from 'starlight-llm-actions';
+
+const render: MarkdownRenderer = async (entry, context) => {
+  return entry.body ?? '';
+};
+
+export default render;
+```
+
+Return the **body only** — the route still prepends `# {title}` and the
+`> description` blockquote. Throwing falls back to the raw source for that page,
+with a warning, exactly as `'simple'` does.
+
+### Advertising the Markdown source with `<link rel="alternate">`
+
+`linkAlternate` adds a per-page `link` tag pointing at that page's Markdown
+route, which lets crawlers and agents discover the Markdown without knowing the
+plugin's URL convention:
+
+```js
+starlightLlmActions({
+  linkAlternate: true,
+})
+```
+
+```html
+<link rel="alternate" type="text/markdown" href="/guides/example.md" />
+```
+
+The href follows your `markdownUrl` template and respects Astro's `base`, and
+non-ASCII slugs are percent-encoded. Two kinds of page get no tag, because the
+Markdown route generates nothing for them: drafts, and the 404 page.
+
+| Option | Default | Behavior |
+| --- | --- | --- |
+| `true` | — | Shorthand for `{}`. |
+| `type` | `'text/markdown'` | The tag's `type` attribute. |
+| `absolute` | `false` | Emit a full URL built from Astro's `site` instead of a root-relative path. |
+
+`absolute: true` requires `site` to be set in your Astro config; the plugin
+throws at config time if it isn't, rather than emitting a broken href.
+
 ## Configuration
 
 For the full configuration reference — including per-provider overrides, the
 print/PDF snapshot disclaimer, and the markdown URL template — see the
 [configuration docs](https://holdenhewett.github.io/starlight-llm-actions/configuration/reference/).
+
+### Static hosting and the `.md` extension
+
+The Markdown route is prerendered, so the `Content-Type: text/markdown` header it
+sets exists only during the build and is discarded when the response is written
+to disk. Static hosts derive `Content-Type` from the file extension instead.
+
+Keep `.md` at the end of your `markdownUrl` template so hosts serve the file as
+Markdown rather than as `application/octet-stream` (which triggers a download) or
+as HTML. Both of these work:
+
+```js
+starlightLlmActions({
+  markdownUrl: '/{slug}.md', // default → /guides/example.md
+})
+
+starlightLlmActions({
+  markdownUrl: '/{slug}/index.md', // → /guides/example/index.md
+})
+```
+
+On a server-rendered deployment the header survives and the extension matters
+less, but keeping `.md` costs nothing and keeps the two deployment targets
+consistent.
 
 ## Customization
 
