@@ -17,9 +17,13 @@ at build time.
 | `huggingface.svg` | [Simple Icons](https://simpleicons.org/?q=huggingface) | `huggingface` | CC0 1.0 |
 | `kagi.svg` | [Simple Icons](https://simpleicons.org/?q=kagi) | `kagi` | CC0 1.0 |
 | `mistral.svg` | [Simple Icons](https://simpleicons.org/?q=mistral) | `mistralai` | CC0 1.0 |
-| `chat-bubble.svg` | Original (generic glyph; fallback for ChatGPT, T3 Chat, Phind, Grok, Google AI Studio, You.com) | — | MIT (this repo) |
+| `openai.svg` | [Lobe Icons](https://lobehub.com/icons?q=openai) | `openai` | MIT |
+| `grok.svg` | [Lobe Icons](https://lobehub.com/icons?q=grok) | `grok` | MIT |
+| `aistudio.svg` | [Lobe Icons](https://lobehub.com/icons?q=aistudio) | `aistudio` | MIT |
+| `phind.svg` | [Lobe Icons](https://lobehub.com/icons?q=phind) | `phind` | MIT |
+| `chat-bubble.svg` | Original (generic glyph; fallback for T3 Chat and You.com) | — | MIT (this repo) |
 
-All Simple Icons SVGs are post-processed:
+All third-party SVGs are post-processed to a common house format:
 
 1. `<title>` element removed.
 2. `<svg>` root rewritten to use `fill="currentColor"` (drop any explicit
@@ -48,6 +52,28 @@ for slug in claude googlegemini githubcopilot perplexity cursor deepseek duckduc
     > "$out"
 done
 ```
+
+Lobe Icons covers AI-product marks that Simple Icons does not. It publishes no
+per-icon CDN, so pull the monochrome variant from the repo and apply the same
+post-processing:
+
+```sh
+# In packages/starlight-llm-actions/icons/
+base="https://raw.githubusercontent.com/lobehub/lobe-icons/master/packages/static-svg/icons"
+for slug in openai grok aistudio phind; do
+  # Already ships fill="currentColor"; strip the <title> and the 1em
+  # width/height/style so CSS controls the size, as above.
+  curl -s "$base/$slug.svg" \
+    | sed -e 's/<title>[^<]*<\/title>//' \
+          -e 's/ width="1em"//' \
+          -e 's/ height="1em"//' \
+          -e 's/ style="[^"]*"//' \
+    > "$slug.svg"
+done
+```
+
+Lobe Icons has no mark for T3 Chat or You.com, so those keep the generic
+`chat-bubble.svg`.
 
 Re-run periodically to pick up upstream brand updates.
 

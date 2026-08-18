@@ -58,7 +58,7 @@ export const BUILTIN_PROVIDERS: Record<ProviderId, BuiltinProvider> = {
     description: 'Open this page in ChatGPT',
     strategy: 'url-prompt',
     urlTemplate: 'https://chatgpt.com/?q={prompt}',
-    iconFile: 'chat-bubble.svg',
+    iconFile: 'openai.svg',
     enabledByDefault: true,
   },
   claude: {
@@ -116,7 +116,7 @@ export const BUILTIN_PROVIDERS: Record<ProviderId, BuiltinProvider> = {
     description: 'Open this page in Google AI Studio',
     strategy: 'url-prompt',
     urlTemplate: 'https://ai.studio/prompts/new_chat?prompt={prompt}',
-    iconFile: 'chat-bubble.svg',
+    iconFile: 'aistudio.svg',
     enabledByDefault: false,
   },
   grok: {
@@ -124,7 +124,7 @@ export const BUILTIN_PROVIDERS: Record<ProviderId, BuiltinProvider> = {
     description: 'Open this page in Grok',
     strategy: 'url-prompt',
     urlTemplate: 'https://grok.com/?q={prompt}',
-    iconFile: 'chat-bubble.svg',
+    iconFile: 'grok.svg',
     enabledByDefault: false,
   },
   huggingchat: {
@@ -164,7 +164,7 @@ export const BUILTIN_PROVIDERS: Record<ProviderId, BuiltinProvider> = {
     description: 'Copies page, opens Phind',
     strategy: 'clipboard-open',
     urlTemplate: 'https://www.phind.com/agent',
-    iconFile: 'chat-bubble.svg',
+    iconFile: 'phind.svg',
     enabledByDefault: false,
   },
   t3chat: {
