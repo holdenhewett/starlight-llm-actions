@@ -86,9 +86,9 @@ The plugin does three things behind the scenes:
 2. **Injects a markdown route** at `/[slug].md` (configurable via
    [`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl))
    that serves the page's body as `text/markdown`.
-3. **Bundles provider icons** (Simple Icons CC0; a generic chat-bubble glyph
-   for providers without a Simple Icons mark) and the small client-side
-   script that runs the per-provider strategy.
+3. **Bundles provider icons** (Simple Icons CC0 and Lobe Icons MIT; a generic
+   chat-bubble glyph for the few providers neither set carries a mark for) and
+   the small client-side script that runs the per-provider strategy.
 
 ## Troubleshooting
 
@@ -110,10 +110,16 @@ Your bundler can't resolve the package's subpath export. Make sure your
 
 ### Provider icons are missing
 
-The plugin ships SVGs in its `icons/` folder and references them via Astro's
-asset pipeline. If you've configured an unusually strict
-[`vite.assetsInclude`](https://vite.dev/config/shared-options.html#assetsinclude)
-filter, ensure `.svg` is still included.
+T3 Chat and You.com intentionally show a generic chat-bubble glyph — no icon
+set carries an official mark for them. Point `providers.<id>.icon` at your own
+asset to replace it.
+
+If a provider you did not override renders a blank space where its icon should
+be, that is a bug in the plugin rather than a configuration problem; please
+[open an issue](https://github.com/holdenhewett/starlight-llm-actions/issues).
+If you set a custom `icon`, it must be a filename the plugin bundles, an
+absolute URL, or a root-relative path such as `/icons/foo.svg`. Any other
+string resolves to nothing and renders an empty slot.
 
 ## Next steps
 
