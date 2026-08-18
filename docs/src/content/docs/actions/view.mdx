@@ -1,17 +1,19 @@
 ---
 title: View as Markdown
-description: Open the current page's raw markdown URL in the browser.
+description: Open the current page's markdown URL in the browser.
 ---
 
 The **View as Markdown** action navigates to the page's markdown route, where
-the body is served as `text/markdown`. The browser shows the raw source —
-useful for confirming what gets copied, what an LLM sees, or just inspecting
-the canonical markdown of a page.
+the body is served as `text/markdown`. The browser shows the page's markdown —
+raw source by default, or the flattened output of
+[`renderMarkdown`](/starlight-llm-actions/configuration/reference/#rendermarkdown)
+if you've configured it — useful for confirming what gets copied, what an LLM
+sees, or just inspecting the canonical markdown of a page.
 
 ## When to use it
 
 - Verifying that the markdown route returns what you expect.
-- Linking someone to the raw source of a docs page.
+- Linking someone to the markdown of a docs page.
 - Manual extraction by readers who prefer the markdown to the rendered HTML.
 
 ## Configuration
