@@ -19,6 +19,10 @@ export default defineConfig({
       ],
       plugins: [
         starlightLlmActions({
+          // Playground only: exercise the non-default rendering path so the
+          // injected .md routes carry flattened Markdown rather than MDX source.
+          renderMarkdown: 'simple',
+          linkAlternate: true,
           actions: {
             // Re-enable PDF in the playground so the dropdown button is testable.
             printPdf: true,

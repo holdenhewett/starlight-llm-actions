@@ -10,3 +10,8 @@ dist/
 *.tgz
 coverage/
 .vscode/
+
+# Local agent-tooling scratch state, not part of the project
+.develop/
+.ship/
+lexicon.md

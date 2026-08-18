@@ -12,6 +12,7 @@
   "include": [
     "index.ts",
     "schema.ts",
+    "route-middleware.ts",
     "config/**/*.ts",
     "internal/**/*.ts",
     "providers/**/*.ts"
@@ -22,6 +23,7 @@
     "scripts",
     "env.d.ts",
     "route.ts",
+    "internal/simple-markdown.ts",
     "**/*.astro",
     "**/*.test.ts"
   ]

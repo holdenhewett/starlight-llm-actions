@@ -13,9 +13,14 @@ for (const dir of dirs) {
   await cp(path.join(pkg, dir), path.join(dist, dir), { recursive: true });
 }
 
-await cp(
-  path.join(pkg, 'internal', 'virtual.d.ts'),
-  path.join(dist, 'internal', 'virtual.d.ts'),
-);
-
-await cp(path.join(pkg, 'route.ts'), path.join(dist, 'route.ts'));
+// Shipped as raw TypeScript because they import `astro:content`, which only
+// resolves inside a running Astro build. Astro compiles them in the consumer's
+// project, the same way it compiles `.astro` files from node_modules.
+const rawSources = [
+  ['route.ts'],
+  ['internal', 'simple-markdown.ts'],
+  ['internal', 'virtual.d.ts'],
+];
+for (const segments of rawSources) {
+  await cp(path.join(pkg, ...segments), path.join(dist, ...segments));
+}

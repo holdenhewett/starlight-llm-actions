@@ -1,12 +1,14 @@
 import {
   StarlightLlmActionsConfigSchema,
   type ActionsConfig,
+  type LinkAlternateConfig,
   type OpenInConfig,
   type PrintNoticeBranding,
   type PrintNoticeConfig,
   type PrintNoticeWarning,
   type ProviderConfig,
   type ProviderId,
+  type RenderMarkdownConfig,
   type StarlightLlmActionsConfig,
   type Strategy,
 } from './schema.js';
@@ -59,6 +61,22 @@ export interface ResolvedPrintNotice {
   warning: ResolvedPrintNoticeWarning | null;
 }
 
+/**
+ * Fully-resolved `renderMarkdown`. Discriminated on `mode` so the route can
+ * branch without re-deriving the union from the user-facing shape.
+ */
+export type ResolvedRenderMarkdown =
+  | { mode: 'raw' }
+  | { mode: 'simple' }
+  | { mode: 'module'; module: string };
+
+export interface ResolvedLinkAlternate {
+  /** `type` attribute value for the emitted `<link>`. */
+  type: string;
+  /** Emit an absolute URL (requires Astro `site`) rather than a root-relative one. */
+  absolute: boolean;
+}
+
 export interface ResolvedConfig {
   actions: {
     copyMarkdown: boolean;
@@ -76,6 +94,10 @@ export interface ResolvedConfig {
   markdownUrl: string;
   /** Whether the plugin should inject its own markdown route. */
   injectRoute: boolean;
+  /** How the injected route renders each page body. */
+  renderMarkdown: ResolvedRenderMarkdown;
+  /** Per-page `<link rel="alternate">` tag config. `null` when disabled. */
+  linkAlternate: ResolvedLinkAlternate | null;
   /** Snapshot disclaimer for printed/PDF output. `null` when disabled. */
   printNotice: ResolvedPrintNotice | null;
   /** How the dropdown opens. `'click'` is the default. */
@@ -93,6 +115,7 @@ const DEFAULT_TRIGGER_LABEL = 'Copy page';
 const DEFAULT_OPEN_IN_LABEL = 'Open in…';
 const DEFAULT_PAGE_OPT_OUT = 'llmActions';
 const DEFAULT_MARKDOWN_URL = '/{slug}.md';
+const DEFAULT_LINK_ALTERNATE_TYPE = 'text/markdown';
 const DEFAULT_PRINT_NOTICE_TITLE = 'Documentation Snapshot';
 const DEFAULT_PRINT_NOTICE_MESSAGE = [
   'This is a point-in-time export and may be outdated.',
@@ -137,6 +160,8 @@ export function resolveConfig(
     pageOptOut,
     markdownUrl,
     injectRoute: parsed.injectRoute ?? true,
+    renderMarkdown: resolveRenderMarkdown(parsed.renderMarkdown),
+    linkAlternate: resolveLinkAlternate(parsed.linkAlternate),
     printNotice: resolvePrintNotice(parsed.printNotice),
     trigger: parsed.trigger ?? 'click',
     closeOnAction: parsed.closeOnAction ?? true,
@@ -155,6 +180,27 @@ function resolveActions(
     viewMarkdown: config.viewMarkdown ?? true,
     printPdf: config.printPdf ?? false,
     openIn: resolveOpenIn(config.openIn, globalPrompt),
+  };
+}
+
+function resolveRenderMarkdown(
+  value: RenderMarkdownConfig | undefined,
+): ResolvedRenderMarkdown {
+  if (value === undefined || value === 'raw') return { mode: 'raw' };
+  if (value === 'simple') return { mode: 'simple' };
+  return { mode: 'module', module: value.module };
+}
+
+function resolveLinkAlternate(
+  value: boolean | LinkAlternateConfig | undefined,
+): ResolvedLinkAlternate | null {
+  if (value === undefined || value === false) return null;
+
+  const config: LinkAlternateConfig = value === true ? {} : value;
+
+  return {
+    type: config.type ?? DEFAULT_LINK_ALTERNATE_TYPE,
+    absolute: config.absolute ?? false,
   };
 }
 

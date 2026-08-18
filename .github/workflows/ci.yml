@@ -37,6 +37,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Run tests
+        run: pnpm --filter starlight-llm-actions test
+
       - name: Build plugin
         run: pnpm --filter starlight-llm-actions build
 

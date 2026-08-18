@@ -119,6 +119,43 @@ const PrintNoticeConfigSchema = z
 
 const PrintNoticeSchema = z.union([z.boolean(), PrintNoticeConfigSchema]);
 
+/**
+ * How the injected Markdown route renders each page body.
+ *
+ * - `'raw'` (default) — emit the unprocessed entry source. MDX `import`
+ *   statements and component tags pass through verbatim.
+ * - `'simple'` — render the page and flatten it to plain Markdown. Needs the
+ *   optional rendering dependencies installed (see README).
+ * - `{ module }` — specifier of a module whose default export renders the body.
+ *
+ * Config reaches the route through a JSON-serialized virtual module, so an
+ * inline function cannot survive the trip — a module specifier is the escape
+ * hatch. Relative specifiers resolve against the Astro project root.
+ */
+const RenderMarkdownSchema = z.union([
+  z.enum(['raw', 'simple']),
+  z.object({ module: z.string().min(1) }).strict(),
+]);
+
+/**
+ * `<link rel="alternate" type="text/markdown">` head tag pointing at the page's
+ * Markdown URL. Signposts the Markdown alternate to agents that don't send an
+ * `Accept: text/markdown` header.
+ */
+const LinkAlternateConfigSchema = z
+  .object({
+    /** `type` attribute value. Default `'text/markdown'`. */
+    type: z.string().optional(),
+    /**
+     * Emit an absolute URL instead of a root-relative one. Requires `site` to
+     * be set in the Astro config. Default `false`.
+     */
+    absolute: z.boolean().optional(),
+  })
+  .strict();
+
+const LinkAlternateSchema = z.union([z.boolean(), LinkAlternateConfigSchema]);
+
 export const StarlightLlmActionsConfigSchema = z
   .object({
     actions: ActionsConfigSchema.optional(),
@@ -135,6 +172,16 @@ export const StarlightLlmActionsConfigSchema = z
      * pipeline) and you only want the dropdown UI.
      */
     injectRoute: z.boolean().optional(),
+    /**
+     * How the injected route renders each page body. Default `'raw'`, which
+     * preserves the behavior of every release before this option existed.
+     */
+    renderMarkdown: RenderMarkdownSchema.optional(),
+    /**
+     * Inject a per-page `<link rel="alternate" type="text/markdown">` tag
+     * pointing at the page's Markdown URL. Default `false` (opt-in).
+     */
+    linkAlternate: LinkAlternateSchema.optional(),
     prompt: z.string().optional(),
     triggerLabel: z.string().optional(),
     pageOptOut: z.union([z.string(), z.literal(false)]).optional(),
@@ -268,4 +315,16 @@ export interface PrintNoticeWarning {
 export interface PrintNoticeConfig {
   branding?: false | PrintNoticeBranding;
   warning?: false | PrintNoticeWarning;
+}
+
+/** Module specifier form of `renderMarkdown`. */
+export interface RenderMarkdownModule {
+  module: string;
+}
+
+export type RenderMarkdownConfig = 'raw' | 'simple' | RenderMarkdownModule;
+
+export interface LinkAlternateConfig {
+  type?: string;
+  absolute?: boolean;
 }
