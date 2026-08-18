@@ -186,7 +186,8 @@ starlightLlmActions({
 ### Replace icons with your own brand assets
 
 Provider icons are SVGs sourced from [Simple Icons](https://simpleicons.org/)
-(CC0). To use official brand assets:
+(CC0) and [Lobe Icons](https://lobehub.com/icons) (MIT). To use official brand
+assets:
 
 ```js
 starlightLlmActions({
@@ -205,13 +206,14 @@ starlightLlmActions({
 `icon` accepts:
 
 - An SVG filename under the package's `icons/` folder (e.g.
-  `'chat-bubble.svg'`).
-- An absolute URL.
+  `'chat-bubble.svg'`) — inlined into the markup.
+- An absolute URL, or a root-relative path such as `/icons/foo.svg` — rendered
+  as an `<img>`.
 - `false` — hide the icon.
 
-A handful of providers (Google AI Studio, Grok, Phind, You.com) ship with the
-generic `chat-bubble.svg` because Simple Icons doesn't carry an official mark
-for them. Override `providers.<id>.icon` if you have your own asset.
+T3 Chat and You.com ship with the generic `chat-bubble.svg` because neither
+icon set carries an official mark for them. Override `providers.<id>.icon` if
+you have your own asset.
 
 ### Per-provider prompts
 
@@ -248,5 +250,6 @@ T3 Chat, Google AI Studio, DeepSeek, DuckDuckGo, Grok, HuggingChat, Kagi,
 Mistral, Phind, You.com) and marks remain trademarks of their respective
 owners and appear nominatively in the plugin only to identify the linked
 services. No endorsement is implied. The bundled icons are from
-[Simple Icons](https://simpleicons.org/) under CC0; to use official brand
+[Simple Icons](https://simpleicons.org/) under CC0 and
+[Lobe Icons](https://lobehub.com/icons) under MIT; to use official brand
 assets, override `providers.<id>.icon`.

@@ -243,10 +243,10 @@ See [CSS customization](https://holdenhewett.github.io/starlight-llm-actions/gui
 
 Licensed under the MIT License, Copyright © Holden Hewett.
 
-Icons sourced from [Simple Icons](https://simpleicons.org/) under CC0. Brand
-names and marks remain trademarks of their respective owners and appear
-nominatively here only to identify the linked services. No endorsement is
-implied. To use official brand assets, override `providers.<name>.icon` in
-your plugin config.
+Icons sourced from [Simple Icons](https://simpleicons.org/) under CC0 and
+[Lobe Icons](https://lobehub.com/icons) under MIT. Brand names and marks remain
+trademarks of their respective owners and appear nominatively here only to
+identify the linked services. No endorsement is implied. To use official brand
+assets, override `providers.<name>.icon` in your plugin config.
 
 See [LICENSE](https://github.com/holdenhewett/starlight-llm-actions/blob/main/LICENSE) for more information.

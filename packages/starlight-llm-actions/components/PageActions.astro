@@ -2,20 +2,41 @@
 import globalConfig, { parsed as parsedGlobal } from 'virtual:starlight-llm-actions/config';
 import { markdownUrlForSlug, resolveConfig } from '../config/resolve';
 import { mergePageOverride, PageOverrideSchema } from '../config/pageOverride';
+import aistudioSvg from '../icons/aistudio.svg?raw';
 import chatBubbleSvg from '../icons/chat-bubble.svg?raw';
 import claudeSvg from '../icons/claude.svg?raw';
-import geminiSvg from '../icons/googlegemini.svg?raw';
 import copilotSvg from '../icons/githubcopilot.svg?raw';
-import perplexitySvg from '../icons/perplexity.svg?raw';
 import cursorSvg from '../icons/cursor.svg?raw';
+import deepseekSvg from '../icons/deepseek.svg?raw';
+import duckduckgoSvg from '../icons/duckduckgo.svg?raw';
+import geminiSvg from '../icons/googlegemini.svg?raw';
+import grokSvg from '../icons/grok.svg?raw';
+import huggingfaceSvg from '../icons/huggingface.svg?raw';
+import kagiSvg from '../icons/kagi.svg?raw';
+import mistralSvg from '../icons/mistral.svg?raw';
+import openaiSvg from '../icons/openai.svg?raw';
+import perplexitySvg from '../icons/perplexity.svg?raw';
+import phindSvg from '../icons/phind.svg?raw';
 
+// Every `iconFile` in providers/builtin.ts needs an entry here. A missing one
+// is silent — getInlineIcon returns null and the slot renders empty — so
+// icons.test.ts asserts the two stay in sync.
 const BUNDLED_ICONS: Record<string, string> = {
+  'aistudio.svg': aistudioSvg,
   'chat-bubble.svg': chatBubbleSvg,
   'claude.svg': claudeSvg,
-  'googlegemini.svg': geminiSvg,
-  'githubcopilot.svg': copilotSvg,
-  'perplexity.svg': perplexitySvg,
   'cursor.svg': cursorSvg,
+  'deepseek.svg': deepseekSvg,
+  'duckduckgo.svg': duckduckgoSvg,
+  'githubcopilot.svg': copilotSvg,
+  'googlegemini.svg': geminiSvg,
+  'grok.svg': grokSvg,
+  'huggingface.svg': huggingfaceSvg,
+  'kagi.svg': kagiSvg,
+  'mistral.svg': mistralSvg,
+  'openai.svg': openaiSvg,
+  'perplexity.svg': perplexitySvg,
+  'phind.svg': phindSvg,
 };
 
 const route = Astro.locals.starlightRoute;
