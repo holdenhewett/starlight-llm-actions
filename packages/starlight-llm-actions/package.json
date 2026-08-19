@@ -117,10 +117,10 @@
     "provenance": true
   },
   "devDependencies": {
-    "@astrojs/mdx": "^7.0.5",
-    "@astrojs/starlight": "^0.41.3",
+    "@astrojs/mdx": "^7.0.6",
+    "@astrojs/starlight": "^0.41.7",
     "@types/hast": "^3.0.5",
-    "astro": "^7.0.6",
+    "astro": "^7.2.3",
     "hast-util-select": "^6.0.4",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
@@ -128,6 +128,6 @@
     "remark-stringify": "^11.0.0",
     "unified": "^11.0.5",
     "unist-util-remove": "^4.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }
