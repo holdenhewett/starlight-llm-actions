@@ -70,8 +70,12 @@ So if your page is at `/guides/install/`, the markdown route is at
 `/guides/install.md`. The dropdown's **View as Markdown** action navigates
 there directly; **Copy as Markdown** fetches it client-side.
 
-If your site already publishes per-page markdown — say through a custom
-HTML→Markdown pipeline at `/raw/[...slug]` — set
+By default that route serves each page's raw markdown source, MDX and all.
+Set [`renderMarkdown: 'simple'`](/starlight-llm-actions/configuration/reference/#rendermarkdown)
+to serve flattened Markdown instead — components and JSX resolved down to plain
+prose — or point it at your own module for full control over the pipeline.
+
+If your site already publishes per-page markdown somewhere else, set
 [`injectRoute: false`](/starlight-llm-actions/configuration/reference/#injectroute)
 to disable the built-in route, and point `markdownUrl` at your existing one.
 
