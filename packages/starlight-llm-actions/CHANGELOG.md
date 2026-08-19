@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.10.0...v0.10.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* preserve hero content and label structure in generated Markdown ([#84](https://github.com/holdenhewett/starlight-llm-actions/issues/84)) ([5bf8f85](https://github.com/holdenhewett/starlight-llm-actions/commit/5bf8f85d4d6988c04ae5f2ff3c3fe569d033188e))
+
 ## [0.10.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.9.0...v0.10.0) (2026-08-18)
 
 
