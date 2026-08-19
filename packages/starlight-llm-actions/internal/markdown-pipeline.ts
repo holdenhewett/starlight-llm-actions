@@ -7,6 +7,13 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { remove } from 'unist-util-remove';
 
+/** Flattens a subtree to the text a reader would see, ignoring markup. */
+function textContent(node: Node): string {
+  if (node.type === 'text') return (node as unknown as { value: string }).value;
+  const children = (node as unknown as { children?: Node[] }).children;
+  return children ? children.map(textContent).join('') : '';
+}
+
 /**
  * Expressive Code renders a `<figure>` full of styling chrome and moves the
  * language onto `<pre data-language>`. `rehype-remark` only recognises the
@@ -29,7 +36,12 @@ function expressiveCode() {
         // becomes a bare line like `astro.config.mjs` floating between two
         // paragraphs, indistinguishable from an unfinished sentence. Bolding it
         // keeps it legible as a caption for the block that follows.
-        if (figcaption.children.length > 0) {
+        //
+        // Most blocks carry no title, and Expressive Code still emits the chip
+        // as an empty `<span class="title">`. Emphasising that yields a bare
+        // `****`, so go by what the caption actually says, not by whether any
+        // nodes are left.
+        if (textContent(figcaption).trim() !== '') {
           figcaption.children = [
             { type: 'element', tagName: 'strong', properties: {}, children: figcaption.children },
           ];
