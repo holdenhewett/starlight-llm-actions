@@ -7,6 +7,13 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { remove } from 'unist-util-remove';
 
+/** Flattens a subtree to the text a reader would see, ignoring markup. */
+function textContent(node: Node): string {
+  if (node.type === 'text') return (node as unknown as { value: string }).value;
+  const children = (node as unknown as { children?: Node[] }).children;
+  return children ? children.map(textContent).join('') : '';
+}
+
 /**
  * Expressive Code renders a `<figure>` full of styling chrome and moves the
  * language onto `<pre data-language>`. `rehype-remark` only recognises the
@@ -23,6 +30,22 @@ function expressiveCode() {
           matches('span.sr-only', child as Element),
         );
         if (index > -1) figcaption.children.splice(index, 1);
+
+        // What remains is the `title="..."` chip — a filename or label that the
+        // rendered page shows as a header bar above the code. Flattened as-is it
+        // becomes a bare line like `astro.config.mjs` floating between two
+        // paragraphs, indistinguishable from an unfinished sentence. Bolding it
+        // keeps it legible as a caption for the block that follows.
+        //
+        // Most blocks carry no title, and Expressive Code still emits the chip
+        // as an empty `<span class="title">`. Emphasising that yields a bare
+        // `****`, so go by what the caption actually says, not by whether any
+        // nodes are left.
+        if (textContent(figcaption).trim() !== '') {
+          figcaption.children = [
+            { type: 'element', tagName: 'strong', properties: {}, children: figcaption.children },
+          ];
+        }
       }
 
       const pre = select('pre', instance);
@@ -133,11 +156,34 @@ function cleanup() {
   };
 }
 
+/**
+ * Starlight renders a `<Card>` title as `<p class="title">`, styled to look like
+ * a heading but marked up as a paragraph. `rehype-remark` faithfully turns it
+ * into a paragraph, so the title becomes indistinguishable from the blurb it
+ * labels — four cards flatten into eight anonymous paragraphs.
+ *
+ * Promoting it to a real heading restores the label/body relationship. The icon
+ * goes: it carries no meaning in Markdown.
+ */
+function cardTitles() {
+  return (tree: Root): void => {
+    for (const card of selectAll('article.card', tree)) {
+      const title = select('p.title', card);
+      if (!title) continue;
+      title.tagName = 'h2';
+      title.children = title.children.filter(
+        (child) => !matches('svg', child as Element),
+      );
+    }
+  };
+}
+
 const pipeline = unified()
   .use(rehypeParse, { fragment: true })
   .use(expressiveCode)
   .use(tabs)
   .use(asides)
+  .use(cardTitles)
   .use(cleanup)
   .use(rehypeRemark)
   .use(remarkGfm)

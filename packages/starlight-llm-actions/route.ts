@@ -13,12 +13,22 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const GET: APIRoute = async (context) => {
   const { entry } = context.props as { entry: DocsEntry };
-  const title = entry.data.hero?.title ?? entry.data.title;
-  const description = entry.data.description;
+  const { hero, description } = entry.data;
+  const title = hero?.title ?? entry.data.title;
   const body = await renderBody(entry, context);
 
   const sections = [`# ${title}`];
   if (description) sections.push(`> ${description}`);
+
+  // A splash page keeps its tagline and primary calls to action in `hero`
+  // frontmatter, which Starlight's layout renders — so none of it is in the
+  // body the renderer sees. Left out, a site's home page advertises no way in:
+  // its Markdown ends up with the card blurbs but not the "Get started" link.
+  if (hero?.tagline) sections.push(hero.tagline);
+  if (hero?.actions?.length) {
+    sections.push(hero.actions.map((action) => `- [${action.text}](${action.link})`).join('\n'));
+  }
+
   sections.push(body);
 
   return new Response(sections.join('\n\n'), {
