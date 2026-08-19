@@ -1,0 +1,134 @@
+---
+title: Markdown rendering
+description: Choose what the markdown route serves — raw page source or flattened Markdown.
+---
+
+The [markdown route](/starlight-llm-actions/getting-started/concepts/#the-markdown-route)
+serves your page's source verbatim by default. On a Markdown site that is
+exactly right. On an MDX site it means the thing an AI agent fetches is full of
+import statements and component tags rather than prose.
+
+[`renderMarkdown`](/starlight-llm-actions/configuration/reference/#rendermarkdown)
+decides which of those the route serves.
+
+## What the modes produce
+
+This page in your editor:
+
+````mdx
+<Tabs syncKey="pkg">
+  <TabItem label="npm">
+    ```sh
+    npm install starlight-llm-actions
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm add starlight-llm-actions
+    ```
+  </TabItem>
+</Tabs>
+````
+
+Under the default `'raw'`, that is byte-for-byte what the `.md` route returns —
+component tags included. An agent has to guess what `<Tabs>` means.
+
+Under `'simple'`, the same block arrives as ordinary Markdown:
+
+````md
+* npm
+
+  ```sh
+  npm install starlight-llm-actions
+  ```
+
+* pnpm
+
+  ```sh
+  pnpm add starlight-llm-actions
+  ```
+````
+
+Nothing is left for the reader to interpret. Starlight's `<Tabs>`,
+`<FileTree>`, `<Steps>`, and Expressive Code blocks all flatten this way.
+
+## Choosing a mode
+
+| Mode | Use it when |
+|---|---|
+| `'raw'` | Your pages are plain Markdown, or you *want* the source — someone copying a page to file a docs PR needs the original, not a rendering of it. |
+| `'simple'` | Your pages use MDX components and the audience is AI agents or readers, not editors. |
+| `{ module }` | You need output neither mode produces — stripping sections, injecting frontmatter, rewriting links for an external index. |
+
+If you are unsure, `'raw'` is the safer default: it has no dependencies and
+cannot fail.
+
+## Enabling `'simple'`
+
+The flattening pipeline is heavy, so the plugin does not bundle it:
+
+```sh
+npm install @astrojs/mdx unified rehype-parse rehype-remark remark-gfm remark-stringify hast-util-select unist-util-remove
+```
+
+Then set the mode:
+
+```js
+starlightLlmActions({
+  renderMarkdown: 'simple',
+})
+```
+
+Miss a dependency and the build stops at config time and prints the exact
+install command — it will not fail halfway through rendering your pages.
+
+## What can go wrong
+
+**Framework components throw.** `'simple'` renders through an Astro container
+that registers the MDX renderer only, so a page using a React, Vue, Svelte, or
+Solid component cannot render. The plugin catches that per page, warns with the
+page name, and serves that page's raw source instead. One such page will not
+fail your build or affect any other page.
+
+**Chrome leaks into the output.** Unknown custom elements are unwrapped and
+their text kept. When an element renders pure chrome you do not want in the
+Markdown, mark it and the whole subtree is dropped:
+
+```html
+<div data-mdast="ignore">…</div>
+```
+
+**Turning off the route makes the mode moot.** With
+[`injectRoute: false`](/starlight-llm-actions/configuration/reference/#injectroute)
+there is no route to render, so the setting changes nothing — though `'simple'`
+still expects its dependencies whenever it is set.
+
+## Advertising the Markdown
+
+Rendering good Markdown only helps if something can find it.
+[`linkAlternate`](/starlight-llm-actions/configuration/reference/#linkalternate)
+adds a discovery tag to every page:
+
+```js
+starlightLlmActions({
+  linkAlternate: true,
+})
+```
+
+Each page then carries a tag pointing at its own Markdown:
+
+```html
+<link rel="alternate" type="text/markdown" href="/guides/example.md" />
+```
+
+Crawlers and agents can follow it without knowing your URL convention. Drafts
+and the 404 page are skipped, because the route produces no Markdown for them.
+
+## Verify it on this site
+
+These docs run `renderMarkdown: 'simple'` and `linkAlternate: true`, so you can
+check both without installing anything. Open
+[the Markdown for the install page](/starlight-llm-actions/getting-started/install.md)
+and compare it against the `<Tabs>` source above — that is the flattening,
+running live. View the source of any page here and you will find its
+`alternate` tag in the `<head>`.

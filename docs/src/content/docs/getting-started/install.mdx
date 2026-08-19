@@ -28,6 +28,14 @@ It works with **Starlight v0.32+** and **Astro v5+**.
   </TabItem>
 </Tabs>
 
+:::note[Optional dependencies]
+The package installs nothing else. One option needs more: setting
+[`renderMarkdown: 'simple'`](/starlight-llm-actions/guides/markdown-rendering/)
+to flatten MDX components into plain Markdown pulls in a rendering pipeline you
+install yourself. Skip it unless you turn that mode on — and if you forget, the
+build tells you the exact command.
+:::
+
 ## 2. Add it to your Starlight config
 
 Drop the plugin into the `plugins` array of your Starlight integration in
