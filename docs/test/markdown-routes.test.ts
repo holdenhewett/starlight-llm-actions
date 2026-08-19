@@ -125,6 +125,40 @@ describe("'simple' mode preserves meaning, not just syntax", () => {
     expect(read('configuration/reference.md')).toMatch(/^```(ts|js)$/m);
   });
 
+  it('carries the splash hero into the home page route', () => {
+    const md = read('index.md');
+    // tagline and CTAs live in `hero` frontmatter, which the layout renders —
+    // none of it is in the body, so it has to be emitted deliberately.
+    expect(md).toContain('Copy as Markdown, view raw, save as PDF');
+    expect(md).toContain('[Get started](/starlight-llm-actions/getting-started/install/)');
+    expect(md).toContain(
+      '[Configuration reference](/starlight-llm-actions/configuration/reference/)',
+    );
+  });
+
+  it('keeps each <Card> title a heading rather than a bare paragraph', () => {
+    const md = read('index.md');
+    for (const title of [
+      'One-line install',
+      'Per-provider strategies',
+      'Print-aware snapshots',
+      'Per-page opt-out',
+    ]) {
+      expect(md).toMatch(new RegExp(`^#{2,3} ${title}$`, 'm'));
+    }
+  });
+
+  it('never emits an empty emphasis run', () => {
+    // Expressive Code ships the title chip even for untitled blocks, as an
+    // empty span. Wrapping that yields a bare `****` between a tab label and
+    // its command; a reader cannot tell it from a formatting error.
+    for (const file of files) {
+      expect(read(file), `${file} has an empty emphasis run`).not.toMatch(
+        /^\s*\*\*\*\*\s*$/m,
+      );
+    }
+  });
+
   it('documents the renderMarkdown values in the reference route', () => {
     const md = read('configuration/reference.md');
     for (const v of ["'raw'", "'simple'", 'module']) expect(md).toContain(v);
