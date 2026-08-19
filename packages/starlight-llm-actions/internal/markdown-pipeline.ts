@@ -23,6 +23,17 @@ function expressiveCode() {
           matches('span.sr-only', child as Element),
         );
         if (index > -1) figcaption.children.splice(index, 1);
+
+        // What remains is the `title="..."` chip — a filename or label that the
+        // rendered page shows as a header bar above the code. Flattened as-is it
+        // becomes a bare line like `astro.config.mjs` floating between two
+        // paragraphs, indistinguishable from an unfinished sentence. Bolding it
+        // keeps it legible as a caption for the block that follows.
+        if (figcaption.children.length > 0) {
+          figcaption.children = [
+            { type: 'element', tagName: 'strong', properties: {}, children: figcaption.children },
+          ];
+        }
       }
 
       const pre = select('pre', instance);
@@ -133,11 +144,34 @@ function cleanup() {
   };
 }
 
+/**
+ * Starlight renders a `<Card>` title as `<p class="title">`, styled to look like
+ * a heading but marked up as a paragraph. `rehype-remark` faithfully turns it
+ * into a paragraph, so the title becomes indistinguishable from the blurb it
+ * labels — four cards flatten into eight anonymous paragraphs.
+ *
+ * Promoting it to a real heading restores the label/body relationship. The icon
+ * goes: it carries no meaning in Markdown.
+ */
+function cardTitles() {
+  return (tree: Root): void => {
+    for (const card of selectAll('article.card', tree)) {
+      const title = select('p.title', card);
+      if (!title) continue;
+      title.tagName = 'h2';
+      title.children = title.children.filter(
+        (child) => !matches('svg', child as Element),
+      );
+    }
+  };
+}
+
 const pipeline = unified()
   .use(rehypeParse, { fragment: true })
   .use(expressiveCode)
   .use(tabs)
   .use(asides)
+  .use(cardTitles)
   .use(cleanup)
   .use(rehypeRemark)
   .use(remarkGfm)

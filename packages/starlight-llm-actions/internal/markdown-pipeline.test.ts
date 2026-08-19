@@ -93,4 +93,29 @@ describe('htmlToMarkdown', () => {
     expect(md).toContain('| Option |');
     expect(md).toContain('| base   |');
   });
+
+  it('keeps an Expressive Code file-name caption legible as a caption', async () => {
+    const md = await htmlToMarkdown(
+      '<figure class="expressive-code">' +
+        '<figcaption class="header">' +
+        '<span class="sr-only">Terminal window</span>' +
+        '<span class="title">astro.config.mjs</span>' +
+        '</figcaption>' +
+        '<pre data-language="js"><code>export default {}</code></pre>' +
+        '</figure>',
+    );
+    expect(md).toContain('**astro.config.mjs**');
+    expect(md).not.toMatch(/^astro\.config\.mjs$/m);
+  });
+
+  it('promotes a Card title to a heading over its blurb', async () => {
+    const md = await htmlToMarkdown(
+      '<article class="card">' +
+        '<p class="title"><svg viewBox="0 0 24 24"><path d="M0 0" /></svg>One-line install</p>' +
+        '<div class="body"><p>Add the plugin and you are done.</p></div>' +
+        '</article>',
+    );
+    expect(md).toContain('## One-line install');
+    expect(md).toContain('Add the plugin and you are done.');
+  });
 });
