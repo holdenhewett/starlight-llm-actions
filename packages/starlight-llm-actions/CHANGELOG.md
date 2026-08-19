@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.9.0...v0.10.0) (2026-08-18)
+
+
+### Features
+
+* add renderMarkdown and linkAlternate options ([#76](https://github.com/holdenhewett/starlight-llm-actions/issues/76)) ([587c8c1](https://github.com/holdenhewett/starlight-llm-actions/commit/587c8c17dbaaab1922e8f467d667f2a4a12284ec))
+
+
+### Bug Fixes
+
+* render icons for every provider in the dropdown ([#77](https://github.com/holdenhewett/starlight-llm-actions/issues/77)) ([b36b5c1](https://github.com/holdenhewett/starlight-llm-actions/commit/b36b5c10e3efaf92ff04caf5ed5cd4201b668855))
+
 ## [0.9.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.8.0...v0.9.0) (2026-07-06)
 
 
