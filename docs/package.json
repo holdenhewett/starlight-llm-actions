@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.6",
@@ -21,5 +22,8 @@
     "starlight-llm-actions": "workspace:*",
     "unified": "^11.0.5",
     "unist-util-remove": "^4.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
   }
 }

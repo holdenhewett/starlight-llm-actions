@@ -54,3 +54,6 @@ jobs:
 
       - name: Build docs playground
         run: pnpm --filter docs build
+
+      - name: Test docs markdown routes
+        run: pnpm --filter docs test
