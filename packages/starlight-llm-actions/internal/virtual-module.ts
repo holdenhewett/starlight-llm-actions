@@ -5,6 +5,30 @@ import type { StarlightLlmActionsConfig } from '../config/schema.js';
 const MODULE_ID = 'virtual:starlight-llm-actions/config';
 const RESOLVED_ID = `\0${MODULE_ID}`;
 
+const UNSAFE_CHARS: Record<string, string> = {
+  '<': '\\u003C',
+  '>': '\\u003E',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+};
+
+/**
+ * JSON as a JavaScript **string literal**, not just as JSON.
+ *
+ * `JSON.stringify` alone is not enough to embed a value in generated source.
+ * It leaves `<` and `>` intact, so a value containing `</script>` can break out
+ * of a script tag if the generated module is ever inlined; and it emits U+2028
+ * and U+2029 raw, which are legal in JSON but were string terminators in
+ * JavaScript before ES2019. Escaping them yields identical runtime values —
+ * `<` in a string literal *is* `<` — with none of the ambiguity.
+ */
+function serialize(value: unknown): string {
+  return JSON.stringify(value).replace(
+    /[<>\u2028\u2029]/g,
+    (char) => UNSAFE_CHARS[char]!,
+  );
+}
+
 /**
  * Vite plugin that exposes plugin config to Astro components and routes via
  * `virtual:starlight-llm-actions/config`. The default export is the
@@ -30,11 +54,11 @@ export function virtualConfigPlugin(
   const renderer =
     rendererSpecifier === null
       ? 'null'
-      : `() => import(${JSON.stringify(rendererSpecifier)})`;
+      : `() => import(${serialize(rendererSpecifier)})`;
 
   const moduleSource =
-    `export default ${JSON.stringify(resolved)};\n` +
-    `export const parsed = ${JSON.stringify(parsed)};\n` +
+    `export default ${serialize(resolved)};\n` +
+    `export const parsed = ${serialize(parsed)};\n` +
     `export const renderer = ${renderer};\n`;
 
   return {
