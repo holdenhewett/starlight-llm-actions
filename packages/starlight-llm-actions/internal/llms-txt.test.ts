@@ -293,4 +293,66 @@ describe('siteMeta', () => {
   it('falls back to the first title when the default language has none', () => {
     expect(siteMeta({ title: { fr: 'Docs Acme' } }).title).toBe('Docs Acme');
   });
+
+  /**
+   * `lang` is optional on every locale but `root`, and Starlight fills it from
+   * the key (`lang = locale.lang || key`). Defaulting to `'en'` instead would
+   * sort a French site with an English collator and pick the wrong localized
+   * title — the site would build, just subtly wrong.
+   */
+  it('falls back to the locales key when that entry omits `lang`', () => {
+    expect(
+      siteMeta({
+        title: { fr: 'Docs Acme', en: 'Acme Docs' },
+        defaultLocale: 'fr',
+        locales: { fr: { label: 'Français' }, en: { label: 'English' } },
+      }),
+    ).toMatchObject({ title: 'Docs Acme', defaultLang: 'fr' });
+  });
+
+  it("still answers 'en' for a 'root' entry with no lang and no locales at all", () => {
+    // `root` is the one key whose schema requires `lang`, so falling back to the
+    // key would yield the nonsense tag 'root'.
+    expect(siteMeta({ title: 'Acme Docs', locales: { root: {} } }).defaultLang).toBe('en');
+    expect(siteMeta({ title: 'Acme Docs' }).defaultLang).toBe('en');
+  });
+});
+
+/**
+ * `llms.txt` is a Markdown document, and page labels and descriptions come from
+ * author-written frontmatter. These pin the two ways that text can stop being a
+ * list item.
+ */
+describe('link sanitization', () => {
+  const one = (label: string, description?: string) =>
+    renderLlmsTxt({
+      title: 'Acme Docs',
+      description: null,
+      sets: [],
+      pages: [{ label, url: 'https://example.com/p.md', description }],
+    })
+      .split('\n')
+      .find((line) => line.startsWith('- '))!;
+
+  it('escapes brackets in a label so the link survives', () => {
+    expect(one('[Deprecated] API')).toBe(
+      '- [\\[Deprecated\\] API](https://example.com/p.md)',
+    );
+  });
+
+  it('escapes an unbalanced bracket, which would otherwise destroy the link', () => {
+    expect(one('Arrays: a] b')).toBe('- [Arrays: a\\] b](https://example.com/p.md)');
+  });
+
+  it('collapses a multi-line description onto the list item', () => {
+    // A YAML literal block keeps its newlines; emitted raw, the continuation
+    // lines land outside the `- ` marker and read as prose between entries.
+    expect(one('Install', 'How to install\nthe plugin,\nstep by step')).toBe(
+      '- [Install](https://example.com/p.md): How to install the plugin, step by step',
+    );
+  });
+
+  it('collapses a multi-line label too', () => {
+    expect(one('A long\n  title')).toBe('- [A long title](https://example.com/p.md)');
+  });
 });

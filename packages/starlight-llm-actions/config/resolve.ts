@@ -176,6 +176,16 @@ export function resolveConfig(
     );
   }
 
+  // Every consumer treats the template as site-absolute and concatenates it onto
+  // a `base` with its trailing slash stripped, so a relative template silently
+  // produces `/docsslug.md`. Astro's `injectRoute` pattern needs the leading
+  // slash too. Rejecting it here beats four subtly wrong URLs downstream.
+  if (!markdownUrl.startsWith('/')) {
+    throw new Error(
+      `starlight-llm-actions: \`markdownUrl\` must start with "/". Got: "${markdownUrl}"`,
+    );
+  }
+
   return {
     actions: resolveActions(parsed.actions, prompt),
     prompt,

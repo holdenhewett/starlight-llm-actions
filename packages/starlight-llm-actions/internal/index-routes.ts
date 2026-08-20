@@ -26,6 +26,17 @@ export const llmsTxt = config.llmsTxt!;
 const collator = new Intl.Collator(starlight.defaultLang);
 
 /**
+ * Pages that are never documentation, whatever the site's config says.
+ *
+ * Starlight renders a 404 page from a synthetic entry that never reaches the
+ * collection, so only a site shipping its own `404.md` has one here. For those,
+ * `404` sorts ahead of every letter, putting "Page not found" at the top of
+ * `llms.txt` as the first thing an agent reads. `link-alternate.ts` already
+ * refuses to advertise that page for the same reason.
+ */
+const NEVER_INDEXED = ['404'];
+
+/**
  * Apply `exclude`, then `promote`/`demote` ordering.
  *
  * Every index starts from this one list: `llms.txt` links each entry, the full
@@ -35,7 +46,7 @@ const collator = new Intl.Collator(starlight.defaultLang);
  */
 export function indexEntries<T extends IndexEntry>(entries: readonly T[]): T[] {
   return sortEntries(
-    applyExclude(entries, llmsTxt.exclude),
+    applyExclude(entries, [...llmsTxt.exclude, ...NEVER_INDEXED]),
     llmsTxt.promote,
     llmsTxt.demote,
     collator,

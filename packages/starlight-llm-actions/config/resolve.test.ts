@@ -210,3 +210,38 @@ describe('option independence', () => {
     expect(resolved.linkAlternate).not.toBeNull();
   });
 });
+
+/**
+ * Both rules are enforced on the *resolved* value rather than in the Zod schema,
+ * because the schema never sees the default — `markdownUrl` is optional, and a
+ * refinement on an absent key does not run.
+ */
+describe('markdownUrl', () => {
+  it('defaults to the per-page .md route', () => {
+    expect(resolveConfig({}).markdownUrl).toBe('/{slug}.md');
+  });
+
+  it('accepts a site-absolute template', () => {
+    expect(resolveConfig({ markdownUrl: '/raw/{slug}.txt' }).markdownUrl).toBe(
+      '/raw/{slug}.txt',
+    );
+  });
+
+  it('rejects a template with no {slug}', () => {
+    expect(() => resolveConfig({ markdownUrl: '/raw.md' })).toThrow(/must contain/);
+  });
+
+  it('rejects a relative template, which would concatenate onto base', () => {
+    // `base` is joined with its trailing slash stripped, so '{slug}.md' under a
+    // base of '/docs/' silently yields '/docsguides/example.md'.
+    expect(() => resolveConfig({ markdownUrl: '{slug}.md' })).toThrow(
+      /must start with "\/"/,
+    );
+  });
+
+  it('names the offending value in the message', () => {
+    expect(() => resolveConfig({ markdownUrl: 'raw/{slug}.md' })).toThrow(
+      /Got: "raw\/\{slug\}\.md"/,
+    );
+  });
+});

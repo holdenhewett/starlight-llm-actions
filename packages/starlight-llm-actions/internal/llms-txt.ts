@@ -49,9 +49,15 @@ export interface StarlightMetaSource {
  * collator can be built.
  *
  * The language resolution mirrors Starlight's own: the `locales` entry named by
- * `defaultLocale`, falling back to the `root` entry, falling back to the
- * built-in `'en'`. Note that `defaultLocale` names a *key in `locales`*, not a
- * language tag — they coincide often enough to be worth stating.
+ * `defaultLocale`, falling back to the `root` entry. Note that `defaultLocale`
+ * names a *key in `locales`*, not a language tag — they coincide often enough to
+ * be worth stating.
+ *
+ * When that entry omits `lang`, Starlight falls back to the key itself
+ * (`lang = locale.lang || key`, in its `locales` transform), so
+ * `locales: { fr: { label: 'Français' } }` runs in French rather than English.
+ * The `root` key is the one exception: its schema requires `lang`. A site with
+ * no `locales` at all gets Starlight's built-in `'en'`.
  *
  * The `Object.values` fallback covers a title record with no entry for the
  * resolved language. Starlight rejects that config outright; this returns
@@ -59,7 +65,9 @@ export interface StarlightMetaSource {
  * title in one generated file is not worth failing a build over.
  */
 export function siteMeta(config: StarlightMetaSource): SiteMeta {
-  const defaultLang = config.locales?.[config.defaultLocale || 'root']?.lang || 'en';
+  const key = config.defaultLocale || 'root';
+  const defaultLang =
+    config.locales?.[key]?.lang || (key === 'root' ? 'en' : key);
 
   const title =
     typeof config.title === 'string'
@@ -183,8 +191,32 @@ export function absoluteUrl(
   return new URL(base.replace(/\/$/, '') + pathname, site).href;
 }
 
+/**
+ * Collapse a frontmatter string onto one line.
+ *
+ * Every entry in `llms.txt` is one list item, but a `description` written as a
+ * YAML literal block keeps its newlines. Emitted as-is, the continuation lines
+ * sit outside the `- ` marker and read as loose prose between entries.
+ */
+function oneLine(value: string): string {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Escape the brackets in a link label.
+ *
+ * CommonMark allows *balanced* brackets inside link text, so a title like
+ * `[Deprecated] API` already survives intact. An unbalanced one does not: a
+ * stray `]` drops the link entirely, and a stray `[` swallows the text before
+ * it. Escaping both is cheaper than deciding which titles are balanced.
+ */
+function escapeLabel(label: string): string {
+  return oneLine(label).replace(/[[\]]/g, '\\$&');
+}
+
 function linkLine({ label, url, description }: IndexLink): string {
-  return `- [${label}](${url})` + (description ? `: ${description}` : '');
+  const summary = description ? oneLine(description) : '';
+  return `- [${escapeLabel(label)}](${url})` + (summary ? `: ${summary}` : '');
 }
 
 export interface LlmsTxtDocument {

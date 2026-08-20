@@ -192,6 +192,15 @@ describe('site-level indexes', () => {
     .split('\n')
     .filter((line) => line.startsWith('- ['));
 
+  /**
+   * Pages that get a `.md` route but never appear in an index.
+   *
+   * `examples/mixed.md` is left out by the playground's `exclude`;
+   * `404.md` is left out by construction, no config involved.
+   */
+  const unindexed = ['404.md', 'examples/mixed.md'];
+  const indexable = files.filter((f) => !unindexed.includes(f));
+
   /** `dist`-relative `.md` path each page link points at. */
   const linked = pageLines.map(
     (line) =>
@@ -223,18 +232,35 @@ describe('site-level indexes', () => {
     ]);
   });
 
-  it('links every page except the excluded one, at its own .md route', () => {
+  it('links every indexable page at its own .md route', () => {
     // Copies, not `linked.sort()`: `linked` is shared with the ordering tests
     // below and Array#sort mutates in place.
-    expect([...linked].sort()).toEqual(
-      files.filter((f) => f !== 'examples/mixed.md').sort(),
-    );
+    expect([...linked].sort()).toEqual([...indexable].sort());
   });
 
   it('still serves the excluded page its own .md route', () => {
     // `exclude` is about the indexes, not about hiding a page.
     expect(files).toContain('examples/mixed.md');
     expect(full).not.toMatch(/^# Example: Mixed overrides$/m);
+  });
+
+  it('leaves a real 404 page out of every index without config', () => {
+    // The playground ships src/content/docs/404.md, so the entry is genuinely
+    // in the collection — and `404` sorts ahead of every letter, so a leak puts
+    // "Page not found" at the top of llms.txt as the first thing an agent reads.
+    expect(files).toContain('404.md');
+    expect(index).not.toContain('404.md');
+    expect(full).not.toMatch(/^# Page not found$/m);
+    for (const f of ['llms-configuration.txt', 'llms-actions.txt']) {
+      expect(read(f)).not.toMatch(/^# Page not found$/m);
+    }
+  });
+
+  it('never advertises the 404 page as a Markdown alternate', () => {
+    // link-alternate skips id '404' for the same reason: a <link rel=alternate>
+    // pointing at the not-found page is worse than no tag at all.
+    const html = readFileSync(`${dist}/404.html`, 'utf8');
+    expect(html).not.toMatch(/rel="alternate"[^>]*404\.md/);
   });
 
   it('promotes the index page and demotes the examples section', () => {
@@ -245,8 +271,7 @@ describe('site-level indexes', () => {
   });
 
   it('concatenates the per-page routes verbatim into the full bundle', () => {
-    for (const f of files) {
-      if (f === 'examples/mixed.md') continue;
+    for (const f of indexable) {
       expect(full, `${f} was re-rendered rather than reused`).toContain(read(f));
     }
   });
