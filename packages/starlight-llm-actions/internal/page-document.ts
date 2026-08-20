@@ -43,12 +43,25 @@ export type PageEntry = {
  * is no second reader, so caching every page document for the length of the
  * build would retain the entire site's Markdown to serve nobody.
  *
- * Keyed on entry id alone, which means the first route to ask for a page fixes
- * the `APIContext` it renders under. The contexts differ only in `url` — the
- * page's own `.md` route versus `/llms-full.txt` — so this is observable only
- * from a component in a doc body that reads `Astro.url`, and Astro gives no
- * ordering guarantee between injected routes anyway. `starlight-llms-txt` passes
- * its own route's context the same way.
+ * Keyed on entry id alone, deliberately. The guarantee this cache exists to
+ * provide is that a page's own `.md` route and every index containing that page
+ * serve the *same bytes*; adding the context to the key would license those to
+ * diverge, which is the bug rather than the fix. `docs/test` pins the identity
+ * end to end.
+ *
+ * The callers' contexts differ in more than `url`: `route.ts` has
+ * `params: { slug }`, the bundle route has `params: { bundle }`, and each passes
+ * its own `props`. None of that reaches the output, because the document is a
+ * function of the entry — `render(entry, context)` spends the context on the
+ * component render, and the title, description and hero all come off
+ * `entry.data`.
+ *
+ * That leaves one case where the first caller wins something observable: a
+ * component in a doc body that reads `Astro.url`. Keying on the context would
+ * not rescue it. The bundle has to inline that page under the bundle's own URL,
+ * so there is no context under which the page's Markdown is both correct in
+ * `llms-full.txt` and identical to its `.md` route. Such a page has no stable
+ * Markdown representation, whatever this Map does.
  */
 const documents = new Map<string, Promise<string>>();
 const shared = config.llmsTxt !== null;
