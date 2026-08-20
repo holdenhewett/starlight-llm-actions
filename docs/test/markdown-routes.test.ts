@@ -71,7 +71,11 @@ describe('built .md routes', () => {
   it.each(files)('%s is non-empty and has a single H1', (f) => {
     const raw = read(f);
     expect(raw.trim()).not.toBe('');
-    expect(raw.match(/^# /gm)?.length).toBe(1);
+    // Counted on prose(), not raw: the llms.txt guide quotes a sample llms.txt
+    // inside a fence, and its `# ` line is example content, not a heading.
+    // Safe only because the next test pins fence balance — an unclosed fence
+    // would make prose() swallow the tail and undercount to a passing 1.
+    expect(prose(raw).match(/^# /gm)?.length).toBe(1);
   });
 
   it.each(files)('%s has balanced code fences', (f) => {
@@ -162,5 +166,108 @@ describe("'simple' mode preserves meaning, not just syntax", () => {
   it('documents the renderMarkdown values in the reference route', () => {
     const md = read('configuration/reference.md');
     for (const v of ["'raw'", "'simple'", 'module']) expect(md).toContain(v);
+  });
+});
+
+/**
+ * End-to-end checks on the site-level indexes.
+ *
+ * The playground enables `llmsTxt` with a `demote`, an `exclude`, and two named
+ * subsets (see astro.config.mjs), so one build exercises every option the
+ * feature has.
+ *
+ * The claim worth pinning here is pipeline consistency: the bundles must contain
+ * exactly the bytes the per-page `.md` routes serve. That is the whole reason
+ * this plugin generates its own indexes instead of deferring to
+ * `starlight-llms-txt` — two generators on one site means two qualities of
+ * Markdown.
+ */
+describe('site-level indexes', () => {
+  const index = read('llms.txt');
+  const full = read('llms-full.txt');
+
+  /** The `- [label](url)` lines under `## Documentation`. */
+  const pageLines = index
+    .slice(index.indexOf('## Documentation\n'))
+    .split('\n')
+    .filter((line) => line.startsWith('- ['));
+
+  /** `dist`-relative `.md` path each page link points at. */
+  const linked = pageLines.map(
+    (line) =>
+      line
+        .match(/\]\(https:\/\/holdenhewett\.github\.io\/starlight-llm-actions\/(.+?)\)/)
+        ?.[1] ?? line,
+  );
+
+  it('emits llms.txt, the full bundle, and one file per named subset', () => {
+    for (const f of ['llms.txt', 'llms-full.txt', 'llms-configuration.txt', 'llms-actions.txt']) {
+      expect(existsSync(`${dist}/${f}`), `${f} was not generated`).toBe(true);
+    }
+  });
+
+  it("opens llms.txt with Starlight's own title and description", () => {
+    expect(index.startsWith('# starlight-llm-actions\n')).toBe(true);
+    expect(index).toContain('> Playground for the starlight-llm-actions plugin.');
+  });
+
+  it('lists the full bundle first, then each subset, as absolute URLs', () => {
+    const sets = index
+      .slice(index.indexOf('## Documentation Sets'), index.indexOf('## Documentation\n'))
+      .split('\n')
+      .filter((line) => line.startsWith('- ['));
+    expect(sets).toEqual([
+      '- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions documentation as Markdown',
+      '- [Configuration](https://holdenhewett.github.io/starlight-llm-actions/llms-configuration.txt): every configuration option',
+      '- [Actions](https://holdenhewett.github.io/starlight-llm-actions/llms-actions.txt): the four page actions',
+    ]);
+  });
+
+  it('links every page except the excluded one, at its own .md route', () => {
+    // Copies, not `linked.sort()`: `linked` is shared with the ordering tests
+    // below and Array#sort mutates in place.
+    expect([...linked].sort()).toEqual(
+      files.filter((f) => f !== 'examples/mixed.md').sort(),
+    );
+  });
+
+  it('still serves the excluded page its own .md route', () => {
+    // `exclude` is about the indexes, not about hiding a page.
+    expect(files).toContain('examples/mixed.md');
+    expect(full).not.toMatch(/^# Example: Mixed overrides$/m);
+  });
+
+  it('promotes the index page and demotes the examples section', () => {
+    expect(linked[0]).toBe('index.md');
+    const lastGuide = linked.findLastIndex((f) => f.startsWith('guides/'));
+    const firstExample = linked.findIndex((f) => f.startsWith('examples'));
+    expect(lastGuide).toBeLessThan(firstExample);
+  });
+
+  it('concatenates the per-page routes verbatim into the full bundle', () => {
+    for (const f of files) {
+      if (f === 'examples/mixed.md') continue;
+      expect(full, `${f} was re-rendered rather than reused`).toContain(read(f));
+    }
+  });
+
+  it('orders the full bundle the same way llms.txt lists the pages', () => {
+    const offsets = linked.map((f) => full.indexOf(read(f)));
+    expect(offsets).toEqual([...offsets].sort((a, b) => a - b));
+  });
+
+  it('names what each bundle holds in a <SYSTEM> preamble', () => {
+    expect(full.startsWith('<SYSTEM>This is the complete starlight-llm-actions documentation, as Markdown.</SYSTEM>')).toBe(true);
+    expect(read('llms-actions.txt')).toContain(
+      '<SYSTEM>This is the Actions section of the starlight-llm-actions documentation, as Markdown.</SYSTEM>',
+    );
+  });
+
+  it('limits a subset to the pages its paths match', () => {
+    const actions = read('llms-actions.txt');
+    const pages = files.filter((f) => f.startsWith('actions/'));
+    expect(pages.length).toBe(4);
+    for (const f of pages) expect(actions).toContain(read(f));
+    expect(actions.match(/^# /gm)?.length).toBe(pages.length);
   });
 });

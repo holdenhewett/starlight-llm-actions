@@ -23,6 +23,7 @@
     "scripts",
     "env.d.ts",
     "route.ts",
+    "routes",
     "internal/simple-markdown.ts",
     "**/*.astro",
     "**/*.test.ts"

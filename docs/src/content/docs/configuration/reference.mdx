@@ -124,6 +124,35 @@ Two kinds of page get no tag, because the injected route generates no Markdown
 for them: drafts, and the 404 page. See
 [`LinkAlternateConfig`](#linkalternateconfig) below.
 
+### `llmsTxt`
+
+- **Type:** `boolean | `[`LlmsTxtConfig`](#llmstxtconfig)
+- **Default:** `false`
+
+Generate site-level indexes: `/llms.txt`, `/llms-full.txt`, and one
+`/llms-{subset}.txt` per named subset.
+
+```js
+starlightLlmActions({
+  llmsTxt: true,
+})
+```
+
+`llms.txt` is the [llmstxt.org](https://llmstxt.org/) index — your site title,
+its description, a link to each bundle, and a link to every page's own Markdown
+route. `llms-full.txt` is every page concatenated into one file.
+
+The bundles run the same renderer the [Markdown
+route](#rendermarkdown) does, so every Markdown surface on your site carries
+identical output.
+
+Requires `site` in your Astro config, because `llms.txt` links have to be
+absolute — an agent handed the file as a blob has no base to resolve against.
+The plugin throws at config time if `site` is unset.
+
+See [`LlmsTxtConfig`](#llmstxtconfig) below for ordering, exclusion, and named
+subsets.
+
 ### `prompt`
 
 - **Type:** `string`
@@ -563,6 +592,121 @@ export default defineConfig({
 ```html
 <link rel="alternate" type="text/markdown" href="https://example.com/guides/example.md" />
 ```
+
+## `LlmsTxtConfig`
+
+Passed to [`llmsTxt`](#llmstxt).
+
+```ts
+{
+  promote?: string[];  // default: ['index*']
+  demote?: string[];   // default: []
+  exclude?: string[];  // default: []
+  subsets?: { label: string; description?: string; paths: string[] }[];
+}
+```
+
+Passing `true` instead of an object is shorthand for `{}` — enabled with all
+defaults.
+
+Every pattern here matches a Content Collection entry id (`guides/example`, not
+`/guides/example/`) through [picomatch](https://github.com/micromatch/picomatch),
+the same glob dialect `starlight-llms-txt` uses. An existing pattern list ports
+over unchanged.
+
+### `llmsTxt.promote`
+
+- **Type:** `string[]`
+- **Default:** `['index*']`
+
+Entry ids sorted to the top of every index. Earlier patterns outrank later ones,
+so `promote: ['index*', 'getting-started/**']` puts the home page first and the
+getting-started section second.
+
+Pass `[]` to turn the default off and order everything alphabetically.
+
+### `llmsTxt.demote`
+
+- **Type:** `string[]`
+- **Default:** `[]`
+
+Entry ids sorted to the end. Earlier patterns come before later ones, so the
+first pattern lands just after the un-ranked pages and the last pattern lands
+dead last.
+
+A page matching both `promote` and `demote` is demoted — a page you pushed to the
+end was named more deliberately than one swept up by a broad `promote` glob.
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    promote: ['index*', 'getting-started/**'],
+    demote: ['reference/**', 'changelog*'],
+  },
+})
+```
+
+### `llmsTxt.exclude`
+
+- **Type:** `string[]`
+- **Default:** `[]`
+
+Entry ids dropped from every index. Drafts are already excluded.
+
+This does not hide a page: an excluded page still serves its own Markdown route,
+and still carries its `<link rel="alternate">` tag if
+[`linkAlternate`](#linkalternate) is on. It only stops appearing in `llms.txt`
+and the bundles.
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    exclude: ['internal/**', 'sandbox/**'],
+  },
+})
+```
+
+### `llmsTxt.subsets`
+
+- **Type:** `{ label: string; description?: string; paths: string[] }[]`
+- **Default:** `[]`
+
+Named slices of the docs, each emitted as its own bundle and listed in
+`llms.txt`. Useful when one section is large enough that an agent should be able
+to fetch it without the rest of the site.
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    subsets: [
+      {
+        label: 'REST API',
+        description: 'the complete REST API reference',
+        paths: ['api/**'],
+      },
+    ],
+  },
+})
+```
+
+That emits `/llms-rest-api.txt` and adds this line to `llms.txt`:
+
+```md
+- [REST API](https://example.com/llms-rest-api.txt): the complete REST API reference
+```
+
+| Field | Required | Behavior |
+| --- | --- | --- |
+| `label` | yes | Human-readable name. Lowercased and hyphenated to build the file name, so `'REST API'` becomes `/llms-rest-api.txt`. |
+| `description` | no | Appended after the subset's link in `llms.txt`. |
+| `paths` | yes | Globs matching the entry ids to include. At least one. |
+
+A subset inherits `exclude` and the `promote`/`demote` ordering — it is a filter
+over the same list `llms-full.txt` is built from, so pages keep their relative
+order.
+
+Two labels that reduce to the same file name are a config error rather than a
+silent overwrite, and `'Full'` is reserved for `/llms-full.txt`.
 
 ## `PrintNoticeConfig`
 

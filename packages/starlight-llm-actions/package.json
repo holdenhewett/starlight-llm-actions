@@ -52,6 +52,8 @@
       "default": "./dist/schema.js"
     },
     "./route": "./dist/route.ts",
+    "./routes/llms-txt": "./dist/routes/llms-txt.ts",
+    "./routes/llms-bundle": "./dist/routes/llms-bundle.ts",
     "./route-middleware": {
       "types": "./dist/route-middleware.d.ts",
       "default": "./dist/route-middleware.js"
@@ -106,6 +108,7 @@
     }
   },
   "dependencies": {
+    "picomatch": "^4",
     "zod": "^4.4.3"
   },
   "engines": {
@@ -120,8 +123,11 @@
     "@astrojs/mdx": "^7.0.6",
     "@astrojs/starlight": "^0.41.7",
     "@types/hast": "^3.0.5",
+    "@types/micromatch": "^4.0.10",
+    "@types/picomatch": "^4.0.3",
     "astro": "^7.2.3",
     "hast-util-select": "^6.0.4",
+    "micromatch": "^4.0.8",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
     "remark-gfm": "^4.0.1",

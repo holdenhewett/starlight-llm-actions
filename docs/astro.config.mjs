@@ -23,6 +23,24 @@ export default defineConfig({
           // injected .md routes carry flattened Markdown rather than MDX source.
           renderMarkdown: 'simple',
           linkAlternate: true,
+          llmsTxt: {
+            // Playground only: every knob exercised at once so the built output
+            // pins ordering, exclusion, and subset generation together.
+            demote: ['examples/**'],
+            exclude: ['examples/mixed'],
+            subsets: [
+              {
+                label: 'Configuration',
+                description: 'every configuration option',
+                paths: ['configuration/**'],
+              },
+              {
+                label: 'Actions',
+                description: 'the four page actions',
+                paths: ['actions/**'],
+              },
+            ],
+          },
           actions: {
             // Re-enable PDF in the playground so the dropdown button is testable.
             printPdf: true,
@@ -92,6 +110,7 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { label: 'Markdown rendering', slug: 'guides/markdown-rendering' },
+            { label: 'Site-level indexes', slug: 'guides/llms-txt' },
             { label: 'Per-page opt-out', slug: 'guides/per-page-opt-out' },
             { label: 'CSS customization', slug: 'guides/css-customization' },
           ],
