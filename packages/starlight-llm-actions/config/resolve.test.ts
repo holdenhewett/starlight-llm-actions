@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveConfig } from './resolve.js';
+import {
+  markdownUrlForSlug,
+  resolveConfig,
+  routeSlugForId,
+} from './resolve.js';
 import { StarlightLlmActionsConfigSchema } from './schema.js';
 
 describe('renderMarkdown', () => {
@@ -243,5 +247,82 @@ describe('markdownUrl', () => {
     expect(() => resolveConfig({ markdownUrl: 'raw/{slug}.md' })).toThrow(
       /Got: "raw\/\{slug\}\.md"/,
     );
+  });
+});
+
+/**
+ * `{slug}` stands for a page's *path segments*, not for its entry id.
+ *
+ * The two coincide for every page but one. The site's root page has zero path
+ * segments, while its docs-collection entry id is the literal string `index` —
+ * confirmed against a real build, where `llms.txt` (which applies no fallback of
+ * its own) links the home page at `/index.md`.
+ *
+ * Under the default `/{slug}.md` the distinction is invisible: substituting
+ * `index` gives `/index.md`, which is right by coincidence. It stops being right
+ * as soon as the template puts a separator after the placeholder.
+ */
+describe('markdownUrlForSlug', () => {
+  it('substitutes the entry id for an ordinary page', () => {
+    expect(markdownUrlForSlug('/{slug}.md', 'guides/example')).toBe(
+      '/guides/example.md',
+    );
+  });
+
+  it('keeps a prefix and a custom extension', () => {
+    expect(markdownUrlForSlug('/page-md/{slug}.txt', 'guides/example')).toBe(
+      '/page-md/guides/example.txt',
+    );
+  });
+
+  describe('the root page', () => {
+    it("falls back to 'index' when the placeholder carries the file name", () => {
+      // No way to express zero segments before a bare `.md`, so `index` stays.
+      expect(markdownUrlForSlug('/{slug}.md', 'index')).toBe('/index.md');
+    });
+
+    it('collapses to nothing when a separator follows the placeholder', () => {
+      // The home page's URL is `/`, so its Markdown twin is `/index.md` — the
+      // page URL plus the template's suffix, same as every other page.
+      expect(markdownUrlForSlug('/{slug}/index.md', 'index')).toBe('/index.md');
+    });
+
+    it('keeps a prefix when the root segment collapses', () => {
+      expect(markdownUrlForSlug('/page-md/{slug}/index.md', 'index')).toBe(
+        '/page-md/index.md',
+      );
+    });
+
+    it("treats an empty id as the root too, for Starlight's URL-derived ids", () => {
+      // `<StarlightPage>` sets `entry.id = urlToSlug(url)`, which is '' at `/`.
+      expect(markdownUrlForSlug('/{slug}/index.md', '')).toBe('/index.md');
+      expect(markdownUrlForSlug('/{slug}.md', '')).toBe('/index.md');
+    });
+
+    it('leaves a page merely named index inside a directory alone', () => {
+      expect(markdownUrlForSlug('/{slug}/index.md', 'guides/index')).toBe(
+        '/guides/index/index.md',
+      );
+    });
+  });
+});
+
+/**
+ * The route params half of the same rule. `getStaticPaths` has to agree with
+ * `markdownUrlForSlug` or the file lands somewhere the links do not point.
+ */
+describe('routeSlugForId', () => {
+  it('passes an ordinary id through', () => {
+    expect(routeSlugForId('/{slug}.md', 'guides/example')).toBe('guides/example');
+  });
+
+  it("gives the root 'index' when the placeholder carries the file name", () => {
+    expect(routeSlugForId('/{slug}.md', 'index')).toBe('index');
+  });
+
+  it('drops the root segment entirely when a separator follows', () => {
+    // Astro omits a rest parameter given `undefined`, which is what turns
+    // `/[...slug]/index.md` into `/index.md`.
+    expect(routeSlugForId('/{slug}/index.md', 'index')).toBeUndefined();
   });
 });

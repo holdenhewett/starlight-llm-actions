@@ -40,13 +40,21 @@ starlightLlmActions({
 - **Default:** `'/{slug}.md'`
 
 URL template the plugin uses for the page's markdown source. `{slug}` is
-substituted with the Content Collection entry's id. The template must start
-with `/` and contain `{slug}`; anything else fails the build with a message
-naming the value it got.
+substituted with the page's path segments. The template must start with `/` and
+contain `{slug}`; anything else fails the build with a message naming the value
+it got.
 
 The leading slash is what lets the plugin join the template onto Astro's
 `base` — a site served from `/docs/` gets `/docs/guides/example.md`. Write the
 path as it appears after the base, not relative to the current page.
+
+The home page is the one page whose path segments are not its entry id: its URL
+is `/`, so it has none, while its entry id is `index`. When a separator follows
+the placeholder, the root substitutes to nothing and the separator goes with it,
+so `'/{slug}/index.md'` puts the home page's Markdown at `/index.md` rather than
+at `/index/index.md`. With `'/{slug}.md'` there is no way to write zero segments
+before a bare extension, so the root keeps `index` and still resolves to
+`/index.md`.
 
 The default route is injected automatically. Sites that publish raw text
 under a different extension can override:
