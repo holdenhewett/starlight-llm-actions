@@ -40,9 +40,11 @@ const BUNDLED_ICONS: Record<string, string> = {
 };
 
 const route = Astro.locals.starlightRoute;
-// Starlight's home-page entry has an empty id; map to 'index' so it matches
-// the file Astro generates for the corresponding `[...slug]` route.
-const slug = route?.entry?.id || 'index';
+// The root page is normalized inside `markdownUrlForSlug`: `<StarlightPage>`
+// derives its id from the URL, so `/` arrives as `''`, while the docs
+// collection spells the same page `'index'`. Both map to whatever the
+// `markdownUrl` template can express.
+const slug = route?.entry?.id ?? '';
 
 // Resolve config for this page: read frontmatter override (if any), validate
 // against the page-override schema, layer it on top of the parsed global

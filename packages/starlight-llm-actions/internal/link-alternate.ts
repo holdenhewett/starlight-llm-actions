@@ -50,14 +50,16 @@ export function alternateHeadTag({
   // a fair trade for never advertising a URL that does not exist.
   if (entry.id === '404') return null;
 
-  // Starlight's home-page entry has an empty id; map it to 'index' exactly as
-  // PageActions.astro does, so both surfaces point at the same URL.
-  const slug = entry.id || 'index';
-
+  // The root page is handled inside `markdownUrlForSlug`, which knows whether
+  // the template can express zero path segments. Both spellings of the root
+  // reach it: `''` from `<StarlightPage>`'s URL-derived id, and `'index'` from
+  // the docs collection.
+  //
   // Mirrors how PageActions.astro builds its Markdown link: strip the trailing
   // slash off `base` so it joins cleanly with the leading slash that the
   // `markdownUrl` template always carries.
-  const pathname = base.replace(/\/$/, '') + markdownUrlForSlug(markdownUrl, slug);
+  const pathname =
+    base.replace(/\/$/, '') + markdownUrlForSlug(markdownUrl, entry.id);
 
   // Astro slugifies whitespace out of ids but keeps non-ASCII characters, so a
   // page named `fëature.md` reaches us with the accent intact. `new URL()`

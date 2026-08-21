@@ -73,6 +73,28 @@ describe('alternateHeadTag', () => {
         '/index.md',
       );
     });
+
+    it('points the root page at the page URL plus the template suffix', () => {
+      // The home page's URL is `/`, so `/{slug}/index.md` has to yield
+      // `/index.md` — not `/index/index.md`, which parallels no page URL.
+      // Both id spellings of the root have to land on it.
+      for (const id of ['index', '']) {
+        expect(
+          tagFor({ markdownUrl: '/{slug}/index.md', entry: { id, data: { draft: false } } })
+            ?.attrs.href,
+        ).toBe('/index.md');
+      }
+    });
+
+    it('keeps base in front of the collapsed root path', () => {
+      expect(
+        tagFor({
+          markdownUrl: '/{slug}/index.md',
+          entry: { id: 'index', data: { draft: false } },
+          base: '/docs/',
+        })?.attrs.href,
+      ).toBe('/docs/index.md');
+    });
   });
 
   describe('absolute hrefs', () => {

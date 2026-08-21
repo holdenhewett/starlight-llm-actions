@@ -418,12 +418,73 @@ function resolveProvider(
  * `{slug}` becomes `[...slug]`. Example: `/{slug}.md` → `/[...slug].md`.
  */
 export function markdownUrlToRoutePattern(template: string): string {
-  return template.replace('{slug}', '[...slug]');
+  return template.replace(PLACEHOLDER, '[...slug]');
+}
+
+const PLACEHOLDER = '{slug}';
+
+/**
+ * The docs-collection entry id of the site's root page.
+ *
+ * Astro's content layer strips a trailing `index` from every id except this one
+ * — `guides/index.mdx` becomes `guides`, but the root cannot become the empty
+ * string, so it keeps the literal segment. `<StarlightPage>` disagrees: it sets
+ * `entry.id = urlToSlug(url)`, which *is* `''` at `/`. Both spellings reach the
+ * substitution below, so both are treated as the root.
+ */
+const ROOT_ID = 'index';
+
+/**
+ * Whether the template can express a page with zero path segments.
+ *
+ * True exactly when a `/` follows the placeholder. `/{slug}/index.md` supplies
+ * the file name itself, so the root page can substitute to nothing; `/{slug}.md`
+ * would collapse to a bare `/.md`, so it cannot.
+ */
+function slugOwnsSegment(template: string): boolean {
+  return template[template.indexOf(PLACEHOLDER) + PLACEHOLDER.length] === '/';
+}
+
+function isRootId(id: string): boolean {
+  return id === '' || id === ROOT_ID;
 }
 
 /**
- * Substitute `{slug}` in the template with the entry slug.
+ * The value `getStaticPaths` should pass for the `slug` rest parameter, or
+ * `undefined` to omit the segment altogether.
+ *
+ * Astro drops a rest parameter given `undefined`, which is what turns
+ * `/[...slug]/index.md` into `/index.md` for the root page. Kept beside
+ * `markdownUrlForSlug` because the two have to agree: the route decides where
+ * the file lands, and every link on the site is built by the other.
  */
-export function markdownUrlForSlug(template: string, slug: string): string {
-  return template.replace('{slug}', slug);
+export function routeSlugForId(
+  template: string,
+  id: string,
+): string | undefined {
+  if (!isRootId(id)) return id;
+  return slugOwnsSegment(template) ? undefined : ROOT_ID;
+}
+
+/**
+ * Substitute `{slug}` in the template with a page's path segments.
+ *
+ * `{slug}` stands for the *page's path*, not for its entry id. The two coincide
+ * for every page but the root, whose URL is `/` — zero segments, not one segment
+ * named `index`. The default `/{slug}.md` hides the difference, because
+ * substituting `index` happens to give the right answer; a template with a
+ * separator after the placeholder does not, and yields `/index/index.md`.
+ *
+ * The separator is consumed along with the placeholder rather than collapsed out
+ * of the result afterwards, so a `//` written deliberately elsewhere in a
+ * template survives.
+ */
+export function markdownUrlForSlug(template: string, id: string): string {
+  const at = template.indexOf(PLACEHOLDER);
+  const rest = at + PLACEHOLDER.length;
+  const slug = routeSlugForId(template, id);
+
+  return slug === undefined
+    ? template.slice(0, at) + template.slice(rest + 1)
+    : template.slice(0, at) + slug + template.slice(rest);
 }
