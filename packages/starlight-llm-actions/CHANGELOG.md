@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.11.0...v0.12.0) (2026-08-21)
+
+
+### Features
+
+* let a subset's paths override exclude ([#91](https://github.com/holdenhewett/starlight-llm-actions/issues/91)) ([e79be18](https://github.com/holdenhewett/starlight-llm-actions/commit/e79be180a04175c681bd2fb36170e25acca0b1d4))
+
 ## [0.11.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.10.1...v0.11.0) (2026-08-21)
 
 
