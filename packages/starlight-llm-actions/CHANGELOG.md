@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.0...v0.12.1) (2026-08-21)
+
+
+### Bug Fixes
+
+* type the generated config module instead of widening it to any ([#93](https://github.com/holdenhewett/starlight-llm-actions/issues/93)) ([7a80bfa](https://github.com/holdenhewett/starlight-llm-actions/commit/7a80bfae2ebf95c99ce9c1f3b4b28675c1b5a6c5))
+
 ## [0.12.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.11.0...v0.12.0) (2026-08-21)
 
 
