@@ -293,6 +293,50 @@ On a server-rendered deployment the header survives and the extension matters
 less, but keeping `.md` costs nothing and keeps the two deployment targets
 consistent.
 
+#### Make sure your host sends `charset=utf-8`
+
+Deriving the type from the extension is only half the job. Some deploy tools stop
+at `text/markdown` and never add a charset, and a browser with no charset to go on
+falls back to windows-1252. Every non-ASCII byte then renders as mojibake: a curly
+apostrophe becomes `â€™`, an em dash becomes `â€”`. Ordinary prose trips this on
+the first page rather than in some edge case, and the natural suspicion — that the
+renderer emitted bad bytes — is wrong. The file on disk is fine.
+
+So the rule is one header parameter: whatever your host is, make sure it serves
+`.md` as `text/markdown; charset=utf-8`. On most hosts that is a headers config —
+a `[[headers]]` block in `netlify.toml`, a `headers` entry in `vercel.json`, a
+response-header rule on your CDN.
+
+`aws s3 sync` is the awkward one, because the type is baked in at upload time. It
+derives `Content-Type` from Python's `mimetypes`, which returns a bare
+`text/markdown` for `.md`. And it re-uploads a file only when the size differs,
+the local copy is newer, or the object is missing — so bolting `--content-type`
+onto a second run over the same `dist` skips every file and changes nothing.
+Upload in two passes instead:
+
+```bash
+aws s3 sync --delete dist s3://example.com/ \
+  --exclude "*.md"
+
+aws s3 sync --delete dist s3://example.com/ \
+  --exclude "*" --include "*.md" \
+  --content-type "text/markdown; charset=utf-8"
+```
+
+`--delete` stays safe across both passes. [Sync excludes filtered-out files from
+deletion](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) as well
+as from upload, so the first pass never touches remote `.md` and the second only
+ever deletes stale `.md`. Together they delete exactly what a single pass would
+have.
+
+One catch when you go to check your work: `astro preview` also serves `.md` as
+`text/markdown` with no charset, so a local test looks identical to the broken
+production case. Verify against the deployed URL:
+
+```bash
+curl -sI https://example.com/guides/example.md | grep -i content-type
+```
+
 ## Customization
 
 ### Using a custom `PageTitle` override
