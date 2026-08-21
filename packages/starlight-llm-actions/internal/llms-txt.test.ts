@@ -320,6 +320,66 @@ describe('siteMeta', () => {
     expect(siteMeta({ title: 'Acme Docs', locales: { root: {} } }).defaultLang).toBe('en');
     expect(siteMeta({ title: 'Acme Docs' }).defaultLang).toBe('en');
   });
+
+  describe('llmsTxt overrides', () => {
+    it('prefers the override over the Starlight title', () => {
+      expect(
+        siteMeta({ title: 'DOCS' }, { title: 'Acme Documentation' }).title,
+      ).toBe('Acme Documentation');
+    });
+
+    it('prefers the override over the Starlight description', () => {
+      expect(
+        siteMeta(
+          { title: 'DOCS', description: 'Docs for Acme.' },
+          { description: 'Every page of the Acme platform docs.' },
+        ).description,
+      ).toBe('Every page of the Acme platform docs.');
+    });
+
+    it('supplies a description for a site that has none', () => {
+      expect(
+        siteMeta({ title: 'DOCS' }, { description: 'The Acme corpus.' }).description,
+      ).toBe('The Acme corpus.');
+    });
+
+    // Each field falls back on its own: overriding the title should not blank
+    // out a description the site already had.
+    it('leaves the other field alone', () => {
+      expect(
+        siteMeta({ title: 'DOCS', description: 'Docs for Acme.' }, { title: 'Acme Documentation' }),
+      ).toEqual({
+        title: 'Acme Documentation',
+        description: 'Docs for Acme.',
+        defaultLang: 'en',
+      });
+    });
+
+    // `resolved.llmsTxt` is `null` when index generation is off, and the
+    // resolved fields are `null` when the user set neither.
+    it('ignores a null override object and null fields', () => {
+      const starlight = { title: 'DOCS', description: 'Docs for Acme.' };
+      const expected = { title: 'DOCS', description: 'Docs for Acme.', defaultLang: 'en' };
+
+      expect(siteMeta(starlight, null)).toEqual(expected);
+      expect(siteMeta(starlight, { title: null, description: null })).toEqual(expected);
+    });
+
+    // The localized-title resolution still has to run: an override replaces the
+    // title, not the language the collator sorts with.
+    it('keeps resolving the default language', () => {
+      expect(
+        siteMeta(
+          { title: { fr: 'Docs Acme' }, locales: { root: { lang: 'fr' } } },
+          { title: 'Acme Documentation' },
+        ),
+      ).toEqual({
+        title: 'Acme Documentation',
+        description: null,
+        defaultLang: 'fr',
+      });
+    });
+  });
 });
 
 /**

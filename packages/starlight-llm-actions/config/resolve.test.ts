@@ -103,6 +103,8 @@ describe('llmsTxt', () => {
 
   it('promotes index pages and nothing else when set to true', () => {
     expect(resolveConfig({ llmsTxt: true }).llmsTxt).toEqual({
+      title: null,
+      description: null,
       promote: ['index*'],
       demote: [],
       exclude: [],
@@ -130,11 +132,42 @@ describe('llmsTxt', () => {
         },
       }).llmsTxt,
     ).toEqual({
+      title: null,
+      description: null,
       promote: ['index*', 'start/**'],
       demote: ['legacy/**'],
       exclude: ['internal/**'],
       subsets: [],
     });
+  });
+
+  // The header strings are resolved here but consumed through `siteMeta`, which
+  // is where the fallback to Starlight's own title and description happens.
+  it('carries the header overrides through unchanged', () => {
+    expect(
+      resolveConfig({
+        llmsTxt: { title: 'Acme Documentation', description: 'The Acme corpus.' },
+      }).llmsTxt,
+    ).toMatchObject({
+      title: 'Acme Documentation',
+      description: 'The Acme corpus.',
+    });
+  });
+
+  it('leaves an unset header override null so Starlight wins', () => {
+    expect(resolveConfig({ llmsTxt: { title: 'Acme Documentation' } }).llmsTxt).toMatchObject({
+      title: 'Acme Documentation',
+      description: null,
+    });
+  });
+
+  // An empty string would emit a bare `# ` heading or a bare `> ` line, which is
+  // worse than the Starlight value it was meant to replace.
+  it('rejects an empty header override', () => {
+    expect(() => StarlightLlmActionsConfigSchema.parse({ llmsTxt: { title: '' } })).toThrow();
+    expect(() =>
+      StarlightLlmActionsConfigSchema.parse({ llmsTxt: { description: '' } }),
+    ).toThrow();
   });
 
   it('slugifies a subset label into a file-name stem', () => {

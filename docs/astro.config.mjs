@@ -31,6 +31,13 @@ export default defineConfig({
           llmsTxt: {
             // Playground only: every knob exercised at once so the built output
             // pins ordering, exclusion, and subset generation together.
+            //
+            // The header overrides are here to prove they reach all four
+            // consumers — the llms.txt H1 and blockquote, the "Complete
+            // documentation" set description, and every bundle's <SYSTEM> note.
+            title: 'starlight-llm-actions plugin',
+            description:
+              'Every page of the starlight-llm-actions plugin documentation, as Markdown.',
             demote: ['examples/**'],
             exclude: ['examples/mixed'],
             subsets: [

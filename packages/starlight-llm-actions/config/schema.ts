@@ -208,6 +208,17 @@ const LlmsTxtSubsetSchema = z
  */
 const LlmsTxtConfigSchema = z
   .object({
+    /**
+     * Name of the corpus, used for the `llms.txt` heading and every bundle's
+     * system note. Defaults to Starlight's `title`, which is a header wordmark
+     * and often too short to identify the docs on its own.
+     */
+    title: z.string().min(1).optional(),
+    /**
+     * Summary of the corpus, used for the blockquote under the heading.
+     * Defaults to Starlight's `description`; omitted entirely when neither is set.
+     */
+    description: z.string().min(1).optional(),
     /** Site paths sorted to the top of every index. Default `['index*']`. */
     promote: z.array(z.string().min(1)).optional(),
     /** Site paths sorted to the end. Wins over `promote` when a page matches both. */
@@ -429,6 +440,8 @@ export interface LlmsTxtSubset {
 }
 
 export interface LlmsTxtConfig {
+  title?: string;
+  description?: string;
   promote?: string[];
   demote?: string[];
   exclude?: string[];

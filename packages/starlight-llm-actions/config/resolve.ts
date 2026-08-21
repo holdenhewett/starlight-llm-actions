@@ -92,6 +92,16 @@ export interface ResolvedLlmsTxtSubset {
 }
 
 export interface ResolvedLlmsTxt {
+  /**
+   * Corpus name for the `llms.txt` heading and the bundle system notes, or
+   * `null` to use Starlight's own title.
+   *
+   * Applied by `siteMeta` at plugin-config time, so the routes only ever see
+   * the resolved `starlight.title` — this field is the unresolved input.
+   */
+  title: string | null;
+  /** Corpus summary for the blockquote, or `null` to use Starlight's own. */
+  description: string | null;
   promote: string[];
   demote: string[];
   exclude: string[];
@@ -379,6 +389,8 @@ function resolveLlmsTxt(
   });
 
   return {
+    title: config.title ?? null,
+    description: config.description ?? null,
     // `index*` matches the home page on a stock Starlight site, and an index
     // page is the one document an agent reading top-down should see first.
     promote: config.promote ?? DEFAULT_LLMS_TXT_PROMOTE,
