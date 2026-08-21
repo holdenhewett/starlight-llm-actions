@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.13.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.1...v0.13.0) (2026-08-21)
+
+
+### ⚠ Home page's Markdown URL moves on some templates
+
+The root-page fix below changes where the home page's Markdown is emitted, but only for a `markdownUrl` template that puts a separator after `{slug}`. On `markdownUrl: '/{slug}/index.md'` the home page moved from `/index/index.md` to `/index.md`, and every reference to it moved with it — the dropdown link, the `rel="alternate"` tag, and the `llms.txt` entry. The default `/{slug}.md` is unaffected, and no other page changes on any template. Add a redirect if you had published the old URL.
+
+### Deployment note: serve `.md` with `charset=utf-8`
+
+Not a change in this release, but newly documented. Static hosts derive `Content-Type` from the file extension and some derive it without a charset; a browser handed a bare `text/markdown` decodes the body as windows-1252, turning every smart quote and em dash into mojibake. `aws s3 sync` does this by default, and `astro preview` reproduces it, so a local check will not warn you. See [Make sure your host sends `charset=utf-8`](https://github.com/holdenhewett/starlight-llm-actions/blob/main/packages/starlight-llm-actions/README.md#make-sure-your-host-sends-charsetutf-8).
+
+### Features
+
+* add llmsTxt title and description overrides ([#100](https://github.com/holdenhewett/starlight-llm-actions/issues/100)) ([5a837ef](https://github.com/holdenhewett/starlight-llm-actions/commit/5a837efdcf1b176046cbf753e184521d1e3a34d2)), closes [#95](https://github.com/holdenhewett/starlight-llm-actions/issues/95)
+* publish Markdown for collections beyond docs ([#104](https://github.com/holdenhewett/starlight-llm-actions/issues/104)) ([dd668c0](https://github.com/holdenhewett/starlight-llm-actions/commit/dd668c07b923ca049235e98d56fb51688e49b1b8)), closes [#96](https://github.com/holdenhewett/starlight-llm-actions/issues/96)
+
+
+### Bug Fixes
+
+* resolve the root page's markdown URL to zero path segments ([#99](https://github.com/holdenhewett/starlight-llm-actions/issues/99)) ([fe87106](https://github.com/holdenhewett/starlight-llm-actions/commit/fe87106e1b5f07882a13d18f835f877abbc7fcac)), closes [#97](https://github.com/holdenhewett/starlight-llm-actions/issues/97)
+
 ## [0.12.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.0...v0.12.1) (2026-08-21)
 
 
