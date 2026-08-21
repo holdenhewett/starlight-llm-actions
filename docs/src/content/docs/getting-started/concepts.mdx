@@ -68,7 +68,9 @@ that serves Content Collection entries as `text/markdown`.
 
 So if your page is at `/guides/install/`, the markdown route is at
 `/guides/install.md`. The dropdown's **View as Markdown** action navigates
-there directly; **Copy as Markdown** fetches it client-side.
+there directly; **Copy as Markdown** fetches it client-side. The home page is
+the one place where the two spellings diverge. Its URL is `/`, so its Markdown
+lands at `/index.md`.
 
 By default that route serves each page's raw markdown source, MDX and all.
 Set [`renderMarkdown: 'simple'`](/starlight-llm-actions/configuration/reference/#rendermarkdown)
@@ -80,6 +82,26 @@ what each mode produces.
 If your site already publishes per-page markdown somewhere else, set
 [`injectRoute: false`](/starlight-llm-actions/configuration/reference/#injectroute)
 to disable the built-in route, and point `markdownUrl` at your existing one.
+
+### Which pages get one
+
+Starlight's own `docs` collection, and nothing else, until you say otherwise.
+That covers most sites in full. If every page is a Markdown or MDX file under
+`src/content/docs/`, every page already has a route.
+
+A page can also live outside that collection. A changelog in its own collection
+with its own route file, or anything rendered through `<StarlightPage>`. Those
+are invisible to the plugin until you name their collection in
+[`collections`](/starlight-llm-actions/configuration/reference/#collections),
+which also tells it the URL template the collection is served at, since an entry
+id and a site path only coincide for `docs`.
+
+Until then such a page is left alone: no `.md` route, no entry in `llms.txt`,
+and no `rel="alternate"` link. The dropdown still renders, minus the two items
+that need a Markdown file. **Open in…** falls back to the page's own URL, so a
+reader never meets a broken link. That is the whole failure mode, and
+it is why forgetting to list a collection costs you coverage rather than
+correctness.
 
 ## The prompt template
 

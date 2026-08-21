@@ -1,0 +1,114 @@
+---
+title: Deployment
+description: What changes when the Markdown route is prerendered to disk. The extension, the Content-Type header, and the missing charset that turns your prose into mojibake.
+---
+
+During `astro dev` the Markdown route is a running endpoint. It sets its own
+`Content-Type`, so everything is correct by construction. A static build turns
+it into a file on disk, and the header goes with it. Whatever your host says
+about that file is now the header, and two parts of it are worth getting right.
+
+## The header does not survive the build
+
+The Markdown route is prerendered, so the `Content-Type: text/markdown` it sets
+exists only during the build. When the response is written to disk, only the
+bytes remain. Static hosts derive the type from the file extension instead.
+
+That is why the extension decides everything on a static deploy, and why it
+barely matters on a server-rendered one. See [Server-rendered
+deployments](#server-rendered-deployments) below.
+
+## Keep `.md` on the template
+
+Leave `.md` at the end of your
+[`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl)
+template so hosts serve the file as Markdown rather than as HTML or as
+`application/octet-stream`, which triggers a download. Both of these work:
+
+```js
+starlightLlmActions({
+  markdownUrl: '/{slug}.md', // default → /guides/example.md
+})
+
+starlightLlmActions({
+  markdownUrl: '/{slug}/index.md', // → /guides/example/index.md
+})
+```
+
+A different extension works too, and `'/{slug}.txt'` is a reasonable choice.
+Just pick one your host maps to a text type. An extension the host does not
+recognise falls back to a download prompt.
+
+## Make sure your host sends `charset=utf-8`
+
+Deriving the type from the extension is only half the job. Some deploy tools
+stop at `text/markdown` and never add a charset, and a browser with no charset
+to go on falls back to windows-1252. Every non-ASCII byte then renders as
+mojibake. A curly apostrophe becomes `â€™`, an em dash becomes `â€”`.
+
+Ordinary prose trips this on the first page rather than in some edge case.
+Smart quotes alone are enough. The natural suspicion is that the plugin's
+renderer emitted bad bytes. It didn't. The file on disk is correct UTF-8, and
+the problem is one missing header parameter, three layers away from anything
+the plugin controls.
+
+The rule is short. Whatever your host is, make sure it serves your Markdown
+files as `text/markdown; charset=utf-8`. On most hosts that is one headers
+config covering every `.md` file at once, like a `[[headers]]` block in
+`netlify.toml`, a `headers` entry in `vercel.json`, or a response-header rule
+on your CDN.
+
+### The `aws s3 sync` case
+
+S3 is the awkward one, because the type is baked in at upload time rather than
+served from a config you can edit afterwards. `aws s3 sync` derives
+`Content-Type` from Python's `mimetypes`, which returns a bare `text/markdown`
+for `.md`. It also re-uploads a file only when the size differs, the local copy
+is newer, or the object is missing. Adding `--content-type` to a second run
+over the same `dist` therefore skips every file and changes nothing.
+
+Upload in two passes instead. Everything except Markdown, then Markdown with
+the type set explicitly.
+
+```bash
+aws s3 sync --delete dist s3://example.com/ \
+  --exclude "*.md"
+
+aws s3 sync --delete dist s3://example.com/ \
+  --exclude "*" --include "*.md" \
+  --content-type "text/markdown; charset=utf-8"
+```
+
+`--delete` stays safe across both passes, which is the first thing worth
+checking when you see a two-pass sync. [Sync excludes filtered-out files from
+deletion](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) as
+well as from upload, so the first pass never touches remote `.md` and the
+second only ever deletes stale `.md`. Together they delete exactly what a
+single pass would have.
+
+If you generate [site-level indexes](/starlight-llm-actions/guides/llms-txt/),
+widen the second pass to cover them. They are `.txt` files, and `mimetypes`
+returns `text/plain` for those with no charset either.
+
+## Verifying
+
+`astro preview` serves `.md` as `text/markdown` with no charset, exactly like
+the broken production case. A local check will not warn you, so verify against
+the deployed URL:
+
+```bash
+curl -sI https://example.com/guides/example.md | grep -i content-type
+```
+
+You want `text/markdown; charset=utf-8`. A bare `text/markdown` is the bug
+above, and `application/octet-stream` means the extension is not mapped.
+
+Opening the file in a browser is a reasonable second check. If the smart quotes
+look right there, the charset is right.
+
+## Server-rendered deployments
+
+On an adapter-backed deployment the route runs per request, so the header it
+sets survives and none of the above applies. Keeping `.md` on the template
+still costs nothing and keeps the two deployment targets consistent, which
+matters if you ever prerender part of your site.

@@ -84,7 +84,7 @@ export default defineConfig({
           },
           printNotice: {
             branding: {
-              logo: { src: '/favicon.svg', alt: 'Logo' },
+              logo: { src: '/starlight-llm-actions/favicon.svg', alt: 'Logo' },
               siteName: 'Playground DOCS',
             },
             warning: {
@@ -130,6 +130,7 @@ export default defineConfig({
           items: [
             { label: 'Markdown rendering', slug: 'guides/markdown-rendering' },
             { label: 'Site-level indexes', slug: 'guides/llms-txt' },
+            { label: 'Deployment', slug: 'guides/deployment' },
             { label: 'Per-page opt-out', slug: 'guides/per-page-opt-out' },
             { label: 'CSS customization', slug: 'guides/css-customization' },
           ],

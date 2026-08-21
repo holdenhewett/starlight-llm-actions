@@ -34,14 +34,30 @@ When disabled, the action is removed from the dropdown.
 
 The action is a plain anchor (`<a href>`) under the hood. Clicking it
 navigates to the URL produced by `markdownUrl` (default `/{slug}.md`),
-which the plugin's injected route serves with:
-
-- `Content-Type: text/markdown; charset=utf-8`
-- The body of the matching Content Collection entry, untransformed
+which the plugin's injected route serves as `text/markdown; charset=utf-8`.
+The body is the matching Content Collection entry's, either as authored or
+flattened, depending on
+[`renderMarkdown`](/starlight-llm-actions/configuration/reference/#rendermarkdown).
 
 Browsers display `text/markdown` as plain text. There's no fallback rendering
 inside the docs site — the user sees exactly what an LLM, fetcher, or script
 would see at that URL.
+
+That header is the dev-server story. On a static build the route is prerendered
+to a file and the header goes with it, so what a reader actually receives is
+whatever your host says about a `.md` file. Getting the charset wrong there
+turns every smart quote on the page into mojibake. See
+[Deployment](/starlight-llm-actions/guides/deployment/).
+
+## When the action isn't there
+
+**View as Markdown** only appears on pages that have a Markdown route to point
+at. A page outside every collection named in
+[`collections`](/starlight-llm-actions/configuration/reference/#collections)
+gets no `.md` file, so the item is dropped rather than linking to a 404. A page
+your own route file renders with `<StarlightPage>` is the usual case. **Copy as
+Markdown** goes with it; the **Open in…** providers stay, falling back to the
+page's own URL.
 
 ## Customising the URL
 

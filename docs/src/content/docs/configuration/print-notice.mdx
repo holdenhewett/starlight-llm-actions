@@ -64,6 +64,11 @@ starlightLlmActions({
 })
 ```
 
+The logo `src` is emitted as written, so on a site with a `base` it needs the
+prefix too (`/my-docs/logo.svg`). Without it the image resolves against the
+domain root and the branding row renders broken, which you will only notice in
+a print preview.
+
 ## Branding-only
 
 To render the branding row without the warning admonition:
