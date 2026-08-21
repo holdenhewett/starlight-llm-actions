@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.13.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.1...v0.13.0) (2026-08-21)
+
+
+### Features
+
+* add llmsTxt title and description overrides ([#100](https://github.com/holdenhewett/starlight-llm-actions/issues/100)) ([5a837ef](https://github.com/holdenhewett/starlight-llm-actions/commit/5a837efdcf1b176046cbf753e184521d1e3a34d2)), closes [#95](https://github.com/holdenhewett/starlight-llm-actions/issues/95)
+* publish Markdown for collections beyond docs ([#104](https://github.com/holdenhewett/starlight-llm-actions/issues/104)) ([dd668c0](https://github.com/holdenhewett/starlight-llm-actions/commit/dd668c07b923ca049235e98d56fb51688e49b1b8)), closes [#96](https://github.com/holdenhewett/starlight-llm-actions/issues/96)
+
+
+### Bug Fixes
+
+* resolve the root page's markdown URL to zero path segments ([#99](https://github.com/holdenhewett/starlight-llm-actions/issues/99)) ([fe87106](https://github.com/holdenhewett/starlight-llm-actions/commit/fe87106e1b5f07882a13d18f835f877abbc7fcac)), closes [#97](https://github.com/holdenhewett/starlight-llm-actions/issues/97)
+
 ## [0.12.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.0...v0.12.1) (2026-08-21)
 
 
