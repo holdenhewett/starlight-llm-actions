@@ -315,3 +315,54 @@ describe('site-level indexes', () => {
     expect(actions.match(/^# /gm)?.length).toBe(pages.length);
   });
 });
+
+/**
+ * The playground keeps its changelog in a second collection with its own route
+ * file, so the two assumptions the plugin used to bake in are both false there:
+ * the collection is not `docs`, and the entry ids (`0-11-0`) are not the paths
+ * the site serves them at (`/changelog/entry/0-11-0`). The `.md` convention only
+ * holds if the Markdown lands beside the HTML.
+ */
+describe('collections beyond docs', () => {
+  const html = readFileSync(`${dist}/changelog/entry/0-11-0/index.html`, 'utf8');
+  const index = read('llms.txt');
+
+  it('emits a route at the page path, not at the entry id', () => {
+    expect(files).toContain('changelog/entry/0-11-0.md');
+    expect(files).toContain('changelog/entry/0-12-0.md');
+    expect(files).not.toContain('changelog/0-11-0.md');
+  });
+
+  it("renders the entry body, so 'simple' mode works off a non-docs schema", () => {
+    // `simple-markdown.ts` casts the entry to `CollectionEntry<'docs'>` before
+    // calling `render()`. That cast is structural, and this is what says so.
+    const md = read('changelog/entry/0-11-0.md');
+    expect(md).toMatch(/^# 0\.11\.0$/m);
+    expect(md).toContain('> Named subset bundles.');
+    expect(md).toContain('`subsets`');
+  });
+
+  it('lists the pages in llms.txt at their site paths', () => {
+    expect(index).toContain('/changelog/entry/0-11-0.md');
+    expect(index).toContain('/changelog/entry/0-12-0.md');
+  });
+
+  it('carries them into the full bundle verbatim, off the shared render', () => {
+    const full = read('llms-full.txt');
+    expect(full).toContain(read('changelog/entry/0-11-0.md'));
+    expect(full).toContain(read('changelog/entry/0-12-0.md'));
+  });
+
+  it('points the Page Actions dropdown at the page’s own Markdown', () => {
+    expect(html).toContain(
+      'data-markdown-href="/starlight-llm-actions/changelog/entry/0-11-0.md"',
+    );
+    expect(html).toContain('data-action="copy-md"');
+  });
+
+  it('advertises the Markdown alternate on the HTML page', () => {
+    expect(html).toMatch(
+      /rel="alternate"[^>]*href="\/starlight-llm-actions\/changelog\/entry\/0-11-0\.md"/,
+    );
+  });
+});

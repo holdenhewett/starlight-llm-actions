@@ -23,6 +23,11 @@ export default defineConfig({
           // injected .md routes carry flattened Markdown rather than MDX source.
           renderMarkdown: 'simple',
           linkAlternate: true,
+          // Playground only: the changelog lives in its own collection with its
+          // own route file, so its entry ids (`0-11-0`) are not its URLs
+          // (`/changelog/entry/0-11-0`). Pins that the path template closes that
+          // gap and that a schema with no `draft` field is still enumerable.
+          collections: ['docs', { name: 'changelog', path: 'changelog/entry/{id}' }],
           llmsTxt: {
             // Playground only: every knob exercised at once so the built output
             // pins ordering, exclusion, and subset generation together.

@@ -54,10 +54,7 @@
     "./route": "./dist/route.ts",
     "./routes/llms-txt": "./dist/routes/llms-txt.ts",
     "./routes/llms-bundle": "./dist/routes/llms-bundle.ts",
-    "./route-middleware": {
-      "types": "./dist/route-middleware.d.ts",
-      "default": "./dist/route-middleware.js"
-    },
+    "./route-middleware": "./dist/route-middleware.ts",
     "./internal/simple-markdown": "./dist/internal/simple-markdown.ts",
     "./overrides/PageTitle.astro": "./dist/overrides/PageTitle.astro",
     "./components/PageActions.astro": "./dist/components/PageActions.astro"
