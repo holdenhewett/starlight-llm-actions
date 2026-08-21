@@ -305,7 +305,9 @@ describe('siteMeta', () => {
       siteMeta({
         title: { fr: 'Docs Acme', en: 'Acme Docs' },
         defaultLocale: 'fr',
-        locales: { fr: { label: 'Français' }, en: { label: 'English' } },
+        // `StarlightMetaSource` models only the `lang` field `siteMeta`
+        // reads; a real locale entry also carries `label` and `dir`.
+        locales: { fr: {}, en: {} },
       }),
     ).toMatchObject({ title: 'Docs Acme', defaultLang: 'fr' });
   });

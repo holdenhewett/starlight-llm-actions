@@ -1,6 +1,6 @@
 import mdxServer from '@astrojs/mdx/server.js';
 import { experimental_AstroContainer } from 'astro/container';
-import { render } from 'astro:content';
+import { render, type CollectionEntry } from 'astro:content';
 import type { MarkdownRenderer } from './renderer.js';
 import { htmlToMarkdown } from './markdown-pipeline.js';
 
@@ -25,7 +25,12 @@ const container = await experimental_AstroContainer.create({
  * source for that page.
  */
 const renderSimpleMarkdown: MarkdownRenderer = async (entry, context) => {
-  const { Content } = await render(entry);
+  // `DocsEntryLike` is the structural subset of a docs entry a renderer is
+  // promised, because `CollectionEntry<'docs'>` only exists once `astro sync`
+  // has generated it in the consumer's project. This module ships raw and is
+  // compiled there, so the real type *is* nameable here — and the value the
+  // injected route passes came straight out of `getCollection('docs')`.
+  const { Content } = await render(entry as CollectionEntry<'docs'>);
   const html = await container.renderToString(Content, context);
   return htmlToMarkdown(html);
 };
