@@ -1,6 +1,7 @@
 import type { Plugin } from 'vite';
 import type { ResolvedConfig } from '../config/resolve.js';
 import type { StarlightLlmActionsConfig } from '../config/schema.js';
+import type { SiteMeta } from './llms-txt.js';
 
 const MODULE_ID = 'virtual:starlight-llm-actions/config';
 const RESOLVED_ID = `\0${MODULE_ID}`;
@@ -39,6 +40,11 @@ function serialize(value: unknown): string {
  * Uses Vite's standard "virtual module" convention: the resolved id is prefixed
  * with `\0` to opt out of file-system resolution and other plugins.
  *
+ * The `starlight` export carries the site title and summary the index routes
+ * print in `llms.txt`. They come from Starlight's config rather than this
+ * plugin's, and a route has no way to reach that config, so they ride across the
+ * same boundary the rest of the data does.
+ *
  * The `renderer` export is generated code rather than config data for two
  * reasons. Config crosses this boundary as JSON, so a function-valued option
  * could never survive the trip; and Vite only follows `import()` calls whose
@@ -50,6 +56,7 @@ export function virtualConfigPlugin(
   resolved: ResolvedConfig,
   parsed: StarlightLlmActionsConfig,
   rendererSpecifier: string | null,
+  starlight: SiteMeta,
 ): Plugin {
   const renderer =
     rendererSpecifier === null
@@ -59,6 +66,7 @@ export function virtualConfigPlugin(
   const moduleSource =
     `export default ${serialize(resolved)};\n` +
     `export const parsed = ${serialize(parsed)};\n` +
+    `export const starlight = ${serialize(starlight)};\n` +
     `export const renderer = ${renderer};\n`;
 
   return {

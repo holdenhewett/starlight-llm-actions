@@ -18,9 +18,14 @@ for (const dir of dirs) {
 // project, the same way it compiles `.astro` files from node_modules.
 const rawSources = [
   ['route.ts'],
+  ['routes', 'llms-txt.ts'],
+  ['routes', 'llms-bundle.ts'],
   ['internal', 'simple-markdown.ts'],
   ['internal', 'virtual.d.ts'],
 ];
 for (const segments of rawSources) {
-  await cp(path.join(pkg, ...segments), path.join(dist, ...segments));
+  const target = path.join(dist, ...segments);
+  // `routes/` holds nothing but raw sources, so tsc never creates it.
+  await mkdir(path.dirname(target), { recursive: true });
+  await cp(path.join(pkg, ...segments), target);
 }

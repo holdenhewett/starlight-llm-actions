@@ -1,0 +1,181 @@
+---
+title: Site-level indexes
+description: Generate llms.txt, llms-full.txt, and named subset bundles from the same renderer the Markdown route uses.
+---
+
+The [markdown route](/starlight-llm-actions/getting-started/concepts/#the-markdown-route)
+gives an agent one page at a time. It has no way to find out what pages exist,
+and no way to take the whole site in one request.
+
+[`llmsTxt`](/starlight-llm-actions/configuration/reference/#llmstxt) adds the
+files that answer both questions:
+
+```js
+starlightLlmActions({
+  llmsTxt: true,
+})
+```
+
+## What gets generated
+
+| File | Contents |
+| --- | --- |
+| `/llms.txt` | The [llmstxt.org](https://llmstxt.org/) index: your site title and description, a link to each bundle, and a link to every page's own Markdown route. |
+| `/llms-full.txt` | Every page concatenated into one Markdown document. |
+| `/llms-{subset}.txt` | One file per [named subset](#named-subsets). |
+
+`llms.txt` on this site looks like:
+
+```md
+# starlight-llm-actions
+
+> Playground for the starlight-llm-actions plugin.
+
+## Documentation Sets
+
+- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions documentation as Markdown
+- [Configuration](https://holdenhewett.github.io/starlight-llm-actions/llms-configuration.txt): every configuration option
+
+## Documentation
+
+- [starlight-llm-actions](https://holdenhewett.github.io/starlight-llm-actions/index.md): Page Actions dropdown for Starlight — copy, view, save as PDF, and open in any LLM.
+- [Copy as Markdown](https://holdenhewett.github.io/starlight-llm-actions/actions/copy.md): Copy the current page's markdown source to the clipboard.
+```
+
+The two sections serve different readers. **Documentation Sets** is for an agent
+that wants the corpus in one request. **Documentation** is for one that would
+rather fetch the three pages it needs than a megabyte it mostly discards —
+worth listing here only because this plugin publishes a route per page.
+
+Links are absolute, so `site` has to be set in your Astro config. An agent that
+fetched `llms.txt` over HTTP has a base to resolve relative links against, but
+one handed the file as a blob does not — and that second case is what the format
+exists to serve.
+
+## One renderer for every surface
+
+The bundles are built by running the same
+[`renderMarkdown`](/starlight-llm-actions/guides/markdown-rendering/) pipeline
+the per-page route runs, on the same pages, and concatenating the results. The
+Markdown in `llms-full.txt` is byte-identical to the Markdown at each page's own
+`.md` URL.
+
+That is the reason this plugin generates its own indexes rather than leaving them
+to a separate package. Two generators on one site means two qualities of
+Markdown: a `<Card>` title that is a real heading on one surface and a bare
+paragraph on the other, an aside that keeps its label in one file and loses it in
+the next. Whatever you configure once applies everywhere.
+
+Each page is rendered once per build regardless of how many files it appears in.
+
+## Ordering
+
+Indexes are ordered alphabetically by entry id, with two escape hatches.
+
+[`promote`](/starlight-llm-actions/configuration/reference/#llmstxtpromote)
+lifts patterns to the top;
+[`demote`](/starlight-llm-actions/configuration/reference/#llmstxtdemote) pushes
+them to the bottom. Earlier patterns outrank later ones within each list.
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    promote: ['index*', 'getting-started/**'],
+    demote: ['reference/**', 'changelog*'],
+  },
+})
+```
+
+That reads top-down the way a person would: the home page, then the
+introduction, then everything else, then the reference material an agent should
+consult rather than read.
+
+`promote: ['index*']` is the default. Pass `[]` to switch it off.
+
+Patterns match Content Collection entry ids — `guides/example`, not
+`/guides/example/` — through
+[picomatch](https://github.com/micromatch/picomatch). A single `*` stays inside
+one path segment; `**` crosses them.
+
+## Excluding pages
+
+[`exclude`](/starlight-llm-actions/configuration/reference/#llmstxtexclude)
+drops pages from every index:
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    exclude: ['internal/**', 'sandbox/**'],
+  },
+})
+```
+
+This is about the indexes, not about hiding a page. An excluded page still serves
+its own Markdown route and still carries its
+[`linkAlternate`](/starlight-llm-actions/configuration/reference/#linkalternate)
+tag. It just stops being advertised in bulk.
+
+Drafts are already excluded, the same way they are already skipped by the
+Markdown route.
+
+## Named subsets
+
+On a large site, `llms-full.txt` can be big enough that fetching it to answer a
+question about one section is wasteful.
+[`subsets`](/starlight-llm-actions/configuration/reference/#llmstxtsubsets)
+publishes that section as its own bundle:
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    subsets: [
+      {
+        label: 'REST API',
+        description: 'the complete REST API reference',
+        paths: ['api/**'],
+      },
+      {
+        label: 'Guides',
+        description: 'task-oriented walkthroughs',
+        paths: ['guides/**', 'tutorials/**'],
+      },
+    ],
+  },
+})
+```
+
+Each entry emits one file — `/llms-rest-api.txt`, `/llms-guides.txt` — and adds
+one line to the **Documentation Sets** section of `llms.txt`. The file name comes
+from `label`, lowercased and hyphenated.
+
+A subset is a filter over the same ordered list `llms-full.txt` is built from, so
+it inherits `exclude` and the `promote`/`demote` order. Nothing stops two subsets
+from overlapping.
+
+## Migrating from `starlight-llms-txt`
+
+The pattern dialect and the ordering rules are ported from
+[`starlight-llms-txt`](https://github.com/delucis/starlight-llms-txt), so an
+existing `promote`/`demote` list produces the order it already produced. Its
+`customSets` entries move over to `subsets` unchanged — same `label`, `paths`,
+and `description` fields.
+
+Two differences to know before you cut over:
+
+- **`exclude` is broader here.** There, it filters `llms-small.txt` only. Here it
+  filters every index, so pages you excluded will also disappear from `llms.txt`
+  and `llms-full.txt`.
+- **There is no `llms-small.txt`.** A named subset is the way to publish a
+  smaller file, and it slices by section rather than by stripping elements out of
+  every page.
+
+These options have no equivalent, on purpose:
+
+| Option | Why not |
+| --- | --- |
+| `minify` | It only shapes `llms-small.txt`, which this plugin does not generate. The flattening is already lossy in the ways that matter; a second pass that drops asides and `<details>` blocks is a debugging problem waiting to happen. |
+| `customSelectors`, `rawContent` | These exist to patch a flattener that cannot handle a site's markup. The fix is a better flattener, which is what [`renderMarkdown: 'simple'`](/starlight-llm-actions/guides/markdown-rendering/) is; for markup it still cannot handle, the [`{ module }` escape hatch](/starlight-llm-actions/configuration/reference/#-module-) hands you the whole pipeline. |
+| `projectName`, `description`, `details`, `optionalLinks` | The header comes from Starlight's own `title` and `description` rather than a second place to keep them in sync. |
+| `pageSeparator` | Bundles always join documents with a blank line. |
+
+Run both plugins for one build and diff the output before you cut over.

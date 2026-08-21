@@ -2,6 +2,7 @@ import {
   StarlightLlmActionsConfigSchema,
   type ActionsConfig,
   type LinkAlternateConfig,
+  type LlmsTxtConfig,
   type OpenInConfig,
   type PrintNoticeBranding,
   type PrintNoticeConfig,
@@ -13,6 +14,7 @@ import {
   type Strategy,
 } from './schema.js';
 import { BUILTIN_PROVIDERS, PROVIDER_IDS } from '../providers/builtin.js';
+import { FULL_BUNDLE_SLUG } from '../internal/llms-txt.js';
 
 /**
  * Fully-resolved provider entry. JSON-serializable: all values are strings,
@@ -77,6 +79,24 @@ export interface ResolvedLinkAlternate {
   absolute: boolean;
 }
 
+/** One named subset, emitted at `/llms-{slug}.txt`. */
+export interface ResolvedLlmsTxtSubset {
+  label: string;
+  /** Blurb for the subset's line in `llms.txt`. `null` when none was given. */
+  description: string | null;
+  /** Globs matching the entry ids this subset includes. */
+  paths: string[];
+  /** File-name stem, slugified from `label`. */
+  slug: string;
+}
+
+export interface ResolvedLlmsTxt {
+  promote: string[];
+  demote: string[];
+  exclude: string[];
+  subsets: ResolvedLlmsTxtSubset[];
+}
+
 export interface ResolvedConfig {
   actions: {
     copyMarkdown: boolean;
@@ -98,6 +118,8 @@ export interface ResolvedConfig {
   renderMarkdown: ResolvedRenderMarkdown;
   /** Per-page `<link rel="alternate">` tag config. `null` when disabled. */
   linkAlternate: ResolvedLinkAlternate | null;
+  /** Site-level index generation. `null` when disabled. */
+  llmsTxt: ResolvedLlmsTxt | null;
   /** Snapshot disclaimer for printed/PDF output. `null` when disabled. */
   printNotice: ResolvedPrintNotice | null;
   /** How the dropdown opens. `'click'` is the default. */
@@ -116,6 +138,7 @@ const DEFAULT_OPEN_IN_LABEL = 'Open in…';
 const DEFAULT_PAGE_OPT_OUT = 'llmActions';
 const DEFAULT_MARKDOWN_URL = '/{slug}.md';
 const DEFAULT_LINK_ALTERNATE_TYPE = 'text/markdown';
+const DEFAULT_LLMS_TXT_PROMOTE = ['index*'];
 const DEFAULT_PRINT_NOTICE_TITLE = 'Documentation Snapshot';
 const DEFAULT_PRINT_NOTICE_MESSAGE = [
   'This is a point-in-time export and may be outdated.',
@@ -153,6 +176,16 @@ export function resolveConfig(
     );
   }
 
+  // Every consumer treats the template as site-absolute and concatenates it onto
+  // a `base` with its trailing slash stripped, so a relative template silently
+  // produces `/docsslug.md`. Astro's `injectRoute` pattern needs the leading
+  // slash too. Rejecting it here beats four subtly wrong URLs downstream.
+  if (!markdownUrl.startsWith('/')) {
+    throw new Error(
+      `starlight-llm-actions: \`markdownUrl\` must start with "/". Got: "${markdownUrl}"`,
+    );
+  }
+
   return {
     actions: resolveActions(parsed.actions, prompt),
     prompt,
@@ -162,6 +195,7 @@ export function resolveConfig(
     injectRoute: parsed.injectRoute ?? true,
     renderMarkdown: resolveRenderMarkdown(parsed.renderMarkdown),
     linkAlternate: resolveLinkAlternate(parsed.linkAlternate),
+    llmsTxt: resolveLlmsTxt(parsed.llmsTxt),
     printNotice: resolvePrintNotice(parsed.printNotice),
     trigger: parsed.trigger ?? 'click',
     closeOnAction: parsed.closeOnAction ?? true,
@@ -201,6 +235,78 @@ function resolveLinkAlternate(
   return {
     type: config.type ?? DEFAULT_LINK_ALTERNATE_TYPE,
     absolute: config.absolute ?? false,
+  };
+}
+
+/**
+ * Turn `'REST API v2'` into `'rest-api-v2'` — the stem of the file the subset is
+ * emitted at.
+ *
+ * ASCII-only on purpose: the result becomes a URL path segment that agents are
+ * expected to guess from the label, and percent-encoded bytes defeat that. A
+ * label with nothing usable left is a config error rather than a silent
+ * fallback, because the alternative is two subsets quietly overwriting each
+ * other's file.
+ */
+function slugifyLabel(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function resolveLlmsTxt(
+  value: boolean | LlmsTxtConfig | undefined,
+): ResolvedLlmsTxt | null {
+  if (value === undefined || value === false) return null;
+
+  const config: LlmsTxtConfig = value === true ? {} : value;
+
+  /** slug -> the label that claimed it, for the collision message. */
+  const claimed = new Map<string, string>();
+  const subsets = (config.subsets ?? []).map((subset) => {
+    const slug = slugifyLabel(subset.label);
+    if (!slug) {
+      throw new Error(
+        `starlight-llm-actions: \`llmsTxt.subsets\` label "${subset.label}" leaves nothing a file name can use. ` +
+          'Give it a label containing at least one ASCII letter or digit.',
+      );
+    }
+
+    // The whole-corpus bundle already lives at this path, and both come out of
+    // the same dynamic route, so this is a duplicate path rather than an
+    // override of it.
+    if (slug === FULL_BUNDLE_SLUG) {
+      throw new Error(
+        `starlight-llm-actions: \`llmsTxt.subsets\` label "${subset.label}" resolves to /llms-${FULL_BUNDLE_SLUG}.txt, ` +
+          'which is where the whole-corpus bundle is served. Rename it.',
+      );
+    }
+
+    const clash = claimed.get(slug);
+    if (clash !== undefined) {
+      throw new Error(
+        `starlight-llm-actions: \`llmsTxt.subsets\` labels "${clash}" and "${subset.label}" both resolve to ` +
+          `/llms-${slug}.txt. Rename one of them.`,
+      );
+    }
+    claimed.set(slug, subset.label);
+
+    return {
+      label: subset.label,
+      description: subset.description ?? null,
+      paths: subset.paths,
+      slug,
+    };
+  });
+
+  return {
+    // `index*` matches the home page on a stock Starlight site, and an index
+    // page is the one document an agent reading top-down should see first.
+    promote: config.promote ?? DEFAULT_LLMS_TXT_PROMOTE,
+    demote: config.demote ?? [],
+    exclude: config.exclude ?? [],
+    subsets,
   };
 }
 

@@ -8,6 +8,7 @@ import {
   type ResolvedConfig,
 } from './config/resolve.js';
 import type { StarlightLlmActionsConfig } from './config/schema.js';
+import { siteMeta, type SiteMeta } from './internal/llms-txt.js';
 import {
   findMissingSimpleDeps,
   missingSimpleDepsMessage,
@@ -22,6 +23,7 @@ function createAstroIntegration(
   resolved: ResolvedConfig,
   parsed: StarlightLlmActionsConfig,
   rendererModule: string | null,
+  starlightMeta: SiteMeta,
   pageTitleConflict: boolean,
 ): AstroIntegration {
   return {
@@ -42,9 +44,26 @@ function createAstroIntegration(
             prerender: true,
           });
         }
+        if (resolved.llmsTxt) {
+          injectRoute({
+            pattern: '/llms.txt',
+            entrypoint: 'starlight-llm-actions/routes/llms-txt',
+            prerender: true,
+          });
+          // One dynamic route covers `/llms-full.txt` and every subset. The
+          // param sits inside the file name rather than owning a path segment,
+          // so the bundles land beside `llms.txt` instead of under a directory.
+          injectRoute({
+            pattern: '/llms-[bundle].txt',
+            entrypoint: 'starlight-llm-actions/routes/llms-bundle',
+            prerender: true,
+          });
+        }
         updateConfig({
           vite: {
-            plugins: [virtualConfigPlugin(resolved, parsed, rendererModule)],
+            plugins: [
+              virtualConfigPlugin(resolved, parsed, rendererModule, starlightMeta),
+            ],
           },
         });
       },
@@ -83,6 +102,14 @@ export default function starlightLlmActions(
           }
         }
 
+        if (resolved.llmsTxt && !astroConfig.site) {
+          throw new Error(
+            'starlight-llm-actions: `llmsTxt` needs an absolute URL to build its links from, ' +
+              'but `site` is not set in your Astro config.\n' +
+              "Set `site` (e.g. site: 'https://example.com'), or drop `llmsTxt`.",
+          );
+        }
+
         if (resolved.linkAlternate?.absolute && !astroConfig.site) {
           throw new Error(
             'starlight-llm-actions: `linkAlternate.absolute` needs an absolute URL to build from, ' +
@@ -119,6 +146,7 @@ export default function starlightLlmActions(
             resolved,
             parsed,
             rendererModule,
+            siteMeta(config),
             pageTitleConflict,
           ),
         );

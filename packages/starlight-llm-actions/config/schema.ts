@@ -156,6 +156,47 @@ const LinkAlternateConfigSchema = z
 
 const LinkAlternateSchema = z.union([z.boolean(), LinkAlternateConfigSchema]);
 
+/**
+ * One named subset of the docs, emitted as its own `/llms-{slug}.txt` bundle and
+ * listed in `llms.txt`.
+ */
+const LlmsTxtSubsetSchema = z
+  .object({
+    /** Human-readable name, e.g. `'API'`. Slugified to build the file name. */
+    label: z.string().min(1),
+    /** Blurb appended after the subset's link in `llms.txt`. */
+    description: z.string().optional(),
+    /** Globs matching the entry ids to include, e.g. `['api/**']`. */
+    paths: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
+/**
+ * Site-level index generation: `/llms.txt`, `/llms-full.txt`, and one
+ * `/llms-{slug}.txt` per named subset.
+ *
+ * Patterns match Content Collection entry ids (e.g. `guides/example`) through
+ * picomatch — the same glob dialect `starlight-llms-txt` uses, so an existing
+ * pattern list ports over unchanged.
+ */
+const LlmsTxtConfigSchema = z
+  .object({
+    /** Entry ids sorted to the top of every index. Default `['index*']`. */
+    promote: z.array(z.string().min(1)).optional(),
+    /** Entry ids sorted to the end. Wins over `promote` when a page matches both. */
+    demote: z.array(z.string().min(1)).optional(),
+    /**
+     * Entry ids dropped from every index. Per-page Markdown routes are
+     * unaffected — an excluded page still serves its own `.md`.
+     */
+    exclude: z.array(z.string().min(1)).optional(),
+    /** Named subsets, one extra bundle each. */
+    subsets: z.array(LlmsTxtSubsetSchema).optional(),
+  })
+  .strict();
+
+const LlmsTxtSchema = z.union([z.boolean(), LlmsTxtConfigSchema]);
+
 export const StarlightLlmActionsConfigSchema = z
   .object({
     actions: ActionsConfigSchema.optional(),
@@ -182,6 +223,15 @@ export const StarlightLlmActionsConfigSchema = z
      * pointing at the page's Markdown URL. Default `false` (opt-in).
      */
     linkAlternate: LinkAlternateSchema.optional(),
+    /**
+     * Generate site-level indexes: `/llms.txt`, `/llms-full.txt`, and one
+     * `/llms-{slug}.txt` per named subset. Default `false` (opt-in).
+     *
+     * The bundles run the same renderer the per-page Markdown route does, so
+     * every Markdown surface on the site carries identical output. Needs `site`
+     * set in the Astro config, because `llms.txt` links have to be absolute.
+     */
+    llmsTxt: LlmsTxtSchema.optional(),
     prompt: z.string().optional(),
     triggerLabel: z.string().optional(),
     pageOptOut: z.union([z.string(), z.literal(false)]).optional(),
@@ -327,4 +377,17 @@ export type RenderMarkdownConfig = 'raw' | 'simple' | RenderMarkdownModule;
 export interface LinkAlternateConfig {
   type?: string;
   absolute?: boolean;
+}
+
+export interface LlmsTxtSubset {
+  label: string;
+  description?: string;
+  paths: string[];
+}
+
+export interface LlmsTxtConfig {
+  promote?: string[];
+  demote?: string[];
+  exclude?: string[];
+  subsets?: LlmsTxtSubset[];
 }

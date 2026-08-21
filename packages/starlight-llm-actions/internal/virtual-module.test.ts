@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../config/resolve.js';
 import type { StarlightLlmActionsConfig } from '../config/schema.js';
+import { siteMeta } from './llms-txt.js';
 import { virtualConfigPlugin } from './virtual-module.js';
 
 const MODULE_ID = 'virtual:starlight-llm-actions/config';
@@ -11,11 +12,13 @@ const HOSTILE = '</script>\u2028\u2029';
 function moduleSource(
   rendererSpecifier: string | null,
   parsed: StarlightLlmActionsConfig = {},
+  starlight = siteMeta({ title: 'Acme Docs' }),
 ): string {
   const plugin = virtualConfigPlugin(
     resolveConfig(parsed),
     parsed,
     rendererSpecifier,
+    starlight,
   );
   const resolvedId = (plugin.resolveId as (id: string) => string | null)(
     MODULE_ID,
@@ -74,5 +77,17 @@ describe('virtualConfigPlugin', () => {
     const code = moduleSource(null);
     expect(code).toContain('export default {');
     expect(code).toContain('export const parsed =');
+  });
+
+  it("carries Starlight's site metadata across, escaped like the rest", () => {
+    const code = moduleSource(null, {}, siteMeta({ title: HOSTILE }));
+    const starlight = /^export const starlight = (.*);$/m.exec(code)?.[1];
+    expect(JSON.parse(starlight!)).toEqual({
+      title: HOSTILE,
+      description: null,
+      defaultLang: 'en',
+    });
+    expect(code).not.toMatch(/[\u2028\u2029]/);
+    expect(code).not.toContain('</script');
   });
 });
