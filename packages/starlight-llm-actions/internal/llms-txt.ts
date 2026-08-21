@@ -209,9 +209,14 @@ function oneLine(value: string): string {
  * `[Deprecated] API` already survives intact. An unbalanced one does not: a
  * stray `]` drops the link entirely, and a stray `[` swallows the text before
  * it. Escaping both is cheaper than deciding which titles are balanced.
+ *
+ * The backslash is in the class because it is the escape character: escaping
+ * only the brackets turns `a \] b` into `a \\] b`, which CommonMark reads as an
+ * escaped backslash followed by a *live* `]` — the bracket this function exists
+ * to neutralise, back again one character later.
  */
 function escapeLabel(label: string): string {
-  return oneLine(label).replace(/[[\]]/g, '\\$&');
+  return oneLine(label).replace(/[\\[\]]/g, '\\$&');
 }
 
 function linkLine({ label, url, description }: IndexLink): string {

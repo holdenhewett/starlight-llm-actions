@@ -344,6 +344,22 @@ describe('link sanitization', () => {
     expect(one('Arrays: a] b')).toBe('- [Arrays: a\\] b](https://example.com/p.md)');
   });
 
+  /**
+   * CodeQL's js/incomplete-sanitization, and it is not theoretical: escaping only
+   * the brackets renders `a \] b` as `a \\] b`, which CommonMark reads as an
+   * escaped backslash plus a live `]`. Verified against remark: the label below
+   * loses its link without the backslash in the character class.
+   */
+  it('escapes the backslash too, or the bracket escape is undone', () => {
+    expect(one('Weird \\] title')).toBe(
+      '- [Weird \\\\\\] title](https://example.com/p.md)',
+    );
+  });
+
+  it('escapes a trailing backslash, which would eat the link text terminator', () => {
+    expect(one('Trailing \\')).toBe('- [Trailing \\\\](https://example.com/p.md)');
+  });
+
   it('collapses a multi-line description onto the list item', () => {
     // A YAML literal block keeps its newlines; emitted raw, the continuation
     // lines land outside the `- ` marker and read as prose between entries.
