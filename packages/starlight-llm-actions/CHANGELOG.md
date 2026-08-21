@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.11.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.10.1...v0.11.0) (2026-08-21)
+
+
+### Features
+
+* generate llms.txt and llms-full.txt from the Markdown pipeline ([#90](https://github.com/holdenhewett/starlight-llm-actions/issues/90)) ([f658590](https://github.com/holdenhewett/starlight-llm-actions/commit/f658590f767a9e67ba811ec798314f2bacc68c60))
+
+
+### Bug Fixes
+
+* escape brackets and backslashes in generated link labels ([#90](https://github.com/holdenhewett/starlight-llm-actions/issues/90)) ([f658590](https://github.com/holdenhewett/starlight-llm-actions/commit/f658590f767a9e67ba811ec798314f2bacc68c60))
+* escape characters JSON.stringify leaves unsafe in generated source ([#88](https://github.com/holdenhewett/starlight-llm-actions/issues/88)) ([574a809](https://github.com/holdenhewett/starlight-llm-actions/commit/574a8094e26485ecbb9d10358c6f733253b5ccd5))
+* keep a real 404 page out of llms.txt and every bundle ([#90](https://github.com/holdenhewett/starlight-llm-actions/issues/90)) ([f658590](https://github.com/holdenhewett/starlight-llm-actions/commit/f658590f767a9e67ba811ec798314f2bacc68c60))
+* reject a markdownUrl template that is not site-absolute ([#90](https://github.com/holdenhewett/starlight-llm-actions/issues/90)) ([f658590](https://github.com/holdenhewett/starlight-llm-actions/commit/f658590f767a9e67ba811ec798314f2bacc68c60))
+* resolve the default language from the locales key, as Starlight does ([#90](https://github.com/holdenhewett/starlight-llm-actions/issues/90)) ([f658590](https://github.com/holdenhewett/starlight-llm-actions/commit/f658590f767a9e67ba811ec798314f2bacc68c60))
+
 ## [0.10.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.10.0...v0.10.1) (2026-08-19)
 
 
