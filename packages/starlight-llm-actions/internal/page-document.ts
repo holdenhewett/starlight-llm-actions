@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro';
 import config, { renderer } from 'virtual:starlight-llm-actions/config';
+import type { IndexEntry } from './llms-txt.js';
 
 /**
  * The docs entry fields a page document is composed from.
@@ -27,7 +28,23 @@ export type PageEntry = {
 };
 
 /**
- * Page documents built so far this build, keyed by entry id.
+ * One page of one collection: where it is published, and the entry behind it.
+ *
+ * The unit every Markdown surface works in. `path` is what the site publishes —
+ * the entry id for a collection Starlight routes itself, and the id through the
+ * collection's `path` template otherwise — and it is what globs match and what
+ * `markdownUrl` is built from. The entry is kept alongside rather than flattened
+ * because the indexes need its `title` and `description` too.
+ */
+export interface CollectionPage extends IndexEntry {
+  /** Collection the entry came from, e.g. `docs`. */
+  collection: string;
+  /** The collection entry itself. */
+  entry: PageEntry;
+}
+
+/**
+ * Page documents built so far this build, keyed by collection and entry id.
  *
  * The per-page Markdown route and every site-level index need byte-identical
  * Markdown for the same page, and producing it is the expensive part of both:
@@ -43,7 +60,11 @@ export type PageEntry = {
  * is no second reader, so caching every page document for the length of the
  * build would retain the entire site's Markdown to serve nobody.
  *
- * Keyed on entry id alone, deliberately. The guarantee this cache exists to
+ * Keyed on collection and entry id rather than on the published path: the two
+ * are one-to-one for any config that builds, but the identity this cache trades
+ * on is the entry's, and a path is a thing config can change out from under it.
+ *
+ * Keyed on the entry alone, deliberately. The guarantee this cache exists to
  * provide is that a page's own `.md` route and every index containing that page
  * serve the *same bytes*; adding the context to the key would license those to
  * diverge, which is the bug rather than the fix. `docs/test` pins the identity
@@ -78,26 +99,28 @@ const shared = config.llmsTxt !== null;
  * failure into the raw source, so there is no poisoned-cache case to guard.
  */
 export function pageDocument(
-  entry: PageEntry,
+  page: CollectionPage,
   context: APIContext,
 ): Promise<string> {
-  if (!shared) return buildDocument(entry, context);
+  if (!shared) return buildDocument(page, context);
 
-  let document = documents.get(entry.id);
+  const key = `${page.collection}:${page.entry.id}`;
+  let document = documents.get(key);
   if (!document) {
-    document = buildDocument(entry, context);
-    documents.set(entry.id, document);
+    document = buildDocument(page, context);
+    documents.set(key, document);
   }
   return document;
 }
 
 async function buildDocument(
-  entry: PageEntry,
+  page: CollectionPage,
   context: APIContext,
 ): Promise<string> {
+  const { entry } = page;
   const { hero, description } = entry.data;
   const title = hero?.title ?? entry.data.title;
-  const body = await renderBody(entry, context);
+  const body = await renderBody(page, context);
 
   const sections = [`# ${title}`];
   if (description) sections.push(`> ${description}`);
@@ -128,9 +151,10 @@ async function buildDocument(
  * build, and the warning tells the author which page needs attention.
  */
 async function renderBody(
-  entry: PageEntry,
+  page: CollectionPage,
   context: APIContext,
 ): Promise<string> {
+  const { entry } = page;
   const raw = entry.body ?? '';
   if (!renderer) return raw;
 
@@ -144,7 +168,7 @@ async function renderBody(
         config.renderMarkdown.mode === 'module'
           ? config.renderMarkdown.module
           : config.renderMarkdown.mode
-      }' failed for "${entry.id}"; emitting the raw source instead.\n  ${reason}`,
+      }' failed for "/${page.path}"; emitting the raw source instead.\n  ${reason}`,
     );
     return raw;
   }

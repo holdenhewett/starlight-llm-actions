@@ -12,8 +12,8 @@ import {
 } from './llms-txt.js';
 
 const collator = new Intl.Collator('en');
-const ids = (entries: { id: string }[]) => entries.map((e) => e.id);
-const entries = (...list: string[]) => list.map((id) => ({ id }));
+const paths = (entries: { path: string }[]) => entries.map((e) => e.path);
+const entries = (...list: string[]) => list.map((path) => ({ path }));
 
 describe('createOrder', () => {
   it('bands promoted entries ahead of neutral ones, in pattern order', () => {
@@ -51,7 +51,7 @@ describe('sortEntries', () => {
       ['legacy/**'],
       collator,
     );
-    expect(ids(sorted)).toEqual([
+    expect(paths(sorted)).toEqual([
       'index',
       'guides/a',
       'guides/b',
@@ -60,21 +60,21 @@ describe('sortEntries', () => {
     ]);
   });
 
-  it('breaks ties on id so output does not depend on loader order', () => {
+  it('breaks ties on path so output does not depend on loader order', () => {
     const forward = sortEntries(entries('a', 'b', 'c'), [], [], collator);
     const reverse = sortEntries(entries('c', 'b', 'a'), [], [], collator);
-    expect(ids(forward)).toEqual(ids(reverse));
+    expect(paths(forward)).toEqual(paths(reverse));
   });
 
   it('does not mutate the input array', () => {
     const input = entries('b', 'a');
     sortEntries(input, [], [], collator);
-    expect(ids(input)).toEqual(['b', 'a']);
+    expect(paths(input)).toEqual(['b', 'a']);
   });
 
   /**
    * The ordering this ports from is expressed as an underscore-prefix trick:
-   * `starlight-llms-txt` prefixes each id with a computed number of underscores
+   * `starlight-llms-txt` prefixes each path with a computed number of underscores
    * and sorts the strings. Reimplementing that formula here and asserting both
    * produce the same sequence is what makes this a port rather than a rewrite
    * that happens to look similar — a consuming site moving its existing
@@ -95,20 +95,22 @@ describe('sortEntries', () => {
       'legacy/v0',
     );
 
-    const prioritize = (id: string) => {
-      const demoted = demote.findIndex((expr) => micromatch.isMatch(id, expr));
+    const prioritize = (path: string) => {
+      const demoted = demote.findIndex((expr) => micromatch.isMatch(path, expr));
       const promoted =
-        demoted > -1 ? -1 : promote.findIndex((expr) => micromatch.isMatch(id, expr));
+        demoted > -1
+          ? -1
+          : promote.findIndex((expr) => micromatch.isMatch(path, expr));
       const prefixLength =
         (promoted > -1 ? promote.length - promoted : 0) + demote.length - demoted - 1;
-      return '_'.repeat(prefixLength) + id;
+      return '_'.repeat(prefixLength) + path;
     };
     const reference = [...sample].sort((a, b) =>
-      collator.compare(prioritize(a.id), prioritize(b.id)),
+      collator.compare(prioritize(a.path), prioritize(b.path)),
     );
 
-    expect(ids(sortEntries(sample, promote, demote, collator))).toEqual(
-      ids(reference),
+    expect(paths(sortEntries(sample, promote, demote, collator))).toEqual(
+      paths(reference),
     );
   });
 });
@@ -116,19 +118,19 @@ describe('sortEntries', () => {
 describe('applyExclude', () => {
   it('drops matching entries', () => {
     expect(
-      ids(applyExclude(entries('index', 'internal/notes', 'guides/a'), ['internal/**'])),
+      paths(applyExclude(entries('index', 'internal/notes', 'guides/a'), ['internal/**'])),
     ).toEqual(['index', 'guides/a']);
   });
 
   it('keeps everything when the list is empty', () => {
-    expect(ids(applyExclude(entries('index', 'guides/a'), []))).toEqual([
+    expect(paths(applyExclude(entries('index', 'guides/a'), []))).toEqual([
       'index',
       'guides/a',
     ]);
   });
 
   it('holds a single star to one path segment', () => {
-    expect(ids(applyExclude(entries('api/tokens', 'api/v2/tokens'), ['api/*']))).toEqual(
+    expect(paths(applyExclude(entries('api/tokens', 'api/v2/tokens'), ['api/*']))).toEqual(
       ['api/v2/tokens'],
     );
   });
@@ -137,18 +139,18 @@ describe('applyExclude', () => {
 describe('applyInclude', () => {
   it('keeps only matching entries', () => {
     expect(
-      ids(applyInclude(entries('api/tokens', 'guides/a', 'api/agents'), ['api/**'])),
+      paths(applyInclude(entries('api/tokens', 'guides/a', 'api/agents'), ['api/**'])),
     ).toEqual(['api/tokens', 'api/agents']);
   });
 
-  it('matches an exact id with no glob syntax', () => {
-    expect(ids(applyInclude(entries('index', 'guides/a'), ['index']))).toEqual([
+  it('matches an exact path with no glob syntax', () => {
+    expect(paths(applyInclude(entries('index', 'guides/a'), ['index']))).toEqual([
       'index',
     ]);
   });
 
   it('keeps nothing when the list is empty', () => {
-    expect(ids(applyInclude(entries('api/tokens'), []))).toEqual([]);
+    expect(paths(applyInclude(entries('api/tokens'), []))).toEqual([]);
   });
 });
 

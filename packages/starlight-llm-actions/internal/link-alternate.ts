@@ -14,6 +14,14 @@ export interface AlternateHeadTagOptions {
   /** The page's docs collection entry. */
   entry: { id: string; data: { draft: boolean } };
   /**
+   * Whether the plugin publishes a Markdown route for this page — see
+   * `internal/pages.ts`.
+   *
+   * Passed in rather than looked up so this stays a pure function of its
+   * arguments; the lookup needs `astro:content` and a whole content store.
+   */
+  covered: boolean;
+  /**
    * Astro's `base`, exactly as `import.meta.env.BASE_URL` reports it — with or
    * without a trailing slash.
    */
@@ -34,10 +42,17 @@ export function alternateHeadTag({
   linkAlternate,
   markdownUrl,
   entry,
+  covered,
   base,
   site,
 }: AlternateHeadTagOptions): AlternateHeadTag | null {
   if (!linkAlternate) return null;
+
+  // The page belongs to no collection this plugin was told about, so nothing
+  // emits a `.md` for it. The two checks below overlap with this one and are
+  // kept anyway: they say what the plugin refuses to advertise, while this says
+  // what does not exist.
+  if (!covered) return null;
 
   // Drafts are excluded from the injected Markdown route, so linking to one
   // would advertise a URL that 404s in production.

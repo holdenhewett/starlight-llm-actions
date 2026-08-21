@@ -1,5 +1,4 @@
 import type { APIRoute } from 'astro';
-import { getCollection } from 'astro:content';
 import { starlight } from 'virtual:starlight-llm-actions/config';
 import {
   bundleUrl,
@@ -12,6 +11,7 @@ import {
   renderLlmsTxt,
   type IndexLink,
 } from '../internal/llms-txt.js';
+import { collectionPages } from '../internal/pages.js';
 
 export const prerender = true;
 
@@ -27,8 +27,7 @@ export const GET: APIRoute = async (context) => {
   // without `site` is a build error, because these links have to be absolute.
   const site = context.site!;
 
-  const docs = await getCollection('docs', (doc) => !doc.data.draft);
-  const entries = indexEntries(docs);
+  const entries = indexEntries(await collectionPages());
 
   const sets: IndexLink[] = [
     {
@@ -47,10 +46,10 @@ export const GET: APIRoute = async (context) => {
     title: starlight.title,
     description: starlight.description,
     sets,
-    pages: entries.map((entry) => ({
-      label: entry.data.title,
-      url: pageUrl(entry.id, site),
-      description: entry.data.description,
+    pages: entries.map((page) => ({
+      label: page.entry.data.title,
+      url: pageUrl(page.path, site),
+      description: page.entry.data.description,
     })),
   });
 

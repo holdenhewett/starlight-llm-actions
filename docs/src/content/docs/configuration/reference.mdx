@@ -85,6 +85,73 @@ starlightLlmActions({
 })
 ```
 
+### `collections`
+
+- **Type:** `(string | CollectionConfig)[]`
+- **Default:** `['docs']`
+
+The Content Collections the plugin publishes Markdown for. Every collection
+listed here gets a `.md` route per entry, a line in `llms.txt`, and its pages in
+`llms-full.txt`; a page in a collection *not* listed here gets none of that, and
+the Page Actions dropdown leaves out its Markdown items rather than pointing them
+at a URL that does not exist.
+
+A bare string names a collection whose entry ids already are its site paths,
+which is true of Starlight's own `docs`. Anything else needs the object form:
+
+```ts
+type CollectionConfig =
+  | string
+  | {
+      name: string;
+      path?: string;  // default: '{id}'
+    };
+```
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `name` | yes | Collection name, as declared in `src/content.config.ts`. |
+| `path` | no | Site path for one entry, with `{id}` standing for the entry id. No leading or trailing slash. |
+
+```js
+starlightLlmActions({
+  collections: [
+    'docs',
+    { name: 'changelog', path: 'changelog/entry/{id}' },
+  ],
+})
+```
+
+#### Why `path` exists
+
+Starlight derives a `docs` page's URL from its entry id, so the two are the same
+string. A collection with its own route file is under no such obligation: a
+`changelog` collection whose entries are `0-11-0` and `0-12-0` might serve them
+at `/changelog/entry/0-11-0`, and `path` is how you say so.
+
+Getting it wrong is what the `.md` convention cannot survive — Markdown at
+`/changelog/0-11-0.md` for a page published at `/changelog/entry/0-11-0/` is a
+URL no agent will guess. The template is validated at config time: it must
+contain `{id}` exactly once and carry no surrounding slashes.
+
+The resulting path is what every other option works in. `markdownUrl` is built
+from it, and the globs in [`llmsTxt`](#llmstxtconfig) match it — so a changelog
+entry is `changelog/entry/*`, not `0-*`.
+
+#### What a collection needs
+
+Two things, neither of them enforced by the plugin:
+
+- **A `title` in its schema.** It becomes the `#` heading of the page's Markdown
+  and its label in every index. A collection without one fails the build with the
+  offending entry named.
+- **A route that renders it.** The plugin publishes the Markdown twin of an HTML
+  page; it does not create the HTML page. A collection with no route file gets
+  `.md` files pointing nowhere.
+
+A `draft: true` entry is skipped, in this collection as in `docs`. A schema with
+no `draft` field simply has no drafts to skip.
+
 ### `renderMarkdown`
 
 - **Type:** `'raw' | 'simple' | { module: string }` — see
@@ -623,17 +690,21 @@ Passed to [`llmsTxt`](#llmstxt).
 Passing `true` instead of an object is shorthand for `{}` — enabled with all
 defaults.
 
-Every pattern here matches a Content Collection entry id (`guides/example`, not
+Every pattern here matches a page's site path (`guides/example`, not
 `/guides/example/`) through [picomatch](https://github.com/micromatch/picomatch),
 the same glob dialect `starlight-llms-txt` uses. An existing pattern list ports
 over unchanged.
+
+For a `docs` page the site path *is* the entry id. For a collection configured
+with a [`path`](#collections) template, it is the id run through that template —
+so one pattern dialect covers every collection, written the way the URLs read.
 
 ### `llmsTxt.promote`
 
 - **Type:** `string[]`
 - **Default:** `['index*']`
 
-Entry ids sorted to the top of every index. Earlier patterns outrank later ones,
+Site paths sorted to the top of every index. Earlier patterns outrank later ones,
 so `promote: ['index*', 'getting-started/**']` puts the home page first and the
 getting-started section second.
 
@@ -665,7 +736,7 @@ starlightLlmActions({
 - **Type:** `string[]`
 - **Default:** `[]`
 
-Entry ids dropped from `llms.txt` and `llms-full.txt`. Drafts are already
+Site paths dropped from `llms.txt` and `llms-full.txt`. Drafts are already
 excluded.
 
 This does not hide a page: an excluded page still serves its own Markdown route,
@@ -718,7 +789,7 @@ That emits `/llms-rest-api.txt` and adds this line to `llms.txt`:
 | --- | --- | --- |
 | `label` | yes | Human-readable name. Lowercased and hyphenated to build the file name, so `'REST API'` becomes `/llms-rest-api.txt`. |
 | `description` | no | Appended after the subset's link in `llms.txt`. |
-| `paths` | yes | Globs matching the entry ids to include. At least one. Takes precedence over [`exclude`](#llmstxtexclude). |
+| `paths` | yes | Globs matching the site paths to include. At least one. Takes precedence over [`exclude`](#llmstxtexclude). |
 
 A subset inherits the `promote`/`demote` ordering, so its pages keep the relative
 order `llms-full.txt` gives them. It does not inherit
@@ -727,8 +798,8 @@ is what lets one config drop a section from `llms-full.txt` and publish it as a
 bundle at the same time.
 
 `paths` that match no page is a build error rather than a bundle holding nothing.
-The globs run against Content Collection entry ids, so write `guides/example`,
-not `/guides/example.md`.
+The globs run against site paths, so write `guides/example`, not
+`/guides/example.md`.
 
 Two labels that reduce to the same file name are a config error rather than a
 silent overwrite, and `'Full'` is reserved for `/llms-full.txt`.

@@ -1,6 +1,7 @@
 import {
   StarlightLlmActionsConfigSchema,
   type ActionsConfig,
+  type CollectionConfig,
   type LinkAlternateConfig,
   type LlmsTxtConfig,
   type OpenInConfig,
@@ -84,7 +85,7 @@ export interface ResolvedLlmsTxtSubset {
   label: string;
   /** Blurb for the subset's line in `llms.txt`. `null` when none was given. */
   description: string | null;
-  /** Globs matching the entry ids this subset includes. */
+  /** Globs matching the site paths this subset includes. */
   paths: string[];
   /** File-name stem, slugified from `label`. */
   slug: string;
@@ -95,6 +96,17 @@ export interface ResolvedLlmsTxt {
   demote: string[];
   exclude: string[];
   subsets: ResolvedLlmsTxtSubset[];
+}
+
+/** One content collection the plugin publishes Markdown for. */
+export interface ResolvedCollection {
+  /** Collection name, as declared in `src/content.config.ts`. */
+  name: string;
+  /**
+   * Site path template for one entry, `{id}` standing for the entry id and no
+   * leading slash. `'{id}'` for a collection Starlight routes itself.
+   */
+  path: string;
 }
 
 export interface ResolvedConfig {
@@ -114,6 +126,8 @@ export interface ResolvedConfig {
   markdownUrl: string;
   /** Whether the plugin should inject its own markdown route. */
   injectRoute: boolean;
+  /** Collections published as Markdown, in the order they were configured. */
+  collections: ResolvedCollection[];
   /** How the injected route renders each page body. */
   renderMarkdown: ResolvedRenderMarkdown;
   /** Per-page `<link rel="alternate">` tag config. `null` when disabled. */
@@ -193,6 +207,7 @@ export function resolveConfig(
     pageOptOut,
     markdownUrl,
     injectRoute: parsed.injectRoute ?? true,
+    collections: resolveCollections(parsed.collections),
     renderMarkdown: resolveRenderMarkdown(parsed.renderMarkdown),
     linkAlternate: resolveLinkAlternate(parsed.linkAlternate),
     llmsTxt: resolveLlmsTxt(parsed.llmsTxt),
@@ -253,6 +268,69 @@ function slugifyLabel(label: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+const ID_PLACEHOLDER = '{id}';
+
+/**
+ * Normalize `collections` into one shape, with every path template validated.
+ *
+ * The string form is shorthand for a collection whose entry ids already are its
+ * site paths — true of Starlight's `docs`, and the reason the default needs no
+ * template at all.
+ *
+ * The validation is stricter than it needs to be for a template that is only
+ * ever substituted into, because the result is concatenated into `markdownUrl`
+ * and then onto `base`. A leading slash there produces `//changelog/...`, and a
+ * missing `{id}` produces one path shared by every entry in the collection —
+ * which Astro resolves by emitting a single file, silently.
+ */
+function resolveCollections(
+  value: CollectionConfig[] | undefined,
+): ResolvedCollection[] {
+  const collections = (value ?? ['docs']).map((entry) => {
+    const { name, path = ID_PLACEHOLDER } =
+      typeof entry === 'string' ? { name: entry } : entry;
+
+    if (path.split(ID_PLACEHOLDER).length !== 2) {
+      throw new Error(
+        `starlight-llm-actions: \`collections\` path for "${name}" must contain "${ID_PLACEHOLDER}" exactly once. ` +
+          `Got: "${path}"`,
+      );
+    }
+
+    if (path.startsWith('/') || path.endsWith('/')) {
+      throw new Error(
+        `starlight-llm-actions: \`collections\` path for "${name}" is a site path without surrounding slashes, ` +
+          `the way an entry id is written. Got: "${path}"`,
+      );
+    }
+
+    return { name, path };
+  });
+
+  const seen = new Set<string>();
+  for (const { name } of collections) {
+    if (seen.has(name)) {
+      throw new Error(
+        `starlight-llm-actions: \`collections\` names "${name}" twice. ` +
+          'Each collection is published once, under a single path template.',
+      );
+    }
+    seen.add(name);
+  }
+
+  return collections;
+}
+
+/**
+ * Substitute `{id}` in a collection's path template with one entry's id.
+ *
+ * The result is a site path with no leading slash — the same shape a `docs`
+ * entry id has, which is what lets everything downstream treat the two alike.
+ */
+export function pagePathForId(template: string, id: string): string {
+  return template.replace(ID_PLACEHOLDER, id);
 }
 
 function resolveLlmsTxt(

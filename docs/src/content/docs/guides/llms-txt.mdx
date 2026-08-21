@@ -68,9 +68,30 @@ the next. Whatever you configure once applies everywhere.
 
 Each page is rendered once per build regardless of how many files it appears in.
 
+## Which pages are indexed
+
+Every page of every collection named in
+[`collections`](/starlight-llm-actions/configuration/reference/#collections),
+which defaults to Starlight's `docs` alone. A site that keeps a changelog, a
+blog, or an API reference in its own collection lists it there to bring those
+pages into the indexes:
+
+```js
+starlightLlmActions({
+  collections: [
+    'docs',
+    { name: 'changelog', path: 'changelog/entry/{id}' },
+  ],
+})
+```
+
+The `path` template maps an entry id onto the URL the site serves it at. It is
+worth getting right beyond the indexes: the same path is what the page's own
+`.md` route is built from, and what the glob options below match.
+
 ## Ordering
 
-Indexes are ordered alphabetically by entry id, with two escape hatches.
+Indexes are ordered alphabetically by site path, with two escape hatches.
 
 [`promote`](/starlight-llm-actions/configuration/reference/#llmstxtpromote)
 lifts patterns to the top;
@@ -92,8 +113,8 @@ consult rather than read.
 
 `promote: ['index*']` is the default. Pass `[]` to switch it off.
 
-Patterns match Content Collection entry ids — `guides/example`, not
-`/guides/example/` — through
+Patterns match a page's site path — `guides/example`, not `/guides/example/` —
+through
 [picomatch](https://github.com/micromatch/picomatch). A single `*` stays inside
 one path segment; `**` crosses them.
 
@@ -157,8 +178,8 @@ relative order `llms-full.txt` puts them in. Nothing stops two subsets from
 overlapping.
 
 A subset whose `paths` match no page is a build error, not an empty file. The
-usual cause is a leading slash or a file extension: `paths` are globs over
-Content Collection entry ids, so `guides/example`, never `/guides/example.md`.
+usual cause is a leading slash or a file extension: `paths` are globs over site
+paths, so `guides/example`, never `/guides/example.md`.
 
 ### Subsets beat `exclude`
 

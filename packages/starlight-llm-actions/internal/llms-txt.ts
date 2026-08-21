@@ -15,8 +15,16 @@ export const FULL_BUNDLE_SLUG = 'full';
  * is: that type only exists after `astro sync` runs in the consumer's project.
  */
 export interface IndexEntry {
-  /** Content Collection entry id, e.g. `guides/example`. */
-  id: string;
+  /**
+   * The page's site path, e.g. `guides/example` — no leading slash, no
+   * extension.
+   *
+   * Every glob in `promote`, `demote`, `exclude`, and a subset's `paths` is
+   * matched against this. It is the entry id for a collection Starlight routes
+   * itself, and the id run through that collection's `path` template otherwise,
+   * so a site writes one pattern dialect over the URLs it actually publishes.
+   */
+  path: string;
 }
 
 /**
@@ -94,7 +102,7 @@ export interface IndexLink {
  * An empty list matches nothing, which is what makes an omitted `exclude`
  * exclude nothing.
  */
-function compile(patterns: readonly string[]): (id: string) => boolean {
+function compile(patterns: readonly string[]): (path: string) => boolean {
   if (patterns.length === 0) return () => false;
   return picomatch([...patterns]);
 }
@@ -105,7 +113,7 @@ export function applyExclude<T extends IndexEntry>(
   exclude: readonly string[],
 ): T[] {
   const excluded = compile(exclude);
-  return entries.filter((entry) => !excluded(entry.id));
+  return entries.filter((entry) => !excluded(entry.path));
 }
 
 /** Keep only the entries one of `paths` matches. Used to build a subset. */
@@ -114,7 +122,7 @@ export function applyInclude<T extends IndexEntry>(
   paths: readonly string[],
 ): T[] {
   const included = compile(paths);
-  return entries.filter((entry) => included(entry.id));
+  return entries.filter((entry) => included(entry.path));
 }
 
 /**
@@ -137,15 +145,15 @@ export function applyInclude<T extends IndexEntry>(
 export function createOrder(
   promote: readonly string[],
   demote: readonly string[],
-): (id: string) => number {
+): (path: string) => number {
   const promoteMatchers = promote.map((pattern) => picomatch(pattern));
   const demoteMatchers = demote.map((pattern) => picomatch(pattern));
 
-  return (id) => {
-    const demoted = demoteMatchers.findIndex((isMatch) => isMatch(id));
+  return (path) => {
+    const demoted = demoteMatchers.findIndex((isMatch) => isMatch(path));
     if (demoted > -1) return demoted + 1;
 
-    const promoted = promoteMatchers.findIndex((isMatch) => isMatch(id));
+    const promoted = promoteMatchers.findIndex((isMatch) => isMatch(path));
     if (promoted > -1) return promoted - promoteMatchers.length;
 
     return 0;
@@ -154,7 +162,7 @@ export function createOrder(
 
 /**
  * Order entries for every index: promoted bands first, then everything else,
- * then demoted bands. Ties break on entry id through `collator`, so the output
+ * then demoted bands. Ties break on site path through `collator`, so the output
  * does not depend on the order the content loader happened to read files in.
  *
  * Each entry's band is computed once up front rather than inside the comparator,
@@ -168,10 +176,10 @@ export function sortEntries<T extends IndexEntry>(
 ): T[] {
   const order = createOrder(promote, demote);
   return entries
-    .map((entry) => ({ entry, tier: order(entry.id) }))
+    .map((entry) => ({ entry, tier: order(entry.path) }))
     .sort(
       (a, b) =>
-        a.tier - b.tier || collator.compare(a.entry.id, b.entry.id),
+        a.tier - b.tier || collator.compare(a.entry.path, b.entry.path),
     )
     .map(({ entry }) => entry);
 }
