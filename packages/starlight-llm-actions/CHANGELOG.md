@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.12.1](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.0...v0.12.1) (2026-08-21)
+
+
+### ⚠ Behavior change in 0.12.0
+
+`llmsTxt.exclude` stopped applying to `llmsTxt.subsets` in 0.12.0. A subset's `paths` now override a corpus-wide `exclude`, so a subset whose globs name excluded pages ships those pages rather than resolving to an empty bundle. If you configured that pairing expecting the exclusion to win, the bundle now carries more pages than it did on 0.11.x. That change went out as a minor with no breaking marker — this is the warning its entry lacked. See [Subsets beat exclude](https://holdenhewett.github.io/starlight-llm-actions/guides/llms-txt/#subsets-beat-exclude).
+
+### Bug Fixes
+
+* type the generated config module instead of widening it to any ([#93](https://github.com/holdenhewett/starlight-llm-actions/issues/93)) ([7a80bfa](https://github.com/holdenhewett/starlight-llm-actions/commit/7a80bfae2ebf95c99ce9c1f3b4b28675c1b5a6c5))
+
 ## [0.12.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.11.0...v0.12.0) (2026-08-21)
 
 
