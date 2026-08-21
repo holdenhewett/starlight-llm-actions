@@ -3,6 +3,14 @@
 ## [0.13.0](https://github.com/holdenhewett/starlight-llm-actions/compare/v0.12.1...v0.13.0) (2026-08-21)
 
 
+### ⚠ Home page's Markdown URL moves on some templates
+
+The root-page fix below changes where the home page's Markdown is emitted, but only for a `markdownUrl` template that puts a separator after `{slug}`. On `markdownUrl: '/{slug}/index.md'` the home page moved from `/index/index.md` to `/index.md`, and every reference to it moved with it — the dropdown link, the `rel="alternate"` tag, and the `llms.txt` entry. The default `/{slug}.md` is unaffected, and no other page changes on any template. Add a redirect if you had published the old URL.
+
+### Deployment note: serve `.md` with `charset=utf-8`
+
+Not a change in this release, but newly documented. Static hosts derive `Content-Type` from the file extension and some derive it without a charset; a browser handed a bare `text/markdown` decodes the body as windows-1252, turning every smart quote and em dash into mojibake. `aws s3 sync` does this by default, and `astro preview` reproduces it, so a local check will not warn you. See [Make sure your host sends `charset=utf-8`](https://github.com/holdenhewett/starlight-llm-actions/blob/main/packages/starlight-llm-actions/README.md#make-sure-your-host-sends-charsetutf-8).
+
 ### Features
 
 * add llmsTxt title and description overrides ([#100](https://github.com/holdenhewett/starlight-llm-actions/issues/100)) ([5a837ef](https://github.com/holdenhewett/starlight-llm-actions/commit/5a837efdcf1b176046cbf753e184521d1e3a34d2)), closes [#95](https://github.com/holdenhewett/starlight-llm-actions/issues/95)
