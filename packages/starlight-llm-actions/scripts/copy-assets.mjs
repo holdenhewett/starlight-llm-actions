@@ -18,8 +18,10 @@ for (const dir of dirs) {
 // project, the same way it compiles `.astro` files from node_modules.
 const rawSources = [
   ['route.ts'],
+  ['route-middleware.ts'],
   ['routes', 'llms-txt.ts'],
   ['routes', 'llms-bundle.ts'],
+  ['internal', 'pages.ts'],
   ['internal', 'simple-markdown.ts'],
   ['internal', 'virtual.d.ts'],
 ];

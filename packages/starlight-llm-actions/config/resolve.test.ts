@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   markdownUrlForSlug,
+  pagePathForId,
   resolveConfig,
   routeSlugForId,
 } from './resolve.js';
@@ -324,5 +325,96 @@ describe('routeSlugForId', () => {
     // Astro omits a rest parameter given `undefined`, which is what turns
     // `/[...slug]/index.md` into `/index.md`.
     expect(routeSlugForId('/{slug}/index.md', 'index')).toBeUndefined();
+  });
+});
+
+/**
+ * `collections` is what lets a site publish Markdown for content outside
+ * Starlight's own `docs`. The path template is the load-bearing half: a
+ * collection with its own route file serves its entries at URLs its entry ids
+ * do not spell, and everything downstream — the injected route, `llms.txt`,
+ * every glob — works in site paths.
+ */
+describe('collections', () => {
+  it("defaults to docs alone, addressed by its own ids", () => {
+    expect(resolveConfig({}).collections).toEqual([{ name: 'docs', path: '{id}' }]);
+  });
+
+  it('reads a bare string as a collection whose ids are its paths', () => {
+    expect(resolveConfig({ collections: ['docs', 'api'] }).collections).toEqual([
+      { name: 'docs', path: '{id}' },
+      { name: 'api', path: '{id}' },
+    ]);
+  });
+
+  it('keeps a path template as written', () => {
+    expect(
+      resolveConfig({
+        collections: [{ name: 'changelog', path: 'changelog/entry/{id}' }],
+      }).collections,
+    ).toEqual([{ name: 'changelog', path: 'changelog/entry/{id}' }]);
+  });
+
+  it('preserves configured order, which is the order indexes list them in', () => {
+    const { collections } = resolveConfig({ collections: ['api', 'docs'] });
+    expect(collections.map((c) => c.name)).toEqual(['api', 'docs']);
+  });
+
+  it('rejects a template with no {id}, which would collapse the collection to one page', () => {
+    expect(() =>
+      resolveConfig({ collections: [{ name: 'changelog', path: 'changelog' }] }),
+    ).toThrow(/must contain "\{id\}" exactly once/);
+  });
+
+  it('rejects a template naming {id} twice, which has no single substitution', () => {
+    expect(() =>
+      resolveConfig({ collections: [{ name: 'x', path: '{id}/{id}' }] }),
+    ).toThrow(/exactly once/);
+  });
+
+  it('rejects a leading slash, which would double up against base', () => {
+    expect(() =>
+      resolveConfig({ collections: [{ name: 'x', path: '/changelog/{id}' }] }),
+    ).toThrow(/without surrounding slashes/);
+  });
+
+  it('rejects a trailing slash, which would leave an empty last segment', () => {
+    expect(() =>
+      resolveConfig({ collections: [{ name: 'x', path: '{id}/' }] }),
+    ).toThrow(/without surrounding slashes/);
+  });
+
+  it('names the offending value in the message', () => {
+    expect(() =>
+      resolveConfig({ collections: [{ name: 'changelog', path: 'changelog' }] }),
+    ).toThrow(/Got: "changelog"/);
+  });
+
+  it('rejects the same collection twice, which would emit each entry twice', () => {
+    expect(() =>
+      resolveConfig({
+        collections: ['docs', { name: 'docs', path: 'copy/{id}' }],
+      }),
+    ).toThrow(/names "docs" twice/);
+  });
+
+  it('rejects an empty list rather than publishing nothing', () => {
+    expect(() => resolveConfig({ collections: [] })).toThrow();
+  });
+});
+
+describe('pagePathForId', () => {
+  it('passes an id straight through the default template', () => {
+    expect(pagePathForId('{id}', 'guides/example')).toBe('guides/example');
+  });
+
+  it('places the id inside a template with its own segments', () => {
+    expect(pagePathForId('changelog/entry/{id}', '0-11-0')).toBe(
+      'changelog/entry/0-11-0',
+    );
+  });
+
+  it('produces a path with no leading slash, the shape a docs id already has', () => {
+    expect(pagePathForId('changelog/{id}', 'v1')).not.toMatch(/^\//);
   });
 });

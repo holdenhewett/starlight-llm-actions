@@ -1,6 +1,7 @@
 ---
 import globalConfig, { parsed as parsedGlobal } from 'virtual:starlight-llm-actions/config';
 import { markdownUrlForSlug, resolveConfig } from '../config/resolve';
+import { hasMarkdownRoute } from '../internal/pages';
 import { mergePageOverride, PageOverrideSchema } from '../config/pageOverride';
 import aistudioSvg from '../icons/aistudio.svg?raw';
 import chatBubbleSvg from '../icons/chat-bubble.svg?raw';
@@ -46,6 +47,12 @@ const route = Astro.locals.starlightRoute;
 // `markdownUrl` template can express.
 const slug = route?.entry?.id ?? '';
 
+// Whether this page is one the plugin actually publishes Markdown for. A site
+// whose `collections` cover only part of its content would otherwise point Copy
+// and View at a 404 on the pages left out — which is what sites hit this with,
+// hiding the component by hand on the routes they knew were uncovered.
+const covered = await hasMarkdownRoute(slug);
+
 // Resolve config for this page: read frontmatter override (if any), validate
 // against the page-override schema, layer it on top of the parsed global
 // config, then re-resolve. Falls back to the global resolved config when no
@@ -68,10 +75,13 @@ if (globalConfig.pageOptOut !== false) {
 
 const { actions, triggerLabel, markdownUrl, trigger, closeOnAction, toastDuration, preOpenDelay } = config;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const markdownHref = base + markdownUrlForSlug(markdownUrl, slug);
+// Empty on an uncovered page, which is also what the client script reads as
+// "no Markdown here": `resolvePrompt` falls back to the page's own URL, so the
+// Open in… providers keep working on HTML rather than disappearing.
+const markdownHref = covered ? base + markdownUrlForSlug(markdownUrl, slug) : '';
 
-const showCopy = actions.copyMarkdown;
-const showView = actions.viewMarkdown;
+const showCopy = covered && actions.copyMarkdown;
+const showView = covered && actions.viewMarkdown;
 const showPdf = actions.printPdf;
 const openIn = actions.openIn;
 const hasMarkdownSection = showCopy || showView;

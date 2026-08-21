@@ -157,6 +157,29 @@ const LinkAlternateConfigSchema = z
 const LinkAlternateSchema = z.union([z.boolean(), LinkAlternateConfigSchema]);
 
 /**
+ * One content collection the plugin should publish Markdown for.
+ *
+ * The string form names a collection whose entry ids already are its site paths,
+ * which is the case for Starlight's own `docs`. The object form is for a
+ * collection served by its own route file, where the two differ.
+ */
+const CollectionConfigSchema = z
+  .object({
+    /** Collection name, as declared in `src/content.config.ts`. */
+    name: z.string().min(1),
+    /**
+     * Site path template for one entry, with `{id}` standing for the entry id
+     * and no leading slash — e.g. `'changelog/entry/{id}'`. Default `'{id}'`.
+     */
+    path: z.string().min(1).optional(),
+  })
+  .strict();
+
+const CollectionsSchema = z
+  .array(z.union([z.string().min(1), CollectionConfigSchema]))
+  .min(1);
+
+/**
  * One named subset of the docs, emitted as its own `/llms-{slug}.txt` bundle and
  * listed in `llms.txt`.
  */
@@ -167,7 +190,7 @@ const LlmsTxtSubsetSchema = z
     /** Blurb appended after the subset's link in `llms.txt`. */
     description: z.string().optional(),
     /**
-     * Globs matching the entry ids to include, e.g. `['api/**']`. Takes
+     * Globs matching the site paths to include, e.g. `['api/**']`. Takes
      * precedence over `exclude`. Matching nothing is a build error.
      */
     paths: z.array(z.string().min(1)).min(1),
@@ -178,18 +201,19 @@ const LlmsTxtSubsetSchema = z
  * Site-level index generation: `/llms.txt`, `/llms-full.txt`, and one
  * `/llms-{slug}.txt` per named subset.
  *
- * Patterns match Content Collection entry ids (e.g. `guides/example`) through
- * picomatch — the same glob dialect `starlight-llms-txt` uses, so an existing
- * pattern list ports over unchanged.
+ * Patterns match a page's site path (e.g. `guides/example`) through picomatch —
+ * the same glob dialect `starlight-llms-txt` uses, so an existing pattern list
+ * ports over unchanged. For a `docs` page the path is the entry id; for any
+ * other collection it is the id run through that collection's `path` template.
  */
 const LlmsTxtConfigSchema = z
   .object({
-    /** Entry ids sorted to the top of every index. Default `['index*']`. */
+    /** Site paths sorted to the top of every index. Default `['index*']`. */
     promote: z.array(z.string().min(1)).optional(),
-    /** Entry ids sorted to the end. Wins over `promote` when a page matches both. */
+    /** Site paths sorted to the end. Wins over `promote` when a page matches both. */
     demote: z.array(z.string().min(1)).optional(),
     /**
-     * Entry ids dropped from `llms.txt` and the full bundle. A `subsets` entry
+     * Site paths dropped from `llms.txt` and the full bundle. A `subsets` entry
      * naming a page in its `paths` overrides this, so an excluded page can
      * still ship as part of a targeted bundle. Per-page Markdown routes are
      * unaffected either way — an excluded page still serves its own `.md`.
@@ -206,11 +230,17 @@ export const StarlightLlmActionsConfigSchema = z
   .object({
     actions: ActionsConfigSchema.optional(),
     /**
-     * URL template for per-page markdown. Use `{slug}` as the entry id placeholder.
+     * URL template for per-page markdown. Use `{slug}` as the page-path placeholder.
      * Default: `/{slug}.md`. Sites that publish raw text under `.txt` can set
      * this to `/{slug}.txt`.
      */
     markdownUrl: z.string().optional(),
+    /**
+     * Content collections to publish Markdown for. Default `['docs']`.
+     * An entry's site path defaults to its id; give the object form a `path`
+     * template when the collection is served from a route of its own.
+     */
+    collections: CollectionsSchema.optional(),
     /**
      * Whether the plugin should inject its own markdown route at the pattern
      * derived from `markdownUrl`. Default `true`. Set to `false` if your site
@@ -383,6 +413,14 @@ export interface LinkAlternateConfig {
   type?: string;
   absolute?: boolean;
 }
+
+/** Object form of a `collections` entry, for a collection with its own route. */
+export interface CollectionObjectConfig {
+  name: string;
+  path?: string;
+}
+
+export type CollectionConfig = string | CollectionObjectConfig;
 
 export interface LlmsTxtSubset {
   label: string;

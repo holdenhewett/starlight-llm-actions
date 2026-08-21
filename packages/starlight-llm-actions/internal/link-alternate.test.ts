@@ -9,6 +9,7 @@ function tagFor(
     linkAlternate?: ResolvedLinkAlternate | null;
     markdownUrl?: string;
     entry?: { id: string; data: { draft: boolean } };
+    covered?: boolean;
     base?: string;
     site?: URL | string | undefined;
   } = {},
@@ -17,6 +18,7 @@ function tagFor(
     linkAlternate: enabled,
     markdownUrl: '/{slug}.md',
     entry: { id: 'guides/example', data: { draft: false } },
+    covered: true,
     base: '/',
     ...overrides,
   });
@@ -151,6 +153,18 @@ describe('alternateHeadTag', () => {
         site: 'https://example.com',
       });
       expect(tag?.attrs.href).toBe('https://example.com/guides/f%C3%ABature.md');
+    });
+  });
+
+  /**
+   * The caller answers this from the set of pages the plugin actually emits, so
+   * a site whose `collections` leave a route uncovered stops advertising a
+   * Markdown URL for it — the same 404 the Page Actions dropdown avoids by
+   * leaving its Markdown section out.
+   */
+  describe('coverage', () => {
+    it('returns null for a page the plugin publishes no Markdown for', () => {
+      expect(tagFor({ covered: false })).toBeNull();
     });
   });
 

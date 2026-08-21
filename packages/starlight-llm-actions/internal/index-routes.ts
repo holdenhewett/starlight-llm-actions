@@ -83,9 +83,9 @@ export function subsetEntries<T extends IndexEntry>(
 }
 
 /** Absolute URL of one page's own Markdown route. */
-export function pageUrl(id: string, site: URL): string {
+export function pageUrl(path: string, site: URL): string {
   return absoluteUrl(
-    markdownUrlForSlug(config.markdownUrl, id),
+    markdownUrlForSlug(config.markdownUrl, path),
     import.meta.env.BASE_URL,
     site,
   );
