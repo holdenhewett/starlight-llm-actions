@@ -166,7 +166,10 @@ const LlmsTxtSubsetSchema = z
     label: z.string().min(1),
     /** Blurb appended after the subset's link in `llms.txt`. */
     description: z.string().optional(),
-    /** Globs matching the entry ids to include, e.g. `['api/**']`. */
+    /**
+     * Globs matching the entry ids to include, e.g. `['api/**']`. Takes
+     * precedence over `exclude`. Matching nothing is a build error.
+     */
     paths: z.array(z.string().min(1)).min(1),
   })
   .strict();
@@ -186,11 +189,13 @@ const LlmsTxtConfigSchema = z
     /** Entry ids sorted to the end. Wins over `promote` when a page matches both. */
     demote: z.array(z.string().min(1)).optional(),
     /**
-     * Entry ids dropped from every index. Per-page Markdown routes are
-     * unaffected — an excluded page still serves its own `.md`.
+     * Entry ids dropped from `llms.txt` and the full bundle. A `subsets` entry
+     * naming a page in its `paths` overrides this, so an excluded page can
+     * still ship as part of a targeted bundle. Per-page Markdown routes are
+     * unaffected either way — an excluded page still serves its own `.md`.
      */
     exclude: z.array(z.string().min(1)).optional(),
-    /** Named subsets, one extra bundle each. */
+    /** Named subsets, one extra bundle each. A subset's `paths` beat `exclude`. */
     subsets: z.array(LlmsTxtSubsetSchema).optional(),
   })
   .strict();

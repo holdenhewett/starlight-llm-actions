@@ -3,6 +3,7 @@ import { markdownUrlForSlug } from '../config/resolve.js';
 import {
   absoluteUrl,
   applyExclude,
+  applyInclude,
   sortEntries,
   type IndexEntry,
 } from './llms-txt.js';
@@ -37,20 +38,48 @@ const collator = new Intl.Collator(starlight.defaultLang);
 const NEVER_INDEXED = ['404'];
 
 /**
- * Apply `exclude`, then `promote`/`demote` ordering.
+ * Order the corpus, dropping only the pages nothing may ever index.
  *
- * Every index starts from this one list: `llms.txt` links each entry, the full
- * bundle concatenates all of them, and a subset filters it down. Ordering before
- * filtering rather than after is what keeps a subset in the same relative order
- * the full bundle puts those pages in.
+ * Ordering before filtering rather than after is what keeps a subset in the same
+ * relative order the full bundle puts those pages in.
  */
-export function indexEntries<T extends IndexEntry>(entries: readonly T[]): T[] {
+function orderEntries<T extends IndexEntry>(entries: readonly T[]): T[] {
   return sortEntries(
-    applyExclude(entries, [...llmsTxt.exclude, ...NEVER_INDEXED]),
+    applyExclude(entries, NEVER_INDEXED),
     llmsTxt.promote,
     llmsTxt.demote,
     collator,
   );
+}
+
+/**
+ * The default corpus: `exclude` applied, then `promote`/`demote` ordering.
+ *
+ * Backs `llms.txt` and the full bundle, the two indexes that speak for the site
+ * as a whole.
+ */
+export function indexEntries<T extends IndexEntry>(entries: readonly T[]): T[] {
+  return orderEntries(applyExclude(entries, llmsTxt.exclude));
+}
+
+/**
+ * One subset's entries, ordered, with `exclude` deliberately not applied.
+ *
+ * A subset names its pages in `paths`, which is a narrower statement than a
+ * corpus-wide `exclude` glob, so the subset wins. That precedence is the whole
+ * reason to configure both: a page too large or too duplicative for
+ * `llms-full.txt` can still ship as a targeted bundle. Reversing it would leave
+ * such a subset silently empty, since its `paths` name exactly the pages
+ * `exclude` dropped.
+ *
+ * `NEVER_INDEXED` still applies. A 404 page belongs in no index, and no `paths`
+ * glob is a considered request for one.
+ */
+export function subsetEntries<T extends IndexEntry>(
+  entries: readonly T[],
+  paths: readonly string[],
+): T[] {
+  return applyInclude(orderEntries(entries), paths);
 }
 
 /** Absolute URL of one page's own Markdown route. */

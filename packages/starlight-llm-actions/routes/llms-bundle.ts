@@ -1,12 +1,12 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import { starlight } from 'virtual:starlight-llm-actions/config';
-import { indexEntries, llmsTxt } from '../internal/index-routes.js';
 import {
-  applyInclude,
-  FULL_BUNDLE_SLUG,
-  renderBundle,
-} from '../internal/llms-txt.js';
+  indexEntries,
+  llmsTxt,
+  subsetEntries,
+} from '../internal/index-routes.js';
+import { FULL_BUNDLE_SLUG, renderBundle } from '../internal/llms-txt.js';
 import { pageDocument } from '../internal/page-document.js';
 
 export const prerender = true;
@@ -38,8 +38,20 @@ export const GET: APIRoute = async (context) => {
   const { paths, label } = context.props as BundleProps;
 
   const docs = await getCollection('docs', (doc) => !doc.data.draft);
-  const ordered = indexEntries(docs);
-  const entries = paths ? applyInclude(ordered, paths) : ordered;
+  const entries = paths ? subsetEntries(docs, paths) : indexEntries(docs);
+
+  // A subset whose paths match nothing builds a file holding only the <SYSTEM>
+  // line, and a 90-byte bundle listed in llms.txt reads as "this section is
+  // empty" rather than as a config mistake. The globs match Content Collection
+  // entry ids, so the usual cause is a leading slash or a file extension that
+  // an id never carries.
+  if (paths && entries.length === 0) {
+    throw new Error(
+      `[starlight-llm-actions] The '${label}' subset matched no pages. ` +
+        `Its paths (${paths.join(', ')}) are globs over Content Collection ` +
+        `entry ids, such as 'guides/example' — no leading slash, no extension.`,
+    );
+  }
 
   // Sequential on purpose. `pageDocument` can run a full Astro component render
   // per page, and a `Promise.all` over a thousand-page site would start every
