@@ -44,6 +44,15 @@ If the user's browser blocks clipboard writes (e.g. on `http://` origins
 without explicit permission), the action falls back to selecting the
 markdown into a hidden textarea and using `document.execCommand('copy')`.
 
+## When the action isn't there
+
+**Copy as Markdown** only appears on pages that have a Markdown route to fetch.
+A page outside every collection named in
+[`collections`](/starlight-llm-actions/configuration/reference/#collections)
+gets no `.md` file, so the item is dropped rather than fetching a 404. **View as
+Markdown** goes with it; the **Open in…** providers stay, falling back to the
+page's own URL.
+
 ## Modifying what gets copied
 
 The action copies whatever the markdown route serves. To change the copied

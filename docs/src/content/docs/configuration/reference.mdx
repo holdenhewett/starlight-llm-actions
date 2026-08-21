@@ -896,6 +896,10 @@ interface PrintNoticeLogo {
 }
 ```
 
+`src` is emitted as written. If your Astro config sets a `base`, include it
+(`/my-docs/logo.svg`), or the image resolves against the domain root and the
+branding row renders broken.
+
 ### `printNotice.warning`
 
 - **Type:** `false | PrintNoticeWarning`

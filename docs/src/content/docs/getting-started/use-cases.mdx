@@ -26,6 +26,23 @@ Markdown** actions and the auto-injected `/[slug].md` route turn every
 page into a stable, plain-text endpoint — useful for AI tooling, doc
 mirroring, scripting, and accessibility.
 
+That covers an agent already looking at one page. An agent that has never
+seen your site needs a way in, which is what
+[`llmsTxt`](/starlight-llm-actions/configuration/reference/#llmstxt) adds:
+`/llms.txt` as a linked index of every page, `/llms-full.txt` as the whole
+corpus in one file, and named subsets for the sections worth handing over on
+their own, like just the configuration reference rather than all of it. It is
+off by default because it only earns its place once you want your docs
+retrievable as a corpus rather than page by page. [Site-level
+indexes](/starlight-llm-actions/guides/llms-txt/) covers ordering, exclusion,
+and subsets.
+
+Both features start from Starlight's `docs` collection. If part of your site
+lives elsewhere, say a changelog or anything with its own route file, it stays
+invisible to both until you name it in
+[`collections`](/starlight-llm-actions/configuration/reference/#collections).
+Worth checking before you conclude the plugin missed a page.
+
 ## Printable PDFs for offline and audit copies
 
 `printPdf` is **off by default** because not every documentation site
@@ -138,6 +155,9 @@ and the
 
 | Scenario | Feature | Default | Where to look |
 |---|---|---|---|
+| Docs retrievable as a corpus | `llmsTxt: true` | off | [Site-level indexes](/starlight-llm-actions/guides/llms-txt/) |
+| Content outside `src/content/docs/` | `collections` | `docs` only | [`collections`](/starlight-llm-actions/configuration/reference/#collections) |
+| Markdown mojibake after deploy | host `charset=utf-8` | n/a | [Deployment](/starlight-llm-actions/guides/deployment/) |
 | Multi-product LLM scoping | per-page `prompt` | n/a | [Custom prompt](/starlight-llm-actions/examples/custom-prompt/) |
 | Coding tools vs general LLMs | per-provider `prompt` | n/a | [Per-provider prompt](/starlight-llm-actions/examples/per-provider-prompt/) |
 | Customer-deliverable PDF | `printPdf: true` | off | [Download as PDF](/starlight-llm-actions/actions/print-pdf/) |

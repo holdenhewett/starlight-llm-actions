@@ -87,14 +87,22 @@ If the dropdown doesn't appear, see [Troubleshooting](#troubleshooting).
 
 ## What gets injected
 
-The plugin does three things behind the scenes:
+The plugin does four things behind the scenes:
 
 1. **Overrides `PageTitle.astro`** so the dropdown can render next to your
    page title without you touching component overrides yourself.
 2. **Injects a markdown route** at `/[slug].md` (configurable via
    [`markdownUrl`](/starlight-llm-actions/configuration/reference/#markdownurl))
-   that serves the page's body as `text/markdown`.
-3. **Bundles provider icons** (Simple Icons CC0 and Lobe Icons MIT; a generic
+   that serves the page's body as `text/markdown`. By default it covers
+   Starlight's `docs` collection; name others in
+   [`collections`](/starlight-llm-actions/configuration/reference/#collections)
+   to publish those too.
+3. **Injects `/llms.txt` and the bundle routes**, but only if you opt in with
+   [`llmsTxt`](/starlight-llm-actions/configuration/reference/#llmstxt), which
+   is off by default. With it on you also get `/llms-full.txt` and one
+   `/llms-{subset}.txt` per named subset. See [Site-level
+   indexes](/starlight-llm-actions/guides/llms-txt/).
+4. **Bundles provider icons** (Simple Icons CC0 and Lobe Icons MIT; a generic
    chat-bubble glyph for the few providers neither set carries a mark for) and
    the small client-side script that runs the per-provider strategy.
 
