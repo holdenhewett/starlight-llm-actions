@@ -39,6 +39,13 @@ export default defineConfig({
                 description: 'the four page actions',
                 paths: ['actions/**'],
               },
+              {
+                // Overlaps `exclude` above on purpose: this pins that a
+                // subset's paths override it.
+                label: 'Examples',
+                description: 'every example page, excluded ones included',
+                paths: ['examples/**'],
+              },
             ],
           },
           actions: {

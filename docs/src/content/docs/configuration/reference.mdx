@@ -657,12 +657,17 @@ starlightLlmActions({
 - **Type:** `string[]`
 - **Default:** `[]`
 
-Entry ids dropped from every index. Drafts are already excluded.
+Entry ids dropped from `llms.txt` and `llms-full.txt`. Drafts are already
+excluded.
 
 This does not hide a page: an excluded page still serves its own Markdown route,
 and still carries its `<link rel="alternate">` tag if
-[`linkAlternate`](#linkalternate) is on. It only stops appearing in `llms.txt`
-and the bundles.
+[`linkAlternate`](#linkalternate) is on. It only stops appearing in the two
+site-wide indexes.
+
+A [`subsets`](#llmstxtsubsets) entry whose `paths` name an excluded page still
+carries it, so a section too large for `llms-full.txt` can ship as its own
+bundle.
 
 ```js
 starlightLlmActions({
@@ -705,11 +710,17 @@ That emits `/llms-rest-api.txt` and adds this line to `llms.txt`:
 | --- | --- | --- |
 | `label` | yes | Human-readable name. Lowercased and hyphenated to build the file name, so `'REST API'` becomes `/llms-rest-api.txt`. |
 | `description` | no | Appended after the subset's link in `llms.txt`. |
-| `paths` | yes | Globs matching the entry ids to include. At least one. |
+| `paths` | yes | Globs matching the entry ids to include. At least one. Takes precedence over [`exclude`](#llmstxtexclude). |
 
-A subset inherits `exclude` and the `promote`/`demote` ordering — it is a filter
-over the same list `llms-full.txt` is built from, so pages keep their relative
-order.
+A subset inherits the `promote`/`demote` ordering, so its pages keep the relative
+order `llms-full.txt` gives them. It does not inherit
+[`exclude`](#llmstxtexclude): `paths` is the narrower statement and wins, which
+is what lets one config drop a section from `llms-full.txt` and publish it as a
+bundle at the same time.
+
+`paths` that match no page is a build error rather than a bundle holding nothing.
+The globs run against Content Collection entry ids, so write `guides/example`,
+not `/guides/example.md`.
 
 Two labels that reduce to the same file name are a config error rather than a
 silent overwrite, and `'Full'` is reserved for `/llms-full.txt`.

@@ -100,7 +100,8 @@ one path segment; `**` crosses them.
 ## Excluding pages
 
 [`exclude`](/starlight-llm-actions/configuration/reference/#llmstxtexclude)
-drops pages from every index:
+drops pages from `llms.txt` and `llms-full.txt`, the two indexes that speak for
+the site as a whole:
 
 ```js
 starlightLlmActions({
@@ -117,6 +118,9 @@ tag. It just stops being advertised in bulk.
 
 Drafts are already excluded, the same way they are already skipped by the
 Markdown route.
+
+A [named subset](#named-subsets) overrides `exclude`. See
+[Subsets beat `exclude`](#subsets-beat-exclude).
 
 ## Named subsets
 
@@ -148,9 +152,41 @@ Each entry emits one file — `/llms-rest-api.txt`, `/llms-guides.txt` — and a
 one line to the **Documentation Sets** section of `llms.txt`. The file name comes
 from `label`, lowercased and hyphenated.
 
-A subset is a filter over the same ordered list `llms-full.txt` is built from, so
-it inherits `exclude` and the `promote`/`demote` order. Nothing stops two subsets
-from overlapping.
+A subset inherits the `promote`/`demote` order, so it lists its pages in the same
+relative order `llms-full.txt` puts them in. Nothing stops two subsets from
+overlapping.
+
+A subset whose `paths` match no page is a build error, not an empty file. The
+usual cause is a leading slash or a file extension: `paths` are globs over
+Content Collection entry ids, so `guides/example`, never `/guides/example.md`.
+
+### Subsets beat `exclude`
+
+`paths` wins over `exclude`. A page you excluded still appears in any subset that
+names it:
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    // Too big for the everything-bundle, and the full reference already
+    // repeats what the endpoint and schema pages say.
+    exclude: ['api/generated/**'],
+    subsets: [
+      {
+        label: 'REST API',
+        description: 'the complete REST API reference',
+        paths: ['api/generated/**'],
+      },
+    ],
+  },
+})
+```
+
+`llms-full.txt` skips those pages and `/llms-rest-api.txt` carries them. That
+pairing is the main reason to reach for a subset: a section too large or too
+duplicative for the everything-bundle can still ship on its own. The narrower
+statement wins, so listing a page by `paths` is a considered request that a
+corpus-wide glob does not override.
 
 ## Migrating from `starlight-llms-txt`
 
@@ -162,9 +198,11 @@ and `description` fields.
 
 Two differences to know before you cut over:
 
-- **`exclude` is broader here.** There, it filters `llms-small.txt` only. Here it
-  filters every index, so pages you excluded will also disappear from `llms.txt`
-  and `llms-full.txt`.
+- **`exclude` reaches further here.** There, it filters `llms-small.txt` only,
+  which means the exclusions you wrote for it never shaped `llms-full.txt`. Here
+  it filters `llms.txt` and `llms-full.txt`, so those pages finally drop out of
+  both. Your `customSets` keep working either way, because
+  [subsets beat `exclude`](#subsets-beat-exclude).
 - **There is no `llms-small.txt`.** A named subset is the way to publish a
   smaller file, and it slices by section rather than by stripping elements out of
   every page.

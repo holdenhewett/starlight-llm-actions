@@ -210,7 +210,13 @@ describe('site-level indexes', () => {
   );
 
   it('emits llms.txt, the full bundle, and one file per named subset', () => {
-    for (const f of ['llms.txt', 'llms-full.txt', 'llms-configuration.txt', 'llms-actions.txt']) {
+    for (const f of [
+      'llms.txt',
+      'llms-full.txt',
+      'llms-configuration.txt',
+      'llms-actions.txt',
+      'llms-examples.txt',
+    ]) {
       expect(existsSync(`${dist}/${f}`), `${f} was not generated`).toBe(true);
     }
   });
@@ -229,6 +235,7 @@ describe('site-level indexes', () => {
       '- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions documentation as Markdown',
       '- [Configuration](https://holdenhewett.github.io/starlight-llm-actions/llms-configuration.txt): every configuration option',
       '- [Actions](https://holdenhewett.github.io/starlight-llm-actions/llms-actions.txt): the four page actions',
+      '- [Examples](https://holdenhewett.github.io/starlight-llm-actions/llms-examples.txt): every example page, excluded ones included',
     ]);
   });
 
@@ -244,6 +251,18 @@ describe('site-level indexes', () => {
     expect(full).not.toMatch(/^# Example: Mixed overrides$/m);
   });
 
+  it('carries an excluded page into a subset whose paths name it', () => {
+    // The playground excludes `examples/mixed` and gives the Examples subset
+    // `examples/**`. The narrower statement wins, so the page ships in that
+    // bundle while staying out of the two site-wide indexes. Reversing the
+    // precedence is what silently empties a subset built to publish exactly
+    // the pages `exclude` dropped.
+    const examples = read('llms-examples.txt');
+    expect(examples).toContain(read('examples/mixed.md'));
+    expect(full).not.toContain(read('examples/mixed.md'));
+    expect(index).not.toContain('examples/mixed.md');
+  });
+
   it('leaves a real 404 page out of every index without config', () => {
     // The playground ships src/content/docs/404.md, so the entry is genuinely
     // in the collection — and `404` sorts ahead of every letter, so a leak puts
@@ -251,7 +270,7 @@ describe('site-level indexes', () => {
     expect(files).toContain('404.md');
     expect(index).not.toContain('404.md');
     expect(full).not.toMatch(/^# Page not found$/m);
-    for (const f of ['llms-configuration.txt', 'llms-actions.txt']) {
+    for (const f of ['llms-configuration.txt', 'llms-actions.txt', 'llms-examples.txt']) {
       expect(read(f)).not.toMatch(/^# Page not found$/m);
     }
   });
