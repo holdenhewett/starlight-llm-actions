@@ -146,7 +146,7 @@ export default function starlightLlmActions(
             resolved,
             parsed,
             rendererModule,
-            siteMeta(config),
+            siteMeta(config, resolved.llmsTxt),
             pageTitleConflict,
           ),
         );

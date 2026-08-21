@@ -221,7 +221,9 @@ starlightLlmActions({
 
 `llms.txt` is the [llmstxt.org](https://llmstxt.org/) index — your site title,
 its description, a link to each bundle, and a link to every page's own Markdown
-route. `llms-full.txt` is every page concatenated into one file.
+route. [`llmsTxt.title`](#llmstxttitle) and
+[`llmsTxt.description`](#llmstxtdescription) override the first two when your
+header wordmark reads poorly as a corpus name. `llms-full.txt` is every page concatenated into one file.
 
 The bundles run the same renderer the [Markdown
 route](#rendermarkdown) does, so every Markdown surface on your site carries
@@ -680,9 +682,11 @@ Passed to [`llmsTxt`](#llmstxt).
 
 ```ts
 {
-  promote?: string[];  // default: ['index*']
-  demote?: string[];   // default: []
-  exclude?: string[];  // default: []
+  title?: string;       // default: Starlight's title
+  description?: string; // default: Starlight's description
+  promote?: string[];   // default: ['index*']
+  demote?: string[];    // default: []
+  exclude?: string[];   // default: []
   subsets?: { label: string; description?: string; paths: string[] }[];
 }
 ```
@@ -698,6 +702,63 @@ over unchanged.
 For a `docs` page the site path *is* the entry id. For a collection configured
 with a [`path`](#collections) template, it is the id run through that template —
 so one pattern dialect covers every collection, written the way the URLs read.
+
+### `llmsTxt.title`
+
+- **Type:** `string`
+- **Default:** Starlight's `title`
+
+Name of the corpus. It becomes the `llms.txt` H1, the phrase in the "Complete
+documentation" set description, and the product name in every bundle's
+`<SYSTEM>` preamble.
+
+Starlight's `title` is the site's header wordmark, and a lot of sites keep that
+short — a site titled `DOCS` opens its `llms.txt` with `# DOCS`, which tells an
+agent nothing about whose docs it just fetched. The
+[llms.txt spec](https://llmstxt.org/) makes that H1 the one required element in
+the file, so this is the way to satisfy it without renaming your header.
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    title: 'Acme Platform Documentation',
+  },
+})
+```
+
+```md title="llms.txt"
+# Acme Platform Documentation
+```
+
+### `llmsTxt.description`
+
+- **Type:** `string`
+- **Default:** Starlight's `description`
+
+Summary of the corpus, emitted as the blockquote under the H1.
+
+Starlight's `description` is a meta-description written for search results,
+which is a different job from telling an agent what the corpus covers. Setting
+this also gives the blockquote to a site that has no Starlight `description` at
+all — without either, the line is omitted.
+
+Each field falls back on its own, so overriding the title leaves your existing
+description in place.
+
+```js
+starlightLlmActions({
+  llmsTxt: {
+    title: 'Acme Platform Documentation',
+    description: 'Guides, API reference, and runbooks for the Acme platform.',
+  },
+})
+```
+
+```md title="llms.txt"
+# Acme Platform Documentation
+
+> Guides, API reference, and runbooks for the Acme platform.
+```
 
 ### `llmsTxt.promote`
 

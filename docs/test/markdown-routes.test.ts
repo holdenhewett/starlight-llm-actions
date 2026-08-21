@@ -221,9 +221,17 @@ describe('site-level indexes', () => {
     }
   });
 
-  it("opens llms.txt with Starlight's own title and description", () => {
-    expect(index.startsWith('# starlight-llm-actions\n')).toBe(true);
-    expect(index).toContain('> Playground for the starlight-llm-actions plugin.');
+  // The playground sets `llmsTxt.title` and `llmsTxt.description`, which shadow
+  // Starlight's own `title` ('starlight-llm-actions') and `description`
+  // ('Playground for the starlight-llm-actions plugin.') everywhere the corpus
+  // names itself — here, in the set description below, and in the <SYSTEM>
+  // preambles further down.
+  it('opens llms.txt with the llmsTxt header overrides', () => {
+    expect(index.startsWith('# starlight-llm-actions plugin\n')).toBe(true);
+    expect(index).toContain(
+      '> Every page of the starlight-llm-actions plugin documentation, as Markdown.',
+    );
+    expect(index).not.toContain('Playground for the starlight-llm-actions plugin.');
   });
 
   it('lists the full bundle first, then each subset, as absolute URLs', () => {
@@ -232,7 +240,7 @@ describe('site-level indexes', () => {
       .split('\n')
       .filter((line) => line.startsWith('- ['));
     expect(sets).toEqual([
-      '- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions documentation as Markdown',
+      '- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions plugin documentation as Markdown',
       '- [Configuration](https://holdenhewett.github.io/starlight-llm-actions/llms-configuration.txt): every configuration option',
       '- [Actions](https://holdenhewett.github.io/starlight-llm-actions/llms-actions.txt): the four page actions',
       '- [Examples](https://holdenhewett.github.io/starlight-llm-actions/llms-examples.txt): every example page, excluded ones included',
@@ -301,9 +309,9 @@ describe('site-level indexes', () => {
   });
 
   it('names what each bundle holds in a <SYSTEM> preamble', () => {
-    expect(full.startsWith('<SYSTEM>This is the complete starlight-llm-actions documentation, as Markdown.</SYSTEM>')).toBe(true);
+    expect(full.startsWith('<SYSTEM>This is the complete starlight-llm-actions plugin documentation, as Markdown.</SYSTEM>')).toBe(true);
     expect(read('llms-actions.txt')).toContain(
-      '<SYSTEM>This is the Actions section of the starlight-llm-actions documentation, as Markdown.</SYSTEM>',
+      '<SYSTEM>This is the Actions section of the starlight-llm-actions plugin documentation, as Markdown.</SYSTEM>',
     );
   });
 

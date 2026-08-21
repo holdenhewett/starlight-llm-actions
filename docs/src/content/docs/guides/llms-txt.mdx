@@ -27,13 +27,13 @@ starlightLlmActions({
 `llms.txt` on this site looks like:
 
 ```md
-# starlight-llm-actions
+# starlight-llm-actions plugin
 
-> Playground for the starlight-llm-actions plugin.
+> Every page of the starlight-llm-actions plugin documentation, as Markdown.
 
 ## Documentation Sets
 
-- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions documentation as Markdown
+- [Complete documentation](https://holdenhewett.github.io/starlight-llm-actions/llms-full.txt): every page of the starlight-llm-actions plugin documentation as Markdown
 - [Configuration](https://holdenhewett.github.io/starlight-llm-actions/llms-configuration.txt): every configuration option
 
 ## Documentation
@@ -41,6 +41,13 @@ starlightLlmActions({
 - [starlight-llm-actions](https://holdenhewett.github.io/starlight-llm-actions/index.md): Page Actions dropdown for Starlight — copy, view, save as PDF, and open in any LLM.
 - [Copy as Markdown](https://holdenhewett.github.io/starlight-llm-actions/actions/copy.md): Copy the current page's markdown source to the clipboard.
 ```
+
+The H1 and the blockquote default to Starlight's `title` and `description`.
+This site overrides both, because its Starlight title is a bare package name and
+an agent that fetched the file needs to know whose docs it is holding — see
+[`llmsTxt.title`](/starlight-llm-actions/configuration/reference/#llmstxttitle)
+and
+[`llmsTxt.description`](/starlight-llm-actions/configuration/reference/#llmstxtdescription).
 
 The two sections serve different readers. **Documentation Sets** is for an agent
 that wants the corpus in one request. **Documentation** is for one that would
@@ -217,7 +224,7 @@ existing `promote`/`demote` list produces the order it already produced. Its
 `customSets` entries move over to `subsets` unchanged — same `label`, `paths`,
 and `description` fields.
 
-Two differences to know before you cut over:
+Three differences to know before you cut over:
 
 - **`exclude` reaches further here.** There, it filters `llms-small.txt` only,
   which means the exclusions you wrote for it never shaped `llms-full.txt`. Here
@@ -227,6 +234,9 @@ Two differences to know before you cut over:
 - **There is no `llms-small.txt`.** A named subset is the way to publish a
   smaller file, and it slices by section rather than by stripping elements out of
   every page.
+- **`projectName` and `description` are `llmsTxt.title` and
+  `llmsTxt.description`.** Both default to Starlight's own values here, so a
+  site whose header already reads as a corpus name can drop them.
 
 These options have no equivalent, on purpose:
 
@@ -234,7 +244,7 @@ These options have no equivalent, on purpose:
 | --- | --- |
 | `minify` | It only shapes `llms-small.txt`, which this plugin does not generate. The flattening is already lossy in the ways that matter; a second pass that drops asides and `<details>` blocks is a debugging problem waiting to happen. |
 | `customSelectors`, `rawContent` | These exist to patch a flattener that cannot handle a site's markup. The fix is a better flattener, which is what [`renderMarkdown: 'simple'`](/starlight-llm-actions/guides/markdown-rendering/) is; for markup it still cannot handle, the [`{ module }` escape hatch](/starlight-llm-actions/configuration/reference/#-module-) hands you the whole pipeline. |
-| `projectName`, `description`, `details`, `optionalLinks` | The header comes from Starlight's own `title` and `description` rather than a second place to keep them in sync. |
+| `details`, `optionalLinks` | Free-form prose and a link list appended to the header. `llms.txt` already links every page and every bundle; a third hand-maintained list drifts. |
 | `pageSeparator` | Bundles always join documents with a blank line. |
 
 Run both plugins for one build and diff the output before you cut over.

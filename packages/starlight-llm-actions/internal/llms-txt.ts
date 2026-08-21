@@ -31,8 +31,9 @@ export interface IndexEntry {
  * Starlight's own site metadata, flattened for the index header.
  *
  * `llms.txt` opens with the site's name and summary, and Starlight already has
- * both — asking a site to restate them in this plugin's config would be a third
- * place to keep the same two strings in sync.
+ * both, so those are the defaults — a site that says nothing keeps the two
+ * strings in one place. `llmsTxt.title` and `llmsTxt.description` override them
+ * for sites whose header wordmark is too terse to identify a corpus by.
  */
 export interface SiteMeta {
   title: string;
@@ -47,6 +48,18 @@ export interface StarlightMetaSource {
   description?: string | undefined;
   defaultLocale?: string | undefined;
   locales?: Record<string, { lang?: string | undefined } | undefined> | undefined;
+}
+
+/**
+ * Corpus-level replacements for the two strings `llms.txt` puts in its header.
+ *
+ * Described structurally rather than importing `ResolvedLlmsTxt`, because this
+ * module is what the routes import and it has no business knowing the shape of
+ * the whole resolved config.
+ */
+export interface SiteMetaOverrides {
+  title?: string | null;
+  description?: string | null;
 }
 
 /**
@@ -67,12 +80,21 @@ export interface StarlightMetaSource {
  * The `root` key is the one exception: its schema requires `lang`. A site with
  * no `locales` at all gets Starlight's built-in `'en'`.
  *
+ * `overrides` wins over everything above, per field: overriding the title
+ * leaves a site's existing description alone, and a description override
+ * supplies the blockquote for a site that set none. The language resolution
+ * still runs either way — an override replaces the title, not the collator's
+ * locale.
+ *
  * The `Object.values` fallback covers a title record with no entry for the
  * resolved language. Starlight rejects that config outright; this returns
  * something printable rather than an empty `# ` heading, because a wrong site
  * title in one generated file is not worth failing a build over.
  */
-export function siteMeta(config: StarlightMetaSource): SiteMeta {
+export function siteMeta(
+  config: StarlightMetaSource,
+  overrides?: SiteMetaOverrides | null,
+): SiteMeta {
   const key = config.defaultLocale || 'root';
   const defaultLang =
     config.locales?.[key]?.lang || (key === 'root' ? 'en' : key);
@@ -82,7 +104,11 @@ export function siteMeta(config: StarlightMetaSource): SiteMeta {
       ? config.title
       : (config.title[defaultLang] ?? Object.values(config.title)[0] ?? '');
 
-  return { title, description: config.description ?? null, defaultLang };
+  return {
+    title: overrides?.title ?? title,
+    description: overrides?.description ?? config.description ?? null,
+    defaultLang,
+  };
 }
 
 /** One `- [label](url): description` line in `llms.txt`. */
