@@ -11,9 +11,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/mdx": "^7.0.6",
-    "@astrojs/starlight": "^0.41.7",
-    "astro": "^7.2.3",
+    "@astrojs/mdx": "^7.0.8",
+    "@astrojs/starlight": "^0.41.8",
+    "astro": "^7.2.6",
     "hast-util-select": "^6.0.4",
     "rehype-parse": "^9.0.1",
     "rehype-remark": "^10.0.1",
