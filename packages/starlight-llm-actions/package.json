@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "picomatch": "^4",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "engines": {
     "node": "^22.0.0 || >=24.0.0"
