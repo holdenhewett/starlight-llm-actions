@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "picomatch": "^4",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "engines": {
     "node": "^22.0.0 || >=24.0.0"
@@ -117,12 +117,12 @@
     "provenance": true
   },
   "devDependencies": {
-    "@astrojs/mdx": "^7.0.6",
-    "@astrojs/starlight": "^0.41.7",
+    "@astrojs/mdx": "^7.0.8",
+    "@astrojs/starlight": "^0.41.10",
     "@types/hast": "^3.0.5",
     "@types/micromatch": "^4.0.10",
     "@types/picomatch": "^4.0.3",
-    "astro": "^7.2.3",
+    "astro": "^7.2.9",
     "hast-util-select": "^6.0.4",
     "micromatch": "^4.0.8",
     "rehype-parse": "^9.0.1",
