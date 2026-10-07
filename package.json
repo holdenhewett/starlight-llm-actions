@@ -22,7 +22,7 @@
     "node": "^22.0.0 || >=24.0.0"
   },
   "devDependencies": {
-    "publint": "^0.3.24",
+    "publint": "^0.3.25",
     "typescript": "^7.0.2"
   }
 }
